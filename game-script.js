@@ -37,6 +37,7 @@ class ReshadGame {
         this.collectibles = [];
         this.particles = [];
         this.movingObstacles = [];
+        this.bullets = [];
         
         // Level data
         this.levels = [
@@ -241,6 +242,9 @@ class ReshadGame {
         this.collectedCoins = 0;
         this.achievements = 0;
         this.player.powerUps = {tech: 0, leadership: 0, research: 0};
+        this.bullets = [];
+        this.movingObstacles = [];
+        document.getElementById('game-over').style.display = 'none';
         this.loadLevel(0);
         this.startGame();
     }
@@ -323,6 +327,9 @@ class ReshadGame {
             case 'Enter':
                 this.checkGoal();
                 break;
+            case 'KeyX':
+                this.fire();
+                break;
         }
     }
     
@@ -345,6 +352,9 @@ class ReshadGame {
         
         // Update moving obstacles
         this.updateMovingObstacles();
+        
+        // Update bullets
+        this.updateBullets();
         
         // Check collisions
         this.checkCollisions();
@@ -384,6 +394,48 @@ class ReshadGame {
         }
     }
     
+    updateBullets() {
+        for (let i = this.bullets.length - 1; i >= 0; i--) {
+            let bullet = this.bullets[i];
+            bullet.x += bullet.velocityX;
+            
+            // Remove bullets that are off screen
+            if (bullet.x > this.canvas.width || bullet.x < 0) {
+                this.bullets.splice(i, 1);
+                continue;
+            }
+            
+            // Check bullet collision with enemies
+            for (let j = this.movingObstacles.length - 1; j >= 0; j--) {
+                let obstacle = this.movingObstacles[j];
+                if (this.isColliding(bullet, obstacle)) {
+                    // Destroy both bullet and enemy
+                    this.movingObstacles.splice(j, 1);
+                    this.bullets.splice(i, 1);
+                    this.score += 200;
+                    this.playSound('enemy');
+                    this.addParticle(obstacle.x, obstacle.y, 'enemy');
+                    break;
+                }
+            }
+        }
+    }
+    
+    fire() {
+        if (this.gameState !== 'playing') return;
+        
+        // Create bullet
+        this.bullets.push({
+            x: this.player.x + this.player.width,
+            y: this.player.y + this.player.height / 2,
+            width: 8,
+            height: 4,
+            velocityX: 8
+        });
+        
+        this.playSound('fire');
+    }
+    
     checkCollisions() {
         // Platform collisions
         this.player.onGround = false;
@@ -400,10 +452,22 @@ class ReshadGame {
         }
         
         // Moving obstacle collisions
-        for (let obstacle of this.movingObstacles) {
+        for (let i = this.movingObstacles.length - 1; i >= 0; i--) {
+            let obstacle = this.movingObstacles[i];
             if (this.isColliding(this.player, obstacle)) {
-                this.loseLife();
-                return;
+                // Check if player is jumping on enemy from above
+                if (this.player.velocityY > 0 && this.player.y < obstacle.y) {
+                    // Player jumped on enemy - destroy enemy and bounce
+                    this.movingObstacles.splice(i, 1);
+                    this.player.velocityY = -this.player.jumpPower * 0.7; // Bounce
+                    this.score += 200;
+                    this.playSound('enemy');
+                    this.addParticle(obstacle.x, obstacle.y, 'enemy');
+                } else {
+                    // Player hit enemy from side - lose life
+                    this.loseLife();
+                    return;
+                }
             }
         }
         
@@ -559,6 +623,9 @@ class ReshadGame {
         // Draw moving obstacles
         this.drawMovingObstacles();
         
+        // Draw bullets
+        this.drawBullets();
+        
         // Draw goal
         this.drawGoal();
         
@@ -693,6 +760,19 @@ class ReshadGame {
             this.ctx.fillRect(obstacle.x + 17, obstacle.y + 7, 2, 2);
             
             this.ctx.fillStyle = '#8B0000';
+        }
+    }
+    
+    drawBullets() {
+        this.ctx.fillStyle = '#FFD700'; // Gold bullets
+        for (let bullet of this.bullets) {
+            this.ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+            
+            // Add glow effect
+            this.ctx.shadowColor = '#FFD700';
+            this.ctx.shadowBlur = 5;
+            this.ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+            this.ctx.shadowBlur = 0;
         }
     }
     
