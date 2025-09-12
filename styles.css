@@ -2192,6 +2192,27 @@ section {
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
 }
 
+/* Dark mode support for certificate buttons */
+[data-theme="dark"] .certificate-item {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .certificate-item:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
+}
+
+[data-theme="dark"] .certificate-button-container .btn-secondary {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+[data-theme="dark"] .certificate-button-container .btn-secondary:hover {
+  background: var(--primary-color);
+  color: white;
+}
+
 /* Experience Stats */
 .experience-stats {
   display: grid;

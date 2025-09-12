@@ -1168,14 +1168,29 @@ function initPDFViewer() {
     let currentPDFUrl = '';
     
     // Initialize PDF viewer buttons
-    pdfButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const pdfUrl = btn.dataset.pdf;
-            const pdfTitle = btn.dataset.title;
-            openPDFModal(pdfUrl, pdfTitle);
+    initPDFButtons();
+    
+    // Reinitialize PDF buttons after a short delay to ensure all elements are loaded
+    setTimeout(() => {
+        initPDFButtons();
+    }, 100);
+    
+    // Function to initialize PDF buttons (can be called multiple times)
+    window.initPDFButtons = function() {
+        const allPdfButtons = document.querySelectorAll('.pdf-viewer-btn');
+        allPdfButtons.forEach(btn => {
+            // Remove existing listeners to avoid duplicates
+            btn.removeEventListener('click', handlePDFButtonClick);
+            btn.addEventListener('click', handlePDFButtonClick);
         });
-    });
+    }
+    
+    function handlePDFButtonClick(e) {
+        e.preventDefault();
+        const pdfUrl = e.target.closest('.pdf-viewer-btn').dataset.pdf;
+        const pdfTitle = e.target.closest('.pdf-viewer-btn').dataset.title;
+        openPDFModal(pdfUrl, pdfTitle);
+    }
     
     // Close modal functionality
     closeBtn?.addEventListener('click', closePDFModal);
