@@ -65,6 +65,7 @@
                 <a href="#cultural" class="nav-link">Cultural</a>
                 <a href="#projects" class="nav-link">Projects</a>
                 <a href="#research" class="nav-link">Research</a>
+                <a href="#game" class="nav-link">My Journey</a>
                 <a href="#contact" class="nav-link">Contact</a>
             </div>
             <div class="hamburger" id="hamburger">
@@ -1525,6 +1526,137 @@
                         </div>
                         <h4>Open Source Contribution</h4>
                         <p>Making research code and datasets available to the community for further development and validation.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Journey Game Section -->
+    <section id="game" class="journey-game">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <h2 class="section-title">My Journey</h2>
+                <p class="section-subtitle">Experience my path from student to AI researcher through an interactive adventure</p>
+            </div>
+            
+            <!-- Game Container -->
+            <div class="game-container" data-aos="fade-up" data-aos-delay="200">
+                <!-- Game Header -->
+                <div class="game-header">
+                    <div class="game-title">
+                        <h3>The Path of Innovation</h3>
+                        <p>Follow Reshad's journey through technology and leadership</p>
+                    </div>
+                    <div class="game-controls">
+                        <button id="start-game" class="btn btn-primary">
+                            <i class="fas fa-play"></i>
+                            Start Journey
+                        </button>
+                        <button id="reset-game" class="btn btn-secondary" style="display: none;">
+                            <i class="fas fa-redo"></i>
+                            Restart
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Game Progress -->
+                <div class="game-progress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="game-progress"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span id="current-chapter">Chapter 1</span>
+                        <span id="progress-percentage">0%</span>
+                    </div>
+                </div>
+                
+                <!-- Game Content -->
+                <div class="game-content" id="game-content" style="display: none;">
+                    <!-- Chapter Display -->
+                    <div class="chapter-display">
+                        <div class="chapter-header">
+                            <h4 id="chapter-title">The Beginning</h4>
+                            <span id="chapter-year">2019-2020</span>
+                        </div>
+                        <div class="chapter-story">
+                            <p id="chapter-text">You're starting your journey at Notre Dame College. What path will you choose?</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Character Stats -->
+                    <div class="character-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Technical Skills</span>
+                            <div class="stat-bar">
+                                <div class="stat-fill" id="tech-skills" style="width: 20%"></div>
+                            </div>
+                            <span class="stat-value" id="tech-value">20</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Leadership</span>
+                            <div class="stat-bar">
+                                <div class="stat-fill" id="leadership" style="width: 15%"></div>
+                            </div>
+                            <span class="stat-value" id="leadership-value">15</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Research</span>
+                            <div class="stat-bar">
+                                <div class="stat-fill" id="research-skills" style="width: 10%"></div>
+                            </div>
+                            <span class="stat-value" id="research-value">10</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Choice Buttons -->
+                    <div class="game-choices" id="game-choices">
+                        <button class="choice-btn" data-choice="1">
+                            <i class="fas fa-users"></i>
+                            <span>Join Cultural Club</span>
+                        </button>
+                        <button class="choice-btn" data-choice="2">
+                            <i class="fas fa-graduation-cap"></i>
+                            <span>Focus on Studies</span>
+                        </button>
+                        <button class="choice-btn" data-choice="3">
+                            <i class="fas fa-laptop-code"></i>
+                            <span>Explore Technology</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Achievements -->
+                    <div class="achievements" id="achievements">
+                        <h5>Recent Achievements</h5>
+                        <div class="achievement-list" id="achievement-list">
+                            <!-- Achievements will be added dynamically -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Game Over Screen -->
+                <div class="game-over" id="game-over" style="display: none;">
+                    <div class="game-over-content">
+                        <h3>Journey Complete!</h3>
+                        <p>You've successfully followed Reshad's path to becoming an AI researcher.</p>
+                        <div class="final-stats">
+                            <div class="final-stat">
+                                <span class="stat-number" id="final-tech">0</span>
+                                <span class="stat-label">Technical Skills</span>
+                            </div>
+                            <div class="final-stat">
+                                <span class="stat-number" id="final-leadership">0</span>
+                                <span class="stat-label">Leadership</span>
+                            </div>
+                            <div class="final-stat">
+                                <span class="stat-number" id="final-research">0</span>
+                                <span class="stat-label">Research</span>
+                            </div>
+                        </div>
+                        <button id="play-again" class="btn btn-primary">
+                            <i class="fas fa-play"></i>
+                            Play Again
+                        </button>
                     </div>
                 </div>
             </div>

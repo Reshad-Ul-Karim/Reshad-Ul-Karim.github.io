@@ -25,6 +25,7 @@ function initializeWebsite() {
     initImageModal();
     initFloatingNav();
     initAboutInteractions();
+    initJourneyGame();
     
     // Add event listeners
     addEventListeners();
@@ -2236,6 +2237,228 @@ function initAboutScrollAnimations() {
     }, observerOptions);
     
     observer.observe(aboutSection);
+}
+
+// ===== JOURNEY GAME =====
+function initJourneyGame() {
+    const startBtn = document.getElementById('start-game');
+    const resetBtn = document.getElementById('reset-game');
+    const playAgainBtn = document.getElementById('play-again');
+    const gameContent = document.getElementById('game-content');
+    const gameProgress = document.querySelector('.game-progress');
+    const gameOver = document.getElementById('game-over');
+    
+    // Game state
+    let currentChapter = 0;
+    let gameStats = {
+        technical: 20,
+        leadership: 15,
+        research: 10
+    };
+    let achievements = [];
+    
+    // Game chapters data
+    const chapters = [
+        {
+            title: "The Beginning",
+            year: "2019-2020",
+            text: "You're starting your journey at Notre Dame College. What path will you choose?",
+            choices: [
+                { text: "Join Cultural Club", icon: "fas fa-users", stats: { leadership: 10, technical: 5 } },
+                { text: "Focus on Studies", icon: "fas fa-graduation-cap", stats: { technical: 15, research: 5 } },
+                { text: "Explore Technology", icon: "fas fa-laptop-code", stats: { technical: 20, research: 10 } }
+            ]
+        },
+        {
+            title: "The Foundation",
+            year: "2020-2022",
+            text: "You've joined BRAC University. A new opportunity arises to join the Mars Rover team. What do you do?",
+            choices: [
+                { text: "Join Mars Rover Team", icon: "fas fa-rocket", stats: { technical: 25, leadership: 15 } },
+                { text: "Start Research Projects", icon: "fas fa-microscope", stats: { research: 30, technical: 20 } },
+                { text: "Build Personal Projects", icon: "fas fa-code", stats: { technical: 30, research: 15 } }
+            ]
+        },
+        {
+            title: "The Breakthrough",
+            year: "2022-2024",
+            text: "You're in the Mars Rover team. URC 2025 is approaching and you need to make crucial decisions.",
+            choices: [
+                { text: "Focus on AI/ML", icon: "fas fa-brain", stats: { technical: 35, research: 25 } },
+                { text: "Work on Hardware", icon: "fas fa-microchip", stats: { technical: 40, leadership: 20 } },
+                { text: "Lead the Team", icon: "fas fa-users-cog", stats: { leadership: 35, technical: 25 } }
+            ]
+        },
+        {
+            title: "The Innovation",
+            year: "2024-Present",
+            text: "You've achieved Top 8 globally in URC 2025. Now it's time to focus on research and innovation.",
+            choices: [
+                { text: "Start Healthcare Research", icon: "fas fa-heartbeat", stats: { research: 40, technical: 30 } },
+                { text: "Publish Research Papers", icon: "fas fa-file-alt", stats: { research: 45, technical: 25 } },
+                { text: "Build More Projects", icon: "fas fa-project-diagram", stats: { technical: 45, research: 30 } }
+            ]
+        }
+    ];
+    
+    // Start game
+    startBtn?.addEventListener('click', () => {
+        startGame();
+    });
+    
+    // Reset game
+    resetBtn?.addEventListener('click', () => {
+        resetGame();
+    });
+    
+    // Play again
+    playAgainBtn?.addEventListener('click', () => {
+        resetGame();
+    });
+    
+    // Choice buttons
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.choice-btn')) {
+            const choice = parseInt(e.target.closest('.choice-btn').dataset.choice);
+            makeChoice(choice);
+        }
+    });
+    
+    function startGame() {
+        currentChapter = 0;
+        gameStats = { technical: 20, leadership: 15, research: 10 };
+        achievements = [];
+        
+        startBtn.style.display = 'none';
+        resetBtn.style.display = 'inline-flex';
+        gameContent.style.display = 'block';
+        gameProgress.style.display = 'block';
+        gameOver.style.display = 'none';
+        
+        loadChapter();
+    }
+    
+    function resetGame() {
+        startGame();
+    }
+    
+    function loadChapter() {
+        if (currentChapter >= chapters.length) {
+            endGame();
+            return;
+        }
+        
+        const chapter = chapters[currentChapter];
+        
+        // Update chapter display
+        document.getElementById('chapter-title').textContent = chapter.title;
+        document.getElementById('chapter-year').textContent = chapter.year;
+        document.getElementById('chapter-text').textContent = chapter.text;
+        
+        // Update progress
+        const progress = ((currentChapter + 1) / chapters.length) * 100;
+        document.getElementById('game-progress').style.width = progress + '%';
+        document.getElementById('current-chapter').textContent = `Chapter ${currentChapter + 1}`;
+        document.getElementById('progress-percentage').textContent = Math.round(progress) + '%';
+        
+        // Update choices
+        const choicesContainer = document.getElementById('game-choices');
+        choicesContainer.innerHTML = '';
+        
+        chapter.choices.forEach((choice, index) => {
+            const choiceBtn = document.createElement('button');
+            choiceBtn.className = 'choice-btn';
+            choiceBtn.dataset.choice = index + 1;
+            choiceBtn.innerHTML = `
+                <i class="${choice.icon}"></i>
+                <span>${choice.text}</span>
+            `;
+            choicesContainer.appendChild(choiceBtn);
+        });
+        
+        updateStats();
+        updateAchievements();
+    }
+    
+    function makeChoice(choiceIndex) {
+        const chapter = chapters[currentChapter];
+        const choice = chapter.choices[choiceIndex - 1];
+        
+        // Update stats
+        Object.keys(choice.stats).forEach(stat => {
+            gameStats[stat] += choice.stats[stat];
+        });
+        
+        // Add achievement
+        addAchievement(`Completed: ${chapter.title}`);
+        
+        // Move to next chapter
+        currentChapter++;
+        
+        // Add delay for smooth transition
+        setTimeout(() => {
+            loadChapter();
+        }, 500);
+    }
+    
+    function updateStats() {
+        // Update technical skills
+        const techBar = document.getElementById('tech-skills');
+        const techValue = document.getElementById('tech-value');
+        const techPercent = Math.min((gameStats.technical / 100) * 100, 100);
+        techBar.style.width = techPercent + '%';
+        techValue.textContent = gameStats.technical;
+        
+        // Update leadership
+        const leadershipBar = document.getElementById('leadership');
+        const leadershipValue = document.getElementById('leadership-value');
+        const leadershipPercent = Math.min((gameStats.leadership / 100) * 100, 100);
+        leadershipBar.style.width = leadershipPercent + '%';
+        leadershipValue.textContent = gameStats.leadership;
+        
+        // Update research
+        const researchBar = document.getElementById('research-skills');
+        const researchValue = document.getElementById('research-value');
+        const researchPercent = Math.min((gameStats.research / 100) * 100, 100);
+        researchBar.style.width = researchPercent + '%';
+        researchValue.textContent = gameStats.research;
+    }
+    
+    function addAchievement(text) {
+        achievements.unshift(text);
+        if (achievements.length > 5) {
+            achievements.pop();
+        }
+        updateAchievements();
+    }
+    
+    function updateAchievements() {
+        const achievementList = document.getElementById('achievement-list');
+        achievementList.innerHTML = '';
+        
+        achievements.forEach(achievement => {
+            const achievementItem = document.createElement('div');
+            achievementItem.className = 'achievement-item';
+            achievementItem.innerHTML = `
+                <i class="fas fa-trophy"></i>
+                <span>${achievement}</span>
+            `;
+            achievementList.appendChild(achievementItem);
+        });
+    }
+    
+    function endGame() {
+        gameContent.style.display = 'none';
+        gameOver.style.display = 'block';
+        
+        // Update final stats
+        document.getElementById('final-tech').textContent = gameStats.technical;
+        document.getElementById('final-leadership').textContent = gameStats.leadership;
+        document.getElementById('final-research').textContent = gameStats.research;
+        
+        // Add final achievement
+        addAchievement('Journey Complete!');
+    }
 }
 
 // ===== CONSOLE MESSAGE =====
