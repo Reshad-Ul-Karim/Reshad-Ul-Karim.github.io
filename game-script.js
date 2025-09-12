@@ -39,6 +39,14 @@ class ReshadGame {
         this.movingObstacles = [];
         this.bullets = [];
         
+        // Player sprites
+        this.playerSprites = {
+            standing: null,
+            shooting: null
+        };
+        this.isShooting = false;
+        this.shootingTimer = 0;
+        
         // Level data
         this.levels = [
             {
@@ -206,8 +214,19 @@ class ReshadGame {
     
     init() {
         this.setupEventListeners();
+        this.loadSprites();
         this.loadLevel(0);
         this.gameLoop();
+    }
+    
+    loadSprites() {
+        // Load standing sprite
+        this.playerSprites.standing = new Image();
+        this.playerSprites.standing.src = 'assets/game-sprite/Standing.png';
+        
+        // Load shooting sprite
+        this.playerSprites.shooting = new Image();
+        this.playerSprites.shooting.src = 'assets/game-sprite/Shooting.png';
     }
     
     setupEventListeners() {
@@ -362,6 +381,14 @@ class ReshadGame {
         // Update particles
         this.updateParticles();
         
+        // Update shooting timer
+        if (this.shootingTimer > 0) {
+            this.shootingTimer--;
+            if (this.shootingTimer === 0) {
+                this.isShooting = false;
+            }
+        }
+        
         // Check if player fell off the world
         if (this.player.y > this.canvas.height) {
             this.loseLife();
@@ -432,6 +459,10 @@ class ReshadGame {
             height: 4,
             velocityX: 8
         });
+        
+        // Set shooting state
+        this.isShooting = true;
+        this.shootingTimer = 10; // Show shooting sprite for 10 frames
         
         this.playSound('fire');
     }
@@ -787,25 +818,33 @@ class ReshadGame {
     }
     
     drawPlayer() {
-        // Player body
-        this.ctx.fillStyle = '#2ecc71';
-        this.ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
+        // Choose sprite based on shooting state
+        const currentSprite = this.isShooting ? this.playerSprites.shooting : this.playerSprites.standing;
         
-        // Player face
-        this.ctx.fillStyle = '#f1c40f';
-        this.ctx.fillRect(this.player.x + 5, this.player.y + 5, 30, 20);
-        
-        // Eyes
-        this.ctx.fillStyle = 'black';
-        this.ctx.fillRect(this.player.x + 10, this.player.y + 10, 3, 3);
-        this.ctx.fillRect(this.player.x + 20, this.player.y + 10, 3, 3);
-        
-        // Smile
-        this.ctx.strokeStyle = 'black';
-        this.ctx.lineWidth = 2;
-        this.ctx.beginPath();
-        this.ctx.arc(this.player.x + 20, this.player.y + 18, 8, 0, Math.PI);
-        this.ctx.stroke();
+        // Draw sprite if loaded, otherwise fallback to simple rectangle
+        if (currentSprite && currentSprite.complete) {
+            this.ctx.drawImage(currentSprite, this.player.x, this.player.y, this.player.width, this.player.height);
+        } else {
+            // Fallback drawing when sprites aren't loaded yet
+            this.ctx.fillStyle = '#2ecc71';
+            this.ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
+            
+            // Player face
+            this.ctx.fillStyle = '#f1c40f';
+            this.ctx.fillRect(this.player.x + 5, this.player.y + 5, 30, 20);
+            
+            // Eyes
+            this.ctx.fillStyle = 'black';
+            this.ctx.fillRect(this.player.x + 10, this.player.y + 10, 3, 3);
+            this.ctx.fillRect(this.player.x + 20, this.player.y + 10, 3, 3);
+            
+            // Smile
+            this.ctx.strokeStyle = 'black';
+            this.ctx.lineWidth = 2;
+            this.ctx.beginPath();
+            this.ctx.arc(this.player.x + 20, this.player.y + 18, 8, 0, Math.PI);
+            this.ctx.stroke();
+        }
     }
     
     drawParticles() {
