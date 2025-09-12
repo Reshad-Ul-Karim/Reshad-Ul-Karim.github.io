@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="description" content="Reshad's Journey - Interactive Mario-style Adventure Game">
+    <title>Reshad's Journey - Interactive Adventure Game</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Product+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="game-styles.css">
+</head>
+<body>
+    <!-- Game Container -->
+    <div id="game-container">
+        <!-- Game Header -->
+        <div id="game-header">
+            <div class="game-title">
+                <h1>Reshad's Journey</h1>
+                <p>An Interactive Adventure Through Life & Technology</p>
+            </div>
+            <div class="game-stats">
+                <div class="stat-item">
+                    <i class="fas fa-heart"></i>
+                    <span id="lives">3</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-star"></i>
+                    <span id="score">0</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-coins"></i>
+                    <span id="coins">0</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-trophy"></i>
+                    <span id="achievements">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Canvas -->
+        <canvas id="game-canvas" width="1200" height="600"></canvas>
+
+        <!-- Game UI Overlay -->
+        <div id="game-ui">
+            <!-- Level Info -->
+            <div class="level-info">
+                <h3 id="level-title">The Beginning</h3>
+                <p id="level-description">Start your journey at Notre Dame College</p>
+            </div>
+
+            <!-- Power-ups -->
+            <div class="powerups">
+                <div class="powerup-item" id="tech-powerup">
+                    <i class="fas fa-laptop-code"></i>
+                    <span>Tech Skills</span>
+                </div>
+                <div class="powerup-item" id="leadership-powerup">
+                    <i class="fas fa-users"></i>
+                    <span>Leadership</span>
+                </div>
+                <div class="powerup-item" id="research-powerup">
+                    <i class="fas fa-microscope"></i>
+                    <span>Research</span>
+                </div>
+            </div>
+
+            <!-- Controls Info -->
+            <div class="controls-info">
+                <p><i class="fas fa-arrow-left"></i> <i class="fas fa-arrow-right"></i> Move</p>
+                <p><i class="fas fa-arrow-up"></i> Jump</p>
+                <p><i class="fas fa-space"></i> Action</p>
+            </div>
+        </div>
+
+        <!-- Game Menu -->
+        <div id="game-menu" class="menu-overlay">
+            <div class="menu-content">
+                <h2>Reshad's Journey</h2>
+                <p>An Interactive Adventure Game</p>
+                <div class="menu-buttons">
+                    <button id="start-game" class="menu-btn primary">
+                        <i class="fas fa-play"></i>
+                        Start Adventure
+                    </button>
+                    <button id="instructions" class="menu-btn secondary">
+                        <i class="fas fa-info-circle"></i>
+                        Instructions
+                    </button>
+                    <button id="back-to-portfolio" class="menu-btn secondary">
+                        <i class="fas fa-home"></i>
+                        Back to Portfolio
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions Modal -->
+        <div id="instructions-modal" class="modal-overlay">
+            <div class="modal-content">
+                <h3>How to Play</h3>
+                <div class="instructions-content">
+                    <div class="instruction-section">
+                        <h4>🎮 Controls</h4>
+                        <ul>
+                            <li><strong>Arrow Keys:</strong> Move left/right</li>
+                            <li><strong>Spacebar:</strong> Jump</li>
+                            <li><strong>Enter:</strong> Action/Interact</li>
+                        </ul>
+                    </div>
+                    <div class="instruction-section">
+                        <h4>🎯 Objectives</h4>
+                        <ul>
+                            <li>Collect coins and power-ups</li>
+                            <li>Complete challenges at each level</li>
+                            <li>Unlock achievements</li>
+                            <li>Follow Reshad's real-life journey</li>
+                        </ul>
+                    </div>
+                    <div class="instruction-section">
+                        <h4>🌟 Power-ups</h4>
+                        <ul>
+                            <li><strong>Tech Skills:</strong> Programming abilities</li>
+                            <li><strong>Leadership:</strong> Team management</li>
+                            <li><strong>Research:</strong> Academic achievements</li>
+                        </ul>
+                    </div>
+                </div>
+                <button id="close-instructions" class="menu-btn primary">Got it!</button>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="game-over" class="menu-overlay" style="display: none;">
+            <div class="menu-content">
+                <h2>Journey Complete!</h2>
+                <p>Congratulations! You've completed Reshad's journey.</p>
+                <div class="final-stats">
+                    <div class="final-stat">
+                        <span class="stat-number" id="final-score">0</span>
+                        <span class="stat-label">Final Score</span>
+                    </div>
+                    <div class="final-stat">
+                        <span class="stat-number" id="final-coins">0</span>
+                        <span class="stat-label">Coins Collected</span>
+                    </div>
+                    <div class="final-stat">
+                        <span class="stat-number" id="final-achievements">0</span>
+                        <span class="stat-label">Achievements</span>
+                    </div>
+                </div>
+                <div class="menu-buttons">
+                    <button id="play-again" class="menu-btn primary">
+                        <i class="fas fa-redo"></i>
+                        Play Again
+                    </button>
+                    <button id="back-to-portfolio-end" class="menu-btn secondary">
+                        <i class="fas fa-home"></i>
+                        Back to Portfolio
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Achievement Popup -->
+        <div id="achievement-popup" class="achievement-popup">
+            <div class="achievement-content">
+                <i class="fas fa-trophy"></i>
+                <div class="achievement-text">
+                    <h4 id="achievement-title">Achievement Unlocked!</h4>
+                    <p id="achievement-description">You've unlocked a new achievement!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Audio Controls -->
+        <div class="audio-controls">
+            <button id="mute-btn" class="audio-btn">
+                <i class="fas fa-volume-up"></i>
+            </button>
+            <button id="music-btn" class="audio-btn">
+                <i class="fas fa-music"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Game Script -->
+    <script src="game-script.js"></script>
+</body>
+</html>
