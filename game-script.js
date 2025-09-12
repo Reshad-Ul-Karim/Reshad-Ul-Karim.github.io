@@ -8,6 +8,7 @@ class ReshadGame {
         this.score = 0;
         this.lives = 3;
         this.coins = 0;
+        this.collectedCoins = 0; // Track collected coins separately
         this.achievements = 0;
         
         // Player object
@@ -35,6 +36,7 @@ class ReshadGame {
         this.enemies = [];
         this.collectibles = [];
         this.particles = [];
+        this.movingObstacles = [];
         
         // Level data
         this.levels = [
@@ -60,6 +62,10 @@ class ReshadGame {
                 powerUps: [
                     {x: 350, y: 400, type: 'tech', collected: false},
                     {x: 550, y: 350, type: 'leadership', collected: false}
+                ],
+                movingObstacles: [
+                    {x: 300, y: 420, width: 30, height: 30, velocityX: -1, minX: 250, maxX: 400, type: 'enemy'},
+                    {x: 500, y: 370, width: 30, height: 30, velocityX: 1, minX: 450, maxX: 600, type: 'enemy'}
                 ],
                 goal: {x: 1150, y: 400, width: 50, height: 100}
             },
@@ -89,6 +95,11 @@ class ReshadGame {
                 powerUps: [
                     {x: 300, y: 400, type: 'tech', collected: false},
                     {x: 600, y: 250, type: 'research', collected: false}
+                ],
+                movingObstacles: [
+                    {x: 250, y: 420, width: 30, height: 30, velocityX: -1, minX: 200, maxX: 300, type: 'enemy'},
+                    {x: 400, y: 370, width: 30, height: 30, velocityX: 1, minX: 350, maxX: 450, type: 'enemy'},
+                    {x: 700, y: 220, width: 30, height: 30, velocityX: -1, minX: 650, maxX: 750, type: 'enemy'}
                 ],
                 goal: {x: 1175, y: 400, width: 25, height: 100}
             },
@@ -122,6 +133,12 @@ class ReshadGame {
                     {x: 250, y: 400, type: 'tech', collected: false},
                     {x: 500, y: 250, type: 'leadership', collected: false},
                     {x: 750, y: 150, type: 'research', collected: false}
+                ],
+                movingObstacles: [
+                    {x: 200, y: 420, width: 30, height: 30, velocityX: -1, minX: 150, maxX: 230, type: 'enemy'},
+                    {x: 350, y: 370, width: 30, height: 30, velocityX: 1, minX: 280, maxX: 360, type: 'enemy'},
+                    {x: 500, y: 320, width: 30, height: 30, velocityX: -1, minX: 410, maxX: 490, type: 'enemy'},
+                    {x: 750, y: 170, width: 30, height: 30, velocityX: 1, minX: 670, maxX: 750, type: 'enemy'}
                 ],
                 goal: {x: 1120, y: 400, width: 80, height: 100}
             },
@@ -160,6 +177,14 @@ class ReshadGame {
                     {x: 420, y: 250, type: 'leadership', collected: false},
                     {x: 640, y: 150, type: 'research', collected: false},
                     {x: 860, y: 50, type: 'tech', collected: false}
+                ],
+                movingObstacles: [
+                    {x: 150, y: 420, width: 30, height: 30, velocityX: -1, minX: 130, maxX: 190, type: 'enemy'},
+                    {x: 280, y: 370, width: 30, height: 30, velocityX: 1, minX: 240, maxX: 300, type: 'enemy'},
+                    {x: 400, y: 320, width: 30, height: 30, velocityX: -1, minX: 350, maxX: 410, type: 'enemy'},
+                    {x: 520, y: 270, width: 30, height: 30, velocityX: 1, minX: 460, maxX: 520, type: 'enemy'},
+                    {x: 640, y: 220, width: 30, height: 30, velocityX: -1, minX: 570, maxX: 630, type: 'enemy'},
+                    {x: 760, y: 170, width: 30, height: 30, velocityX: 1, minX: 680, maxX: 740, type: 'enemy'}
                 ],
                 goal: {x: 1140, y: 400, width: 60, height: 100}
             }
@@ -213,6 +238,7 @@ class ReshadGame {
         this.score = 0;
         this.lives = 3;
         this.coins = 0;
+        this.collectedCoins = 0;
         this.achievements = 0;
         this.player.powerUps = {tech: 0, leadership: 0, research: 0};
         this.loadLevel(0);
@@ -260,6 +286,9 @@ class ReshadGame {
         
         // Load power-ups
         this.powerUps = level.powerUps.map(powerUp => ({...powerUp}));
+        
+        // Load moving obstacles
+        this.movingObstacles = level.movingObstacles.map(obstacle => ({...obstacle}));
         
         // Reset player position
         this.resetPlayer();
@@ -314,6 +343,9 @@ class ReshadGame {
         // Update player physics
         this.updatePlayer();
         
+        // Update moving obstacles
+        this.updateMovingObstacles();
+        
         // Check collisions
         this.checkCollisions();
         
@@ -341,6 +373,17 @@ class ReshadGame {
         }
     }
     
+    updateMovingObstacles() {
+        for (let obstacle of this.movingObstacles) {
+            obstacle.x += obstacle.velocityX;
+            
+            // Reverse direction at boundaries
+            if (obstacle.x <= obstacle.minX || obstacle.x >= obstacle.maxX) {
+                obstacle.velocityX *= -1;
+            }
+        }
+    }
+    
     checkCollisions() {
         // Platform collisions
         this.player.onGround = false;
@@ -356,12 +399,21 @@ class ReshadGame {
             }
         }
         
+        // Moving obstacle collisions
+        for (let obstacle of this.movingObstacles) {
+            if (this.isColliding(this.player, obstacle)) {
+                this.loseLife();
+                return;
+            }
+        }
+        
         // Coin collisions
         for (let i = this.coins.length - 1; i >= 0; i--) {
             let coin = this.coins[i];
             if (!coin.collected && this.isColliding(this.player, coin)) {
                 coin.collected = true;
                 this.coins++;
+                this.collectedCoins++;
                 this.score += 100;
                 this.playSound('coin');
                 this.addParticle(coin.x, coin.y, 'coin');
@@ -404,7 +456,7 @@ class ReshadGame {
     gameWin() {
         this.gameState = 'gameOver';
         document.getElementById('final-score').textContent = this.score;
-        document.getElementById('final-coins').textContent = this.coins;
+        document.getElementById('final-coins').textContent = this.collectedCoins;
         document.getElementById('final-achievements').textContent = this.achievements;
         document.getElementById('game-over').style.display = 'flex';
     }
@@ -421,7 +473,7 @@ class ReshadGame {
     gameOver() {
         this.gameState = 'gameOver';
         document.getElementById('final-score').textContent = this.score;
-        document.getElementById('final-coins').textContent = this.coins;
+        document.getElementById('final-coins').textContent = this.collectedCoins;
         document.getElementById('final-achievements').textContent = this.achievements;
         document.getElementById('game-over').style.display = 'flex';
     }
@@ -504,6 +556,9 @@ class ReshadGame {
         // Draw power-ups
         this.drawPowerUps();
         
+        // Draw moving obstacles
+        this.drawMovingObstacles();
+        
         // Draw goal
         this.drawGoal();
         
@@ -518,21 +573,37 @@ class ReshadGame {
     }
     
     drawBackground() {
-        // Sky gradient
+        // Super Mario style background
         const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
-        gradient.addColorStop(0, '#87CEEB');
-        gradient.addColorStop(0.5, '#98FB98');
-        gradient.addColorStop(1, '#8FBC8F');
+        gradient.addColorStop(0, '#5C94FC'); // Sky blue
+        gradient.addColorStop(0.7, '#5C94FC'); // Sky blue
+        gradient.addColorStop(0.8, '#87CEEB'); // Light sky blue
+        gradient.addColorStop(1, '#98FB98'); // Light green ground
+        
         this.ctx.fillStyle = gradient;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Clouds
-        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-        for (let i = 0; i < 5; i++) {
-            const x = (i * 200) + (Date.now() * 0.01) % 200;
-            const y = 50 + Math.sin(i) * 20;
+        // Draw clouds
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        for (let i = 0; i < 6; i++) {
+            const x = (i * 200) + (Date.now() * 0.005) % 200;
+            const y = 30 + Math.sin(i * 0.5) * 15;
             this.drawCloud(x, y);
         }
+        
+        // Draw mountains in background
+        this.ctx.fillStyle = 'rgba(139, 69, 19, 0.3)';
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, 400);
+        this.ctx.lineTo(200, 300);
+        this.ctx.lineTo(400, 350);
+        this.ctx.lineTo(600, 280);
+        this.ctx.lineTo(800, 320);
+        this.ctx.lineTo(1000, 290);
+        this.ctx.lineTo(1200, 350);
+        this.ctx.lineTo(1200, 400);
+        this.ctx.closePath();
+        this.ctx.fill();
     }
     
     drawCloud(x, y) {
@@ -606,6 +677,25 @@ class ReshadGame {
         return icons[type] || '?';
     }
     
+    drawMovingObstacles() {
+        this.ctx.fillStyle = '#8B0000'; // Dark red
+        for (let obstacle of this.movingObstacles) {
+            this.ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            
+            // Add eyes
+            this.ctx.fillStyle = 'white';
+            this.ctx.fillRect(obstacle.x + 5, obstacle.y + 5, 5, 5);
+            this.ctx.fillRect(obstacle.x + 15, obstacle.y + 5, 5, 5);
+            
+            // Add pupils
+            this.ctx.fillStyle = 'black';
+            this.ctx.fillRect(obstacle.x + 7, obstacle.y + 7, 2, 2);
+            this.ctx.fillRect(obstacle.x + 17, obstacle.y + 7, 2, 2);
+            
+            this.ctx.fillStyle = '#8B0000';
+        }
+    }
+    
     drawGoal() {
         const level = this.levels[this.currentLevel];
         this.ctx.fillStyle = '#f39c12';
@@ -650,7 +740,7 @@ class ReshadGame {
     updateUI() {
         document.getElementById('lives').textContent = this.lives;
         document.getElementById('score').textContent = this.score;
-        document.getElementById('coins').textContent = this.coins;
+        document.getElementById('coins').textContent = this.collectedCoins;
         document.getElementById('achievements').textContent = this.achievements;
     }
     
