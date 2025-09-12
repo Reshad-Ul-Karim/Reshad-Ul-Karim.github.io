@@ -49,6 +49,26 @@
         <!-- Game Canvas -->
         <canvas id="game-canvas" width="1200" height="600"></canvas>
 
+        <!-- Mobile Controls -->
+        <div id="mobile-controls" class="mobile-controls">
+            <div class="mobile-control-group">
+                <button id="mobile-left" class="mobile-btn direction-btn">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <button id="mobile-right" class="mobile-btn direction-btn">
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+            <div class="mobile-control-group">
+                <button id="mobile-jump" class="mobile-btn action-btn">
+                    <i class="fas fa-arrow-up"></i>
+                </button>
+                <button id="mobile-fire" class="mobile-btn action-btn">
+                    <i class="fas fa-bolt"></i>
+                </button>
+            </div>
+        </div>
+
         <!-- Game UI Overlay -->
         <div id="game-ui">
             <!-- Level Info -->
@@ -112,10 +132,12 @@
                     <div class="instruction-section">
                         <h4>🎮 Controls</h4>
                         <ul>
-                            <li><strong>Arrow Keys:</strong> Move left/right</li>
-                            <li><strong>Spacebar:</strong> Jump</li>
-                            <li><strong>Enter:</strong> Action/Interact</li>
-                            <li><strong>X Key:</strong> Fire bullets</li>
+                            <li><strong>Desktop:</strong> Arrow keys, Spacebar, Enter, X key</li>
+                            <li><strong>Mobile:</strong> On-screen touch buttons</li>
+                            <li><strong>Move:</strong> Left/Right arrows or touch buttons</li>
+                            <li><strong>Jump:</strong> Spacebar or jump button</li>
+                            <li><strong>Fire:</strong> X key or fire button</li>
+                            <li><strong>Action:</strong> Enter key</li>
                         </ul>
                     </div>
                     <div class="instruction-section">

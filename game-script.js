@@ -242,6 +242,29 @@ class ReshadGame {
         document.getElementById('mute-btn').addEventListener('click', () => this.toggleMute());
         document.getElementById('music-btn').addEventListener('click', () => this.toggleMusic());
         
+        // Mobile controls
+        document.getElementById('mobile-left').addEventListener('touchstart', (e) => this.handleMobileInput(e, 'left', 'down'));
+        document.getElementById('mobile-left').addEventListener('touchend', (e) => this.handleMobileInput(e, 'left', 'up'));
+        document.getElementById('mobile-left').addEventListener('mousedown', (e) => this.handleMobileInput(e, 'left', 'down'));
+        document.getElementById('mobile-left').addEventListener('mouseup', (e) => this.handleMobileInput(e, 'left', 'up'));
+        
+        document.getElementById('mobile-right').addEventListener('touchstart', (e) => this.handleMobileInput(e, 'right', 'down'));
+        document.getElementById('mobile-right').addEventListener('touchend', (e) => this.handleMobileInput(e, 'right', 'up'));
+        document.getElementById('mobile-right').addEventListener('mousedown', (e) => this.handleMobileInput(e, 'right', 'down'));
+        document.getElementById('mobile-right').addEventListener('mouseup', (e) => this.handleMobileInput(e, 'right', 'up'));
+        
+        document.getElementById('mobile-jump').addEventListener('touchstart', (e) => this.handleMobileInput(e, 'jump', 'down'));
+        document.getElementById('mobile-jump').addEventListener('click', (e) => this.handleMobileInput(e, 'jump', 'down'));
+        
+        document.getElementById('mobile-fire').addEventListener('touchstart', (e) => this.handleMobileInput(e, 'fire', 'down'));
+        document.getElementById('mobile-fire').addEventListener('click', (e) => this.handleMobileInput(e, 'fire', 'down'));
+        
+        // Prevent default touch behaviors
+        document.getElementById('mobile-left').addEventListener('touchstart', (e) => e.preventDefault());
+        document.getElementById('mobile-right').addEventListener('touchstart', (e) => e.preventDefault());
+        document.getElementById('mobile-jump').addEventListener('touchstart', (e) => e.preventDefault());
+        document.getElementById('mobile-fire').addEventListener('touchstart', (e) => e.preventDefault());
+        
         // Keyboard controls
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
         document.addEventListener('keyup', (e) => this.handleKeyUp(e));
@@ -323,6 +346,41 @@ class ReshadGame {
         this.player.velocityX = 0;
         this.player.velocityY = 0;
         this.player.onGround = false;
+    }
+    
+    handleMobileInput(e, action, type) {
+        if (this.gameState !== 'playing') return;
+        
+        e.preventDefault();
+        
+        switch(action) {
+            case 'left':
+                if (type === 'down') {
+                    this.player.velocityX = -this.player.speed;
+                } else if (type === 'up') {
+                    this.player.velocityX = 0;
+                }
+                break;
+            case 'right':
+                if (type === 'down') {
+                    this.player.velocityX = this.player.speed;
+                } else if (type === 'up') {
+                    this.player.velocityX = 0;
+                }
+                break;
+            case 'jump':
+                if (type === 'down' && this.player.onGround) {
+                    this.player.velocityY = -this.player.jumpPower;
+                    this.player.onGround = false;
+                    this.playSound('jump');
+                }
+                break;
+            case 'fire':
+                if (type === 'down') {
+                    this.fire();
+                }
+                break;
+        }
     }
     
     handleKeyDown(e) {
