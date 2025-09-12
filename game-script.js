@@ -256,6 +256,9 @@ class ReshadGame {
         document.getElementById('mobile-jump').addEventListener('touchstart', (e) => this.handleMobileInput(e, 'jump', 'down'));
         document.getElementById('mobile-jump').addEventListener('click', (e) => this.handleMobileInput(e, 'jump', 'down'));
         
+        document.getElementById('mobile-action').addEventListener('touchstart', (e) => this.handleMobileInput(e, 'action', 'down'));
+        document.getElementById('mobile-action').addEventListener('click', (e) => this.handleMobileInput(e, 'action', 'down'));
+        
         document.getElementById('mobile-fire').addEventListener('touchstart', (e) => this.handleMobileInput(e, 'fire', 'down'));
         document.getElementById('mobile-fire').addEventListener('click', (e) => this.handleMobileInput(e, 'fire', 'down'));
         
@@ -263,6 +266,7 @@ class ReshadGame {
         document.getElementById('mobile-left').addEventListener('touchstart', (e) => e.preventDefault());
         document.getElementById('mobile-right').addEventListener('touchstart', (e) => e.preventDefault());
         document.getElementById('mobile-jump').addEventListener('touchstart', (e) => e.preventDefault());
+        document.getElementById('mobile-action').addEventListener('touchstart', (e) => e.preventDefault());
         document.getElementById('mobile-fire').addEventListener('touchstart', (e) => e.preventDefault());
         
         // Keyboard controls
@@ -373,6 +377,11 @@ class ReshadGame {
                     this.player.velocityY = -this.player.jumpPower;
                     this.player.onGround = false;
                     this.playSound('jump');
+                }
+                break;
+            case 'action':
+                if (type === 'down') {
+                    this.checkGoal();
                 }
                 break;
             case 'fire':
@@ -718,6 +727,9 @@ class ReshadGame {
         // Draw goal
         this.drawGoal();
         
+        // Draw goal indicator if player is near
+        this.drawGoalIndicator();
+        
         // Draw player
         this.drawPlayer();
         
@@ -873,6 +885,43 @@ class ReshadGame {
         // Add flag
         this.ctx.fillStyle = '#e74c3c';
         this.ctx.fillRect(level.goal.x + level.goal.width - 10, level.goal.y, 10, 30);
+    }
+    
+    drawGoalIndicator() {
+        const level = this.levels[this.currentLevel];
+        const distance = Math.abs(this.player.x - (level.goal.x + level.goal.width / 2));
+        
+        // Show indicator if player is within 100 pixels of goal
+        if (distance < 100) {
+            const indicatorY = level.goal.y - 30;
+            const indicatorX = level.goal.x + level.goal.width / 2 - 15;
+            
+            // Draw pulsing indicator
+            const time = Date.now() * 0.005;
+            const scale = Math.sin(time) * 0.3 + 0.7;
+            
+            this.ctx.save();
+            this.ctx.translate(indicatorX + 15, indicatorY + 15);
+            this.ctx.scale(scale, scale);
+            
+            // Draw arrow pointing down
+            this.ctx.fillStyle = '#f39c12';
+            this.ctx.beginPath();
+            this.ctx.moveTo(0, -10);
+            this.ctx.lineTo(-8, 0);
+            this.ctx.lineTo(8, 0);
+            this.ctx.closePath();
+            this.ctx.fill();
+            
+            // Draw text
+            this.ctx.fillStyle = '#2c3e50';
+            this.ctx.font = 'bold 8px Arial';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText('PRESS', 0, 15);
+            this.ctx.fillText('ACTION', 0, 25);
+            
+            this.ctx.restore();
+        }
     }
     
     drawPlayer() {
