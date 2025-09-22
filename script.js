@@ -1159,6 +1159,7 @@ function initPDFViewer() {
     
     // PDF viewer buttons
     const pdfButtons = document.querySelectorAll('.pdf-viewer-btn');
+    const pdfThumbs = document.querySelectorAll('.pdf-thumb');
     
     // PDF state
     let currentPDF = null;
@@ -1167,22 +1168,73 @@ function initPDFViewer() {
     let currentScale = 1.0;
     let currentPDFUrl = '';
     
-    // Initialize PDF viewer buttons
-    initPDFButtons();
-    
-    // Reinitialize PDF buttons after a short delay to ensure all elements are loaded
-    setTimeout(() => {
-        initPDFButtons();
-    }, 100);
-    
-    // Function to initialize PDF buttons (can be called multiple times)
-    window.initPDFButtons = function() {
+    // Define before first use and also expose globally
+    function initPDFButtons() {
         const allPdfButtons = document.querySelectorAll('.pdf-viewer-btn');
         allPdfButtons.forEach(btn => {
             // Remove existing listeners to avoid duplicates
             btn.removeEventListener('click', handlePDFButtonClick);
             btn.addEventListener('click', handlePDFButtonClick);
         });
+    }
+    window.initPDFButtons = initPDFButtons;
+
+    // Initialize PDF viewer buttons
+    initPDFButtons();
+    renderPDFThumbnails();
+    
+    // Reinitialize PDF buttons after a short delay to ensure all elements are loaded
+    setTimeout(() => {
+        initPDFButtons();
+        renderPDFThumbnails();
+    }, 100);
+    
+    // Function initPDFButtons already defined above
+
+    // Render small PDF previews (first page) inside elements with class .pdf-thumb
+    async function renderPDFThumbnails() {
+        try {
+            const thumbs = document.querySelectorAll('.pdf-thumb');
+            if (!thumbs || thumbs.length === 0) return;
+
+            thumbs.forEach(async (thumb) => {
+                // Avoid duplicate renders
+                if (thumb.dataset.rendered === 'true') return;
+
+                const pdfUrl = thumb.getAttribute('data-pdf');
+                if (!pdfUrl) return;
+
+                // Create canvas
+                const canvas = document.createElement('canvas');
+                canvas.width = 320; // small preview
+                canvas.height = 200;
+                canvas.className = 'pdf-thumb-canvas';
+                thumb.innerHTML = '';
+                thumb.appendChild(canvas);
+
+                const ctx = canvas.getContext('2d');
+                try {
+                    const loadingTask = pdfjsLib.getDocument(pdfUrl);
+                    const pdf = await loadingTask.promise;
+                    const page = await pdf.getPage(1);
+                    const viewport = page.getViewport({ scale: 0.3 });
+
+                    // Resize canvas to aspect of page
+                    const scale = Math.min(canvas.width / viewport.width, canvas.height / viewport.height);
+                    const scaledViewport = page.getViewport({ scale: 0.3 * scale * (320/ canvas.width) });
+                    canvas.width = Math.floor(scaledViewport.width);
+                    canvas.height = Math.floor(scaledViewport.height);
+
+                    await page.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
+                    thumb.dataset.rendered = 'true';
+                } catch (err) {
+                    // Fallback icon if PDF fails to render
+                    thumb.innerHTML = '<div class="pdf-thumb-fallback"><i class="fas fa-file-pdf"></i></div>';
+                }
+            });
+        } catch (e) {
+            // Silently ignore thumbnail errors to not break the page
+        }
     }
     
     function handlePDFButtonClick(e) {
