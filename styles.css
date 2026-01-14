@@ -3154,6 +3154,26 @@ section {
   transform: translateX(5px);
 }
 
+.banner-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-banner-secondary {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  box-shadow: 
+    0 10px 25px rgba(220, 38, 38, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.btn-banner-secondary:hover {
+  transform: translateY(-3px);
+  box-shadow: 
+    0 15px 35px rgba(220, 38, 38, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
 .banner-preview {
   position: relative;
   z-index: 1;
@@ -5411,6 +5431,11 @@ section {
     justify-content: center;
     font-size: 1rem;
     padding: 0.875rem 1.5rem;
+  }
+  
+  .banner-buttons {
+    flex-direction: column;
+    width: 100%;
   }
   
   .preview-container {
