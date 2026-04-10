@@ -41,6 +41,9 @@
     
     <!-- AOS Animation Library -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <!-- Vanilla Tilt 3D -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js" defer></script>
     
     <!-- PDF.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -49,6 +52,28 @@
     <link rel="stylesheet" href="styles.css?v=1.3.0">
 </head>
 <body>
+    <!-- SVG Grain Filter -->
+    <svg class="grain-svg" xmlns="http://www.w3.org/2000/svg">
+        <filter id="grain-filter" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+            <feTurbulence type="fractalNoise" baseFrequency="0.72" numOctaves="4" stitchTiles="stitch" result="noise"/>
+            <feColorMatrix type="saturate" values="0" in="noise"/>
+        </filter>
+    </svg>
+    <div class="grain-overlay" aria-hidden="true"></div>
+
+    <!-- Custom Cursor -->
+    <div class="custom-cursor" id="custom-cursor"></div>
+    <div class="cursor-dot" id="cursor-dot"></div>
+
+    <!-- Scroll Progress Ring -->
+    <div class="scroll-progress-ring" id="scroll-progress-ring">
+        <svg width="48" height="48" viewBox="0 0 48 48">
+            <circle class="spr-bg" cx="24" cy="24" r="20"/>
+            <circle class="spr-fill" id="spr-fill" cx="24" cy="24" r="20"/>
+        </svg>
+        <i class="fas fa-chevron-up spr-icon" id="spr-icon"></i>
+    </div>
+
     <!-- Particles Background -->
     <div id="particles-js"></div>
     
@@ -77,6 +102,9 @@
 
     <!-- Hero Section -->
     <section id="home" class="hero">
+        <!-- Morphing blob backgrounds -->
+        <div class="hero-blob hero-blob-1"></div>
+        <div class="hero-blob hero-blob-2"></div>
         <div class="hero-content">
             <div class="hero-text" data-aos="fade-up" data-aos-delay="200">
                 <h1 class="hero-title">
@@ -166,7 +194,7 @@
         </div>
     </section>
 
-    
+    <div class="section-divider divider-wave"></div>
 
     <!-- About Section -->
     <section id="about" class="about">
@@ -481,6 +509,8 @@
         </div>
     </section>
 
+    <div class="section-divider divider-diagonal"></div>
+
     <!-- Experience Section -->
     <section id="experience" class="experience">
         <div class="container">
@@ -492,7 +522,7 @@
             <!-- Interactive Experience Cards -->
             <div class="experience-grid" data-aos="fade-up" data-aos-delay="100">
                 <!-- Mars Rover Team Experience -->
-                <div class="experience-card featured" data-aos="fade-up" data-aos-delay="100">
+                <div class="experience-card featured" data-aos="fade-up" data-aos-delay="100" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1" data-tilt-scale="1.01">
                     <div class="experience-header">
                         <div class="company-logo">
                             <i class="fas fa-rocket"></i>
@@ -582,7 +612,7 @@
                 </div>
                 
                 <!-- Teaching Assistant Experience -->
-                <div class="experience-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="experience-card" data-aos="fade-up" data-aos-delay="200" data-tilt data-tilt-max="6" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.12" data-tilt-scale="1.01">
                     <div class="experience-header">
                         <div class="company-logo">
                             <i class="fas fa-graduation-cap"></i>
@@ -640,7 +670,7 @@
                 </div>
                 
                 <!-- Rescue Rover Experience -->
-                <div class="experience-card" data-aos="fade-up" data-aos-delay="300">
+                <div class="experience-card" data-aos="fade-up" data-aos-delay="300" data-tilt data-tilt-max="6" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.12" data-tilt-scale="1.01">
                     <div class="experience-header">
                         <div class="company-logo">
                             <i class="fas fa-robot"></i>
@@ -740,6 +770,8 @@
         </div>
     </section>
 
+    <div class="section-divider divider-wave"></div>
+
     <!-- Cultural Leadership Section -->
     <section id="cultural" class="cultural">
         <div class="container">
@@ -751,7 +783,7 @@
             <!-- Cultural Experience Cards -->
             <div class="cultural-grid" data-aos="fade-up" data-aos-delay="100">
                 <!-- Notre Dame Cultural Club Experience -->
-                <div class="cultural-card featured" data-aos="fade-up" data-aos-delay="100">
+                <div class="cultural-card featured" data-aos="fade-up" data-aos-delay="100" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1" data-tilt-scale="1.01">
                     <div class="cultural-header">
                         <div class="organization-logo">
                             <i class="fas fa-theater-masks"></i>
@@ -830,7 +862,7 @@
                 </div>
                 
                 <!-- BRAC University Cultural Club Experience -->
-                <div class="cultural-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="cultural-card" data-aos="fade-up" data-aos-delay="200" data-tilt data-tilt-max="6" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.12" data-tilt-scale="1.01">
                     <div class="cultural-header">
                         <div class="organization-logo">
                             <i class="fas fa-graduation-cap"></i>
@@ -1064,7 +1096,7 @@
             </div>
             
             <div class="projects-grid">
-                <div class="project-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="project-card" data-aos="fade-up" data-aos-delay="100" data-tilt data-tilt-max="8" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.15" data-tilt-scale="1.02">
                     <div class="project-image">
                         <!-- YouTube Video Preview -->
                         <div class="youtube-preview" data-video-id="vdP5qrJQqGc" data-start-time="131">
@@ -1103,7 +1135,7 @@
                     </div>
                 </div>
                 
-                <div class="project-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="project-card" data-aos="fade-up" data-aos-delay="200" data-tilt data-tilt-max="8" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.15" data-tilt-scale="1.02">
                     <div class="project-image">
                         <div class="project-placeholder">
                             <i class="fas fa-brain"></i>
@@ -1136,7 +1168,7 @@
                     </div>
                 </div>
                 
-                <div class="project-card" data-aos="fade-up" data-aos-delay="300">
+                <div class="project-card" data-aos="fade-up" data-aos-delay="300" data-tilt data-tilt-max="8" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.15" data-tilt-scale="1.02">
                     <div class="project-image">
                         <!-- YouTube Video Preview -->
                         <div class="youtube-preview" data-video-id="BSgDdoiRlTY">
@@ -1175,7 +1207,7 @@
                     </div>
                 </div>
                 
-                <div class="project-card" data-aos="fade-up" data-aos-delay="400">
+                <div class="project-card" data-aos="fade-up" data-aos-delay="400" data-tilt data-tilt-max="8" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.15" data-tilt-scale="1.02">
                     <div class="project-image">
                         <div class="project-placeholder">
                             <i class="fas fa-hospital"></i>
@@ -1208,7 +1240,7 @@
                     </div>
                 </div>
                 
-                <div class="project-card" data-aos="fade-up" data-aos-delay="500">
+                <div class="project-card" data-aos="fade-up" data-aos-delay="500" data-tilt data-tilt-max="8" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.15" data-tilt-scale="1.02">
                     <div class="project-image">
                         <div class="project-placeholder">
                             <i class="fas fa-graduation-cap"></i>
@@ -1241,7 +1273,7 @@
                     </div>
                 </div>
                 
-                <div class="project-card" data-aos="fade-up" data-aos-delay="600">
+                <div class="project-card" data-aos="fade-up" data-aos-delay="600" data-tilt data-tilt-max="8" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.15" data-tilt-scale="1.02">
                     <div class="project-image">
                         <div class="project-placeholder">
                             <i class="fas fa-hand-paper"></i>
@@ -1274,7 +1306,7 @@
                     </div>
                 </div>
                 
-                <div class="project-card" data-aos="fade-up" data-aos-delay="700">
+                <div class="project-card" data-aos="fade-up" data-aos-delay="700" data-tilt data-tilt-max="8" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.15" data-tilt-scale="1.02">
                     <div class="project-image">
                         <div class="project-placeholder">
                             <i class="fas fa-eye"></i>
@@ -1307,7 +1339,7 @@
                     </div>
                 </div>
                 
-                <div class="project-card" data-aos="fade-up" data-aos-delay="800">
+                <div class="project-card" data-aos="fade-up" data-aos-delay="800" data-tilt data-tilt-max="8" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.15" data-tilt-scale="1.02">
                     <div class="project-image">
                         <div class="project-placeholder">
                             <i class="fas fa-brain"></i>
@@ -1340,7 +1372,7 @@
                     </div>
                 </div>
                 
-                <div class="project-card" data-aos="fade-up" data-aos-delay="900">
+                <div class="project-card" data-aos="fade-up" data-aos-delay="900" data-tilt data-tilt-max="8" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.15" data-tilt-scale="1.02">
                     <div class="project-image">
                         <div class="project-placeholder">
                             <i class="fas fa-heartbeat"></i>
@@ -1370,7 +1402,7 @@
                     </div>
                 </div>
                 
-                <div class="project-card" data-aos="fade-up" data-aos-delay="1000">
+                <div class="project-card" data-aos="fade-up" data-aos-delay="1000" data-tilt data-tilt-max="8" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.15" data-tilt-scale="1.02">
                     <div class="project-image">
                         <!-- YouTube Video Preview -->
                         <div class="youtube-preview" data-video-id="WJUcASlT_to">
@@ -1415,7 +1447,7 @@
                     </div>
                 </div>
                 
-                <div class="project-card" data-aos="fade-up" data-aos-delay="1100">
+                <div class="project-card" data-aos="fade-up" data-aos-delay="1100" data-tilt data-tilt-max="8" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.15" data-tilt-scale="1.02">
                     <div class="project-image">
                         <div class="project-placeholder">
                             <i class="fas fa-gamepad"></i>
@@ -1445,7 +1477,7 @@
                     </div>
                 </div>
                 
-                <div class="project-card" data-aos="fade-up" data-aos-delay="1200">
+                <div class="project-card" data-aos="fade-up" data-aos-delay="1200" data-tilt data-tilt-max="8" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.15" data-tilt-scale="1.02">
                     <div class="project-image">
                         <div class="project-placeholder">
                             <i class="fas fa-car-crash"></i>
@@ -1492,7 +1524,7 @@
             <!-- Research Overview -->
             <div class="research-overview" data-aos="fade-up" data-aos-delay="100">
                 <div class="research-metrics">
-                    <div class="metric-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="metric-card" data-aos="fade-up" data-aos-delay="200" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.2" data-tilt-scale="1.03">
                         <div class="metric-icon">
                             <i class="fas fa-file-alt"></i>
                         </div>
@@ -1502,7 +1534,7 @@
                             <span class="metric-description">Peer-reviewed research papers</span>
                         </div>
                     </div>
-                    <div class="metric-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="metric-card" data-aos="fade-up" data-aos-delay="300" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.2" data-tilt-scale="1.03">
                         <div class="metric-icon">
                             <i class="fas fa-award"></i>
                         </div>
@@ -1512,7 +1544,7 @@
                             <span class="metric-description">IEEE Access journal rating</span>
                         </div>
                     </div>
-                    <div class="metric-card" data-aos="fade-up" data-aos-delay="400">
+                    <div class="metric-card" data-aos="fade-up" data-aos-delay="400" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.2" data-tilt-scale="1.03">
                         <div class="metric-icon">
                             <i class="fas fa-brain"></i>
                         </div>
@@ -1522,7 +1554,7 @@
                             <span class="metric-description">Explainable AI & Healthcare</span>
                         </div>
                     </div>
-                    <div class="metric-card" data-aos="fade-up" data-aos-delay="500">
+                    <div class="metric-card" data-aos="fade-up" data-aos-delay="500" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.2" data-tilt-scale="1.03">
                         <div class="metric-icon">
                             <i class="fas fa-chart-line"></i>
                         </div>
@@ -1539,7 +1571,7 @@
             <div class="research-areas" data-aos="fade-up" data-aos-delay="200">
                 <h3 class="research-areas-title">Research Areas</h3>
                 <div class="research-areas-grid">
-                    <div class="research-area-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="research-area-card" data-aos="fade-up" data-aos-delay="300" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.2" data-tilt-scale="1.03">
                         <div class="area-icon">
                             <i class="fas fa-brain"></i>
                         </div>
@@ -1989,6 +2021,7 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-    <script src="script.js?v=1.3.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+    <script src="script.js?v=2.0.0"></script>
 </body>
 </html> 
