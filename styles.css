@@ -7130,40 +7130,15 @@ section {
    Scroll-fade hero · Animated borders · Clip-path reveals
    ============================================================ */
 
-/* ===== FILM GRAIN OVERLAY ===== */
+/* ===== FILM GRAIN OVERLAY — disabled (caused flicker) ===== */
 .grain-svg {
   display: none;
 }
 
 .grain-overlay {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 9997;
-  opacity: 0.055;
-  filter: url(#grain-filter);
-  background: rgba(200, 200, 200, 0.8);
-  animation: grainShift 0.35s steps(1) infinite;
+  display: none;
 }
 
-[data-theme="dark"] .grain-overlay {
-  opacity: 0.07;
-}
-
-@keyframes grainShift {
-  0%   { transform: translate(0%, 0%); }
-  10%  { transform: translate(-3%, -5%); }
-  20%  { transform: translate(5%, 3%); }
-  30%  { transform: translate(-2%, 6%); }
-  40%  { transform: translate(4%, -4%); }
-  50%  { transform: translate(-6%, 2%); }
-  60%  { transform: translate(2%, -2%); }
-  70%  { transform: translate(-4%, 5%); }
-  80%  { transform: translate(6%, -3%); }
-  90%  { transform: translate(-2%, 4%); }
-}
 
 /* ===== GLASSMORPHISM CARD UPGRADE ===== */
 .project-card {
@@ -7190,7 +7165,6 @@ section {
 
 /* ===== SPOTLIGHT CARD EFFECT (JS sets --sx --sy) ===== */
 .project-card,
-.experience-card,
 .research-area-card,
 .metric-card,
 .cert-card {
@@ -7199,7 +7173,6 @@ section {
 }
 
 .project-card::after,
-.experience-card::after,
 .research-area-card::after,
 .metric-card::after,
 .cert-card::after {
@@ -7208,9 +7181,9 @@ section {
   inset: 0;
   border-radius: inherit;
   background: radial-gradient(
-    280px circle at var(--sx) var(--sy),
-    rgba(99, 102, 241, 0.12),
-    transparent 70%
+    260px circle at var(--sx) var(--sy),
+    rgba(99, 102, 241, 0.1),
+    transparent 65%
   );
   opacity: 0;
   transition: opacity 0.4s ease;
@@ -7219,7 +7192,6 @@ section {
 }
 
 .project-card:hover::after,
-.experience-card:hover::after,
 .research-area-card:hover::after,
 .metric-card:hover::after,
 .cert-card:hover::after {
@@ -7254,24 +7226,11 @@ section {
   /* JS sets opacity and filter directly via style for performance */
 }
 
-/* ===== GLITCH TEXT ON HERO NAME HOVER ===== */
+/* ===== GLITCH TEXT — removed (caused flicker on hover) ===== */
 .hero-title {
   position: relative;
 }
 
-.hero-title:hover .gradient-text {
-  animation: subtleGlitch 0.5s steps(2) 1;
-}
-
-@keyframes subtleGlitch {
-  0%   { transform: translate(0, 0);         filter: hue-rotate(0deg); }
-  15%  { transform: translate(-3px, 1px);    filter: hue-rotate(80deg) brightness(1.1); }
-  30%  { transform: translate(3px, -1px);    filter: hue-rotate(-80deg) brightness(0.95); }
-  45%  { transform: translate(-2px, 2px);    filter: hue-rotate(40deg); }
-  60%  { transform: translate(2px, -1px);    filter: hue-rotate(-40deg) brightness(1.05); }
-  75%  { transform: translate(-1px, 1px);    filter: hue-rotate(20deg); }
-  100% { transform: translate(0, 0);         filter: hue-rotate(0deg); }
-}
 
 /* ===== SECTION TITLE CLIP-PATH WIPE REVEAL ===== */
 .section-title {
@@ -7536,5 +7495,93 @@ html.lenis body {
 
   .section-divider {
     height: 40px;
+  }
+}
+
+/* ============================================================
+   ABOUT SECTION — LAYOUT REORGANIZATION
+   Profile card fixed width | Skills 2-col grid | Education full
+   ============================================================ */
+
+/* Desktop: give profile a fixed comfortable width, skills take the rest */
+.about-content {
+  grid-template-columns: 360px 1fr;
+  gap: 2.5rem;
+  align-items: start;
+}
+
+/* Skills section: remove any fixed height constraints */
+.skills-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Skills container: 2-column grid instead of single vertical flex */
+.skills-container {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  flex-direction: unset;
+}
+
+/* 3rd skill card (Hardware & Robotics) spans full width for balance */
+.skills-container .skill-category-card:nth-child(3) {
+  grid-column: 1 / -1;
+}
+
+/* When scroll-revealed, the spanned card keeps its skills visible */
+.skills-container .skill-category-card:nth-child(3)[data-scroll-revealed] .skills-list {
+  max-height: 350px !important;
+  opacity: 1 !important;
+}
+
+/* Education card — full width, comfortable spacing */
+.education-card-modern {
+  margin-top: 0.25rem;
+  width: 100%;
+}
+
+/* Skills header breathing room */
+.skills-header {
+  margin-bottom: 0.5rem;
+}
+
+/* ===== ABOUT SECTION — RESPONSIVE ===== */
+
+/* Laptop/tablet (≤1200px): shrink profile column slightly */
+@media (max-width: 1200px) {
+  .about-content {
+    grid-template-columns: 320px 1fr;
+    gap: 2rem;
+  }
+}
+
+/* Tablet (≤1024px): stack to full-width single column */
+@media (max-width: 1024px) {
+  .about-content {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  /* Keep 2-col skills grid on tablet */
+  .skills-container {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* Hardware card no longer needs to span full on tablet (enough room) */
+  .skills-container .skill-category-card:nth-child(3) {
+    grid-column: span 1;
+  }
+}
+
+/* Mobile (≤640px): single-column everything */
+@media (max-width: 640px) {
+  .skills-container {
+    grid-template-columns: 1fr !important;
+  }
+
+  .skills-container .skill-category-card:nth-child(3) {
+    grid-column: span 1;
   }
 }

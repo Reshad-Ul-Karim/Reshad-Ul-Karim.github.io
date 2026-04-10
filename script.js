@@ -37,7 +37,6 @@ function initializeWebsite() {
     initLenis();
     initSpotlightCards();
     initHeroScrollFade();
-    initTextScramble();
     initStaggeredCards();
     
 
@@ -2593,7 +2592,7 @@ function initSpotlightCards() {
     if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
     const cards = document.querySelectorAll(
-        '.project-card, .experience-card, .research-area-card, .metric-card, .cert-card'
+        '.project-card, .research-area-card, .metric-card, .cert-card'
     );
 
     cards.forEach(card => {
