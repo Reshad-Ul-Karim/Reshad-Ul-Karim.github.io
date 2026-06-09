@@ -2655,25 +2655,30 @@ function initHeroScrollFade() {
     const heroContent = document.querySelector('.hero-content');
     if (!heroContent) return;
 
+    // Only GPU-composited props (opacity + translateY) — NO blur() filter.
+    // Blurring the whole hero subtree on every scroll event was a major jank
+    // source. rAF-throttled so we touch the DOM at most once per frame.
+    let fadeTicking = false;
     function updateHeroFade() {
         const scrolled = window.pageYOffset;
         const windowHeight = window.innerHeight;
 
         if (scrolled < windowHeight) {
-            const progress = scrolled / (windowHeight * 0.65);
+            const progress = scrolled / (windowHeight * 0.7);
             const opacity = Math.max(0, 1 - progress);
-            const blur   = Math.min(8, progress * 10);
-            const yShift = progress * 30;
-
-            heroContent.style.opacity  = opacity;
-            heroContent.style.filter   = `blur(${blur.toFixed(2)}px)`;
-            heroContent.style.transform = `translateY(${yShift.toFixed(1)}px)`;
+            const yShift = progress * 28;
+            heroContent.style.opacity = opacity;
+            heroContent.style.transform = `translate3d(0, ${yShift.toFixed(1)}px, 0)`;
         } else {
-            heroContent.style.opacity  = '0';
+            heroContent.style.opacity = '0';
         }
     }
 
-    window.addEventListener('scroll', updateHeroFade, { passive: true });
+    window.addEventListener('scroll', () => {
+        if (fadeTicking) return;
+        fadeTicking = true;
+        requestAnimationFrame(() => { updateHeroFade(); fadeTicking = false; });
+    }, { passive: true });
     updateHeroFade();
 }
 
