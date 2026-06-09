@@ -1,1 +1,168 @@
-/* placeholder — populated by parallel worker */
+/* ============================================================
+   morph-motion.css
+   Modern morphing & cinematic transitions
+   - View Transitions API styling (theme circular reveal)
+   - GSAP Flip card -> modal helper classes
+   - Scrubbed section-divider SVG morphs
+   - Custom-cursor "View/Open" label morph
+   - Reduced-motion + mobile fallbacks
+   ============================================================ */
+
+/* ---------- VIEW TRANSITIONS: THEME TOGGLE ---------- */
+/* The new view (post-toggle) is revealed via an expanding circular
+   clip-path. We set the clip animation inline from JS (origin = button),
+   but disable the default cross-fade here so the clip reads cleanly. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  /* Let JS-driven clip-path animation own the reveal; kill default fade. */
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* When JS cannot animate clip-path (older VT impls), fall back to a
+   gentle cross-dissolve via this class on <html>. */
+html.vt-crossfade::view-transition-old(root) {
+  animation: vt-fade-out 0.35s ease both;
+}
+html.vt-crossfade::view-transition-new(root) {
+  animation: vt-fade-in 0.35s ease both;
+}
+
+@keyframes vt-fade-out {
+  to { opacity: 0; }
+}
+@keyframes vt-fade-in {
+  from { opacity: 0; }
+}
+
+/* ---------- GSAP FLIP: CARD -> MODAL ---------- */
+/* A floating proxy clone used to morph from the clicked card rect into
+   the modal's media region. It is absolutely positioned + above modal. */
+.morph-flip-proxy {
+  position: fixed;
+  margin: 0;
+  z-index: 100000;
+  overflow: hidden;
+  border-radius: 16px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  background: #000;
+  will-change: transform, width, height;
+}
+.morph-flip-proxy img,
+.morph-flip-proxy .morph-proxy-fill {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* While a Flip morph is in flight, keep the real modal content hidden so
+   only the proxy is visible; revealed when Flip completes. */
+.morph-modal-content-hidden {
+  opacity: 0 !important;
+}
+
+/* ---------- CURSOR LABEL MORPH ---------- */
+/* Injected once into #custom-cursor by JS. Hidden by default. */
+.cursor-media-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.6);
+  font-family: inherit;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  opacity: 0;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* When the cursor is over media/cards, grow the ring into a filled disc
+   and reveal the label. Scoped so it never fights the existing
+   .cursor-hover behaviour (this is additive). */
+.custom-cursor.cursor-media {
+  width: 74px;
+  height: 74px;
+  background: var(--primary-color, #6366f1);
+  border-color: var(--primary-color, #6366f1);
+  mix-blend-mode: normal;
+}
+.custom-cursor.cursor-media .cursor-media-label {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+/* Hide the tiny center dot while the media label is showing. */
+.cursor-dot.cursor-media {
+  opacity: 0;
+}
+
+/* ---------- SECTION DIVIDER (scrubbed SVG morph) ---------- */
+/* JS injects an <svg class="divider-morph-svg"> into each .section-divider.
+   The base ::before bg art is kept; our SVG layers an animated path on top. */
+.divider-morph-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+.divider-morph-svg path {
+  will-change: d, transform;
+}
+
+/* A gradient sweep that wipes across the divider as you scroll past.
+   The horizontal position is driven by --sweep (0 -> 1) from ScrollTrigger. */
+.divider-sweep {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(99, 102, 241, 0.18) 45%,
+    rgba(236, 72, 153, 0.16) 55%,
+    transparent 100%
+  );
+  background-size: 220% 100%;
+  background-position: calc((1 - var(--sweep, 0)) * 100%) 0;
+  opacity: 0.9;
+  mix-blend-mode: screen;
+}
+
+/* ---------- MOBILE ---------- */
+@media (max-width: 768px), (hover: none), (pointer: coarse) {
+  /* Cursor label morphs make no sense without a fine pointer. */
+  .custom-cursor.cursor-media,
+  .cursor-dot.cursor-media {
+    width: 36px;
+    height: 36px;
+    background: transparent;
+  }
+  .cursor-media-label { display: none; }
+
+  /* Lighter divider effects on small screens. */
+  .divider-sweep { display: none; }
+}
+
+/* ---------- REDUCED MOTION ---------- */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+  .divider-sweep { display: none; }
+  .cursor-media-label { display: none; }
+  .custom-cursor.cursor-media,
+  .cursor-dot.cursor-media {
+    width: 36px;
+    height: 36px;
+    background: transparent;
+  }
+  .morph-flip-proxy { display: none !important; }
+}

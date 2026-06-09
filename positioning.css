@@ -1,1 +1,258 @@
-/* placeholder — populated by parallel worker */
+/* ==========================================================================
+   positioning.css
+   Research/recruiter-facing repositioning styles.
+   All new content blocks live here. Uses existing CSS custom properties so
+   both light and dark themes work. Mobile-first responsive; no horizontal
+   overflow at 390px.
+   ========================================================================== */
+
+/* ---- Hero static research identity line ----------------------------- */
+.hero-research-tag {
+    display: inline-block;
+    margin: 0 0 0.5rem;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--text-primary);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.14), rgba(236, 72, 153, 0.14));
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+}
+
+/* ---- Hero research CTA buttons --------------------------------------- */
+.hero-buttons.hero-buttons-research {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.hero-buttons-research .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ---- Research Statement (About) ------------------------------------- */
+.research-statement {
+    position: relative;
+    max-width: 920px;
+    margin: 0 auto 3rem;
+    padding: 2rem 2.25rem;
+    background: var(--card-bg, var(--bg-secondary));
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--primary-color);
+    border-radius: var(--border-radius, 16px);
+    box-shadow: var(--shadow-medium, 0 8px 24px rgba(0, 0, 0, 0.08));
+}
+
+.research-statement-icon {
+    position: absolute;
+    top: -14px;
+    left: 24px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: #fff;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    font-size: 0.85rem;
+}
+
+.research-statement-text {
+    margin: 0;
+    font-size: 1.08rem;
+    line-height: 1.75;
+    color: var(--text-secondary);
+}
+
+.research-statement-text strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* ---- Research Interests (Research section) -------------------------- */
+.research-interests {
+    max-width: 960px;
+    margin: 0 auto 2.5rem;
+    text-align: center;
+}
+
+.research-interests-title {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1.25rem;
+}
+
+.research-interests-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 1.75rem;
+}
+
+.research-interest-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.1rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    background: var(--card-bg, var(--bg-secondary));
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    transition: var(--transition-fast, all 0.2s ease);
+}
+
+.research-interest-pill i {
+    color: var(--primary-color);
+}
+
+.research-interest-pill:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+/* ---- Research CTA link row ------------------------------------------ */
+.research-cta-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.research-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.3rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    color: #fff;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border: none;
+    border-radius: 999px;
+    transition: var(--transition-fast, all 0.2s ease);
+}
+
+.research-cta-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium, 0 8px 20px rgba(99, 102, 241, 0.3));
+}
+
+/* ---- Publication author list + contribution ------------------------- */
+.publication-authors {
+    margin: 0.25rem 0 0.75rem;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    font-family: var(--font-mono, monospace);
+}
+
+.publication-authors strong {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.publication-contribution {
+    margin: 0;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+.publication-contribution strong {
+    color: var(--text-primary);
+}
+
+/* DOI links inside publication details */
+.doi-info a {
+    color: var(--primary-color);
+    text-decoration: none;
+    word-break: break-word;
+}
+
+.doi-info a:hover {
+    text-decoration: underline;
+}
+
+/* ---- Footer link row ------------------------------------------------- */
+.footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+}
+
+.footer-links a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.footer-links a:hover {
+    text-decoration: underline;
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+@media (max-width: 768px) {
+    .research-statement {
+        padding: 1.6rem 1.4rem;
+        margin-bottom: 2.25rem;
+    }
+
+    .research-statement-text {
+        font-size: 1rem;
+        line-height: 1.7;
+    }
+
+    .research-interests-title {
+        font-size: 1.2rem;
+    }
+
+    .hero-buttons.hero-buttons-research .btn {
+        flex: 1 1 calc(50% - 0.75rem);
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-research-tag {
+        font-size: 0.82rem;
+        padding: 0.3rem 0.7rem;
+    }
+
+    .research-statement {
+        padding: 1.4rem 1.1rem;
+    }
+
+    .research-statement-icon {
+        left: 16px;
+    }
+
+    .research-interest-pill {
+        font-size: 0.85rem;
+        padding: 0.5rem 0.85rem;
+    }
+
+    .research-cta-btn {
+        font-size: 0.88rem;
+        padding: 0.6rem 1rem;
+    }
+
+    .hero-buttons.hero-buttons-research .btn {
+        flex: 1 1 100%;
+    }
+
+    .publication-authors {
+        font-size: 0.85rem;
+    }
+}

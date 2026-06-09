@@ -1,1 +1,59 @@
-/* placeholder — populated by parallel worker */
+/* =========================================================================
+   reveal-motion.css
+   Helper classes + reduced-motion fallbacks for the GSAP reveal system.
+   Owned by worker-reveal. Loaded after styles.css.
+   ========================================================================= */
+
+/* Clip-path wipe helper. JS animates inset(0 100% 0 0) -> inset(0). */
+.reveal-clip {
+    clip-path: inset(0 100% 0 0);
+    will-change: clip-path;
+}
+
+/* Items the JS reveal system is about to animate. We pre-hide them in CSS
+   so there is no flash-of-final-content before GSAP sets its start state.
+   The .rm-ready class is added to <html> by reveal-motion.js the instant it
+   runs; if the script never runs (error), elements stay visible (no .rm-ready
+   guard below means default = visible). */
+html.rm-ready [data-rm-hide] {
+    opacity: 0;
+}
+
+/* will-change discipline: only applied while actively animating, toggled by JS. */
+.rm-animating {
+    will-change: transform, opacity, clip-path;
+}
+.rm-anim-done {
+    will-change: auto;
+}
+
+/* Pinned cinematic scene wrapper (research). Keeps GPU compositing clean. */
+.rm-pin-stage {
+    will-change: transform;
+}
+
+/* =========================================================================
+   FAIL-SAFE / REDUCED MOTION
+   If the user prefers reduced motion, neutralise everything: full visibility,
+   no transforms, no clip-path. This wins over the pre-hide rule above.
+   ========================================================================= */
+@media (prefers-reduced-motion: reduce) {
+    html.rm-ready [data-rm-hide],
+    .reveal-clip,
+    [data-rm-hide] {
+        opacity: 1 !important;
+        transform: none !important;
+        clip-path: none !important;
+        will-change: auto !important;
+    }
+}
+
+/* Hard safety net: if for any reason our JS adds .rm-failsafe to <html>
+   (e.g. the visibility timeout fires), force everything visible. */
+html.rm-failsafe [data-rm-hide],
+html.rm-failsafe .reveal-clip {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+    will-change: auto !important;
+}
