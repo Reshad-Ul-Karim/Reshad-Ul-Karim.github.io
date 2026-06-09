@@ -1,1 +1,71 @@
-/* placeholder — populated by parallel worker */
+/* =========================================================================
+   three-scene.css  —  Styling for the lazy-loaded Three.js hero 3D layer.
+
+   Owned by the WebGL/3D worker. The actual <canvas> + wrapper are created at
+   runtime by three-scene.js and appended INTO the existing `.hero` section so
+   the hero's `overflow:hidden` clips the layer (it can never cause page
+   horizontal overflow). Everything here is defensive/non-intrusive:
+     - sits ABOVE the CSS blobs (z-index:0) but BELOW the hero content (z-index:2)
+     - never receives pointer events (text/buttons stay fully clickable)
+     - low opacity so it complements, never competes with, the hero
+   ========================================================================= */
+
+.three-hero-layer {
+  position: absolute;
+  inset: 0;
+  /* Above .hero-blob (z-index:0), below .hero-content (z-index:2+). */
+  z-index: 1;
+  /* Never block clicks / hover / selection on the hero. */
+  pointer-events: none;
+  /* Belt-and-suspenders: the parent .hero already clips, but guard anyway so
+     a full-bleed canvas can never push the page wider than the viewport. */
+  overflow: hidden;
+  /* Composite on its own layer; keeps text crisp above it. */
+  will-change: opacity;
+  /* Fade in once the first frame is rendered (set via .is-ready). */
+  opacity: 0;
+  transition: opacity 1.1s ease;
+  /* Subtle blend so the object reads as light/energy, not a flat sprite. */
+  mix-blend-mode: screen;
+}
+
+.three-hero-layer.is-ready {
+  opacity: 1;
+}
+
+.three-hero-layer canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  /* Canvas inherits non-interactivity from the wrapper, but be explicit. */
+  pointer-events: none;
+}
+
+/* Dark theme: the object glows a touch stronger against the dark hero. */
+[data-theme="dark"] .three-hero-layer {
+  mix-blend-mode: screen;
+}
+
+/* Light theme: `screen` blend can wash out on light backgrounds — use a
+   gentler blend and lower the layer opacity ceiling via a CSS var the JS reads
+   is overkill; instead just soften here. */
+[data-theme="light"] .three-hero-layer,
+:root:not([data-theme="dark"]) .three-hero-layer {
+  mix-blend-mode: multiply;
+}
+
+/* Reduced motion: if the JS still renders a single static frame, keep it calm
+   and a bit more transparent so it's purely decorative. */
+@media (prefers-reduced-motion: reduce) {
+  .three-hero-layer {
+    transition: none;
+  }
+}
+
+/* Small screens: the JS disables WebGL under 768px, but if a wrapper ever
+   exists, make sure it stays invisible and inert. */
+@media (max-width: 768px) {
+  .three-hero-layer {
+    display: none !important;
+  }
+}

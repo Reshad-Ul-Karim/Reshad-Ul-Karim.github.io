@@ -1,1 +1,153 @@
-/* placeholder — populated by parallel worker */
+/* ============================================================
+   fixes.css  — loaded LAST, overrides styles.css/positioning.css
+   Owner: worker-positioning2
+   Scope: (A) desktop card sizing, (B) About profile-card text clipping.
+   Rules: additive overrides only, mobile-safe (no overflow @390px),
+          theme-safe (use CSS vars, never hardcode theme colors).
+   ============================================================ */
+
+/* ===========================================================
+   JOB 2B — ABOUT PROFILE CARD: stop button/label text clipping
+   The shine ::before relies on overflow:hidden; flex children
+   lacked min-width:0 and couldn't wrap, so text got clipped.
+   These rules let text wrap instead, at ALL widths.
+   =========================================================== */
+
+.profile-actions {
+  flex-wrap: wrap;          /* buttons drop to next line instead of squeezing */
+}
+
+.profile-actions .btn {
+  min-width: 0;             /* allow flex item to shrink below content size */
+  /* give each a comfortable min size so they wrap to new rows instead of
+     cramming 3 across a narrow 360px profile column */
+  flex: 1 1 8.5rem;
+  text-align: center;
+  white-space: normal;      /* let the button itself wrap */
+  height: auto;             /* grow vertically when label wraps */
+}
+
+.profile-actions .btn span {
+  min-width: 0;
+  white-space: normal;      /* label wraps at spaces instead of being clipped */
+  overflow-wrap: break-word;
+  line-height: 1.25;
+}
+
+/* Stat items: let the content/label show fully, keep shine ::before.
+   The about profile card can be a narrow ~360px column, so tighten the
+   internal spacing/icon to give the label room and avoid mid-word breaks. */
+.profile-stats .stat-item {
+  padding: 0.95rem;         /* was 1.25rem — reclaim horizontal room */
+  gap: 0.7rem;              /* was 1rem */
+}
+
+.profile-stats .stat-icon {
+  width: 34px;              /* was 40px */
+  height: 34px;
+  font-size: 1rem;
+}
+
+.stat-content {
+  min-width: 0;             /* critical: flex child can shrink, no clipping */
+}
+
+.stat-label {
+  white-space: normal;      /* "Global Rank" etc. wrap at spaces, never clip */
+  overflow-wrap: break-word;/* break a long single word only if it can't fit */
+  word-break: normal;       /* prefer breaking at spaces first */
+  hyphens: none;
+  line-height: 1.25;
+}
+
+/* About profile card: the column is narrow, and the base .stat-label is
+   UPPERCASE with 0.05em tracking which makes "GLOBAL" overflow. Tighten
+   tracking + size so each label sits on one line (breaks at the space). */
+.profile-stats .stat-label {
+  font-size: 0.78rem;
+  letter-spacing: 0.01em;
+}
+
+.profile-stats .stat-number {
+  font-size: 1.3rem;        /* slightly smaller so long numbers don't crowd */
+}
+
+.stat-number {
+  overflow-wrap: normal;
+}
+
+/* ===========================================================
+   JOB 2A — DESKTOP CARD SIZING
+   Constrain only on larger screens; mobile stays fluid.
+   =========================================================== */
+
+@media (min-width: 1024px) {
+
+  /* ---- Featured project banner ---- */
+  .featured-banner {
+    /* keep it from sprawling on very wide content columns */
+    max-width: 1040px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 2.25rem;
+  }
+
+  .banner-content {
+    padding: 1.85rem;        /* was 2.5rem */
+    gap: 2.25rem;            /* was 3rem */
+  }
+
+  /* Cap the banner preview so the 16:9 frame isn't enormous.
+     preview-container uses padding-top:56.25% for aspect ratio,
+     so capping width caps height proportionally. */
+  .banner-preview {
+    width: 100%;
+    max-width: 460px;
+    margin-left: auto;       /* sits to the inner edge of its grid cell */
+  }
+
+  /* ---- Publications: compact, readable cards ---- */
+  .publications-timeline {
+    max-width: 920px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .publication-item {
+    margin-bottom: 1.5rem;   /* was 2rem */
+  }
+
+  .publication-header {
+    padding: 1.15rem 1.6rem; /* was 1.5rem 2rem */
+  }
+
+  .publication-content {
+    padding: 1.5rem 1.6rem;  /* was 2rem */
+  }
+
+  /* ---- Experience / research cards: tighten padding (were 2rem) ----
+     (.project-content is already a tight 1.5rem, left as-is.) */
+  .experience-card {
+    padding: 1.6rem;
+  }
+
+  .research-area-card {
+    padding: 1.6rem;
+  }
+}
+
+/* On very wide screens, hold readable widths and balance whitespace. */
+@media (min-width: 1400px) {
+
+  .featured-banner {
+    max-width: 1100px;
+  }
+
+  .banner-preview {
+    max-width: 500px;
+  }
+
+  .publications-timeline {
+    max-width: 980px;
+  }
+}

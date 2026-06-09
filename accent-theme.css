@@ -1,1 +1,203 @@
-/* placeholder — populated by parallel worker */
+/* =====================================================================
+   GLOBAL ACCENT THEME — blue / red / orange
+   Independent of dark/light (data-theme). Keyed on html[data-accent].
+   Overrides the CSS custom properties from styles.css :root so the
+   majority of the UI (buttons, gradient name, borders, glows) recolors.
+   ===================================================================== */
+
+/* Default identity = BLUE (indigo/violet + pink), matches the current site.
+   We also expose RGB-channel helper vars so the few hardcoded rgba()
+   gradient/glow accents can be re-tinted (see overrides at the bottom). */
+html[data-accent="blue"] {
+  --primary-color:   #6366f1;
+  --primary-dark:    #4f46e5;
+  --secondary-color: #ec4899;
+  --accent-color:    #06b6d4;
+  --accent-primary-rgb:   99, 102, 241;  /* primary   */
+  --accent-secondary-rgb: 236, 72, 153;  /* secondary */
+  --accent-tertiary-rgb:  6, 182, 212;   /* accent    */
+}
+
+/* RED — cohesive rose / crimson with amber spark. Reads well on
+   #ffffff and #0f172a; white button text passes contrast. */
+html[data-accent="red"] {
+  --primary-color:   #e11d48;
+  --primary-dark:    #be123c;
+  --secondary-color: #fb7185;
+  --accent-color:    #f59e0b;
+  --accent-primary-rgb:   225, 29, 72;
+  --accent-secondary-rgb: 251, 113, 133;
+  --accent-tertiary-rgb:  245, 158, 11;
+}
+
+/* ORANGE — warm orange / amber. */
+html[data-accent="orange"] {
+  --primary-color:   #ea580c;
+  --primary-dark:    #c2410c;
+  --secondary-color: #f59e0b;
+  --accent-color:    #fb923c;
+  --accent-primary-rgb:   234, 88, 12;
+  --accent-secondary-rgb: 245, 158, 11;
+  --accent-tertiary-rgb:  251, 146, 60;
+}
+
+/* ---------------------------------------------------------------------
+   Re-tint the most visible HARDCODED indigo/pink rgba() accents.
+   styles.css bakes rgb(99,102,241) / rgb(236,72,153) / rgb(6,182,212)
+   into several gradients & glows that the variable swap can't reach.
+   We re-declare the highest-impact ones using the channel vars above so
+   red/orange don't show stray indigo. Scoped to non-blue accents only so
+   blue stays byte-identical to today.
+   --------------------------------------------------------------------- */
+html[data-accent="red"]  .auto-scroll-btn,
+html[data-accent="orange"] .auto-scroll-btn {
+  box-shadow: 0 8px 32px rgba(var(--accent-primary-rgb), 0.3);
+}
+
+/* Hero background wash uses the baked indigo/pink. Soft, low-alpha —
+   re-tint for cohesion. */
+html[data-accent="red"]  .hero,
+html[data-accent="orange"] .hero {
+  background-image:
+    linear-gradient(135deg, rgba(var(--accent-primary-rgb), 0.08), rgba(var(--accent-secondary-rgb), 0.08)),
+    radial-gradient(circle at 20% 80%, rgba(var(--accent-tertiary-rgb), 0.10) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(var(--accent-primary-rgb), 0.10) 0%, transparent 50%);
+}
+
+/* =====================================================================
+   ACCENT SWITCHER CONTROL (injected by accent-theme.js)
+   Glassmorphism palette button that expands to 3 swatches.
+   ===================================================================== */
+#accent-switcher {
+  position: fixed;
+  right: 20px;
+  bottom: 84px; /* sits just above the 50px theme toggle (bottom:20px) */
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Trigger (palette) button */
+#accent-switcher .accent-trigger {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: #fff;
+  font-size: 1.15rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-large, 0 10px 30px rgba(0, 0, 0, 0.25));
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.25s ease;
+}
+#accent-switcher .accent-trigger:hover {
+  transform: scale(1.1);
+}
+#accent-switcher .accent-trigger:active {
+  transform: scale(0.92);
+}
+
+/* Swatch tray (appears above the trigger) */
+#accent-switcher .accent-tray {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 28px;
+  background: rgba(20, 20, 35, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+  order: -1; /* render above trigger in column */
+  /* collapsed state */
+  opacity: 0;
+  transform: translateY(8px) scale(0.85);
+  transform-origin: bottom center;
+  pointer-events: none;
+  transition: opacity 0.22s ease, transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+/* light-mode tray tint for contrast on white backgrounds */
+html[data-theme="light"] #accent-switcher .accent-tray {
+  background: rgba(255, 255, 255, 0.6);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+#accent-switcher.open .accent-tray {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* Individual swatches */
+#accent-switcher .accent-swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  padding: 0;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+#accent-switcher .accent-swatch[data-swatch="blue"]   { background: linear-gradient(135deg, #6366f1, #ec4899); }
+#accent-switcher .accent-swatch[data-swatch="red"]    { background: linear-gradient(135deg, #e11d48, #fb7185); }
+#accent-switcher .accent-swatch[data-swatch="orange"] { background: linear-gradient(135deg, #ea580c, #f59e0b); }
+
+#accent-switcher .accent-swatch:hover {
+  transform: scale(1.18);
+}
+#accent-switcher .accent-swatch.active {
+  box-shadow: 0 0 0 3px var(--bg-primary, #fff), 0 0 0 5px currentColor, 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+#accent-switcher .accent-swatch[data-swatch="blue"].active   { color: #6366f1; }
+#accent-switcher .accent-swatch[data-swatch="red"].active    { color: #e11d48; }
+#accent-switcher .accent-swatch[data-swatch="orange"].active { color: #ea580c; }
+
+/* Keyboard accessibility */
+#accent-switcher .accent-trigger:focus-visible,
+#accent-switcher .accent-swatch:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 3px;
+}
+
+/* ----------------------- Mobile placement -----------------------
+   Theme toggle moves to bottom:140px (45px tall), right:15px on mobile.
+   Put ours just above it so neither overlaps the floating nav (top) or
+   each other. No horizontal overflow at 390px. */
+@media (max-width: 768px) {
+  #accent-switcher {
+    right: 15px;
+    bottom: 198px; /* 140 (toggle bottom) + 45 (toggle h) + 13 gap */
+  }
+  #accent-switcher .accent-trigger {
+    width: 45px;
+    height: 45px;
+    font-size: 1.05rem;
+  }
+}
+
+/* Reduced motion: kill transitions/animation on the control itself. */
+@media (prefers-reduced-motion: reduce) {
+  #accent-switcher .accent-trigger,
+  #accent-switcher .accent-tray,
+  #accent-switcher .accent-swatch {
+    transition: none !important;
+  }
+}
+
+/* View Transition: smooth cross-fade of the accent swap. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.45s;
+}
