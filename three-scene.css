@@ -30,7 +30,12 @@
 }
 
 .three-hero-layer.is-ready {
-  opacity: 1;
+  /* Background accent, not a centerpiece — keep it subtle behind content. */
+  opacity: 0.5;
+}
+[data-theme="light"] .three-hero-layer.is-ready,
+:root:not([data-theme="dark"]) .three-hero-layer.is-ready {
+  opacity: 0.32;
 }
 
 .three-hero-layer canvas {

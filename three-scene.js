@@ -185,7 +185,9 @@
     /* ---- Scene + camera ---- */
     var scene = new THREE.Scene();
     var camera = new THREE.PerspectiveCamera(50, dim.w / dim.h, 0.1, 100);
-    var BASE_CAM_Z = 6.2;
+    // Pushed back so the object reads as a small ambient background accent,
+    // not a giant centerpiece covering the hero card.
+    var BASE_CAM_Z = 9.5;
     camera.position.set(0, 0, BASE_CAM_Z);
 
     var accents = readAccents(THREE);
@@ -248,7 +250,7 @@
       // mouse adds a gentle directional swell
       '  float mInf = 0.35 * (uMouse.x * normalize(pos).x + uMouse.y * normalize(pos).y);',
       // scroll inflates + roughens the blob as it disperses
-      '  float amp = 0.28 + 0.55 * uDisperse;',
+      '  float amp = 0.18 + 0.40 * uDisperse;',
       '  float disp = n * amp + mInf;',
       '  pos += normal * disp;',
       '  vNoise = n;',
@@ -272,11 +274,12 @@
       '  float g = clamp(vNoise * 0.5 + 0.5, 0.0, 1.0);',
       '  vec3 col = mix(uColorA, uColorB, g);',
       '  col = mix(col, uColorC, smoothstep(0.55, 1.0, g) * 0.6);',
-      // Fresnel rim glow
-      '  float fres = pow(1.0 - max(dot(vNormalW, vViewDir), 0.0), 2.5);',
-      '  col += fres * 0.9;',
-      // fade slightly as it disperses
-      '  float a = (0.5 + 0.5 * fres) * (1.0 - 0.35 * uDisperse);',
+      // Fresnel rim glow — kept subtle so the core stays a soft accent, not a
+      // bright white ball that washes out the hero.
+      '  float fres = pow(1.0 - max(dot(vNormalW, vViewDir), 0.0), 2.8);',
+      '  col += fres * 0.28;',
+      // overall low alpha so it sits behind the content as ambient light
+      '  float a = (0.18 + 0.38 * fres) * (1.0 - 0.45 * uDisperse);',
       '  gl_FragColor = vec4(col, a);',
       '}'
     ].join('\n');
@@ -298,7 +301,7 @@
       color: accents.accent.clone(),
       wireframe: true,
       transparent: true,
-      opacity: 0.16,
+      opacity: 0.08,
       blending: THREE.AdditiveBlending,
       depthWrite: false
     });
@@ -387,8 +390,10 @@
     group.add(particles);
     scene.remove(core); scene.remove(shell); scene.remove(particles);
     scene.add(group);
-    // Compose with the hero: nudge toward the avatar/right side a touch.
-    group.position.x = 0.6;
+    // Compose with the hero: sit up-and-right as an ambient halo behind the
+    // code card, well clear of the headline/CTA text on the left.
+    group.position.x = 1.6;
+    group.position.y = 0.5;
 
     /* ----------------------------------------------------------------------
        4. MOUSE PARALLAX (gentle) — separate from the hero's own parallax.
