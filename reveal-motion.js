@@ -103,16 +103,13 @@
        --------------------------------------------------------------------- */
     var lenis = window._lenis;
     if (lenis && typeof lenis.on === 'function') {
+        // Single source of truth: forward Lenis scroll -> ScrollTrigger.update.
+        // morph-motion.js deliberately does NOT also register this, so there is
+        // exactly one updater (no double-update). (Boss review note #3.)
         lenis.on('scroll', ScrollTrigger.update);
     }
-    // Drive ScrollTrigger time from gsap.ticker for buttery sync.
-    gsap.ticker.add(function (time) {
-        if (lenis && typeof lenis.raf === 'function') {
-            // Lenis already RAFs itself in script.js; calling again would
-            // double-advance. So we DON'T re-raf here — we only ensure ST stays
-            // in sync. (Left intentionally light.)
-        }
-    });
+    // Lenis already RAFs itself in script.js, so we don't re-raf here.
+    // Just disable lag smoothing so scrubbed scenes track the scroll precisely.
     gsap.ticker.lagSmoothing(0);
 
     /* Helper: collect elements (live, filtered to existing). */
@@ -127,14 +124,10 @@
         return el;
     }
 
-    /* will-change discipline: add on start, clean on complete. */
-    function onAnimStart() { this.targets().forEach(function (t) {
-        t.classList.add('rm-animating');
-    }); }
-    function onAnimDone() { this.targets().forEach(function (t) {
-        t.classList.remove('rm-animating');
-        t.classList.add('rm-anim-done');
-    }); }
+    /* will-change discipline is handled inline per-tween/timeline via the
+       `rm-animating` / `rm-anim-done` classes. (Timeline callbacks must not
+       call .targets() — only tweens expose it — so we manage classes from the
+       closure-scoped element instead. Boss review fix.) */
 
     /* A reusable "force visible" used by the failsafe + each tween's onComplete
        fallback so a misfire still resolves to a clean visible state. */
@@ -191,9 +184,10 @@
                     onLeaveBack: function () {}
                 },
                 defaults: { ease: 'expo.out' },
-                onStart: onAnimStart,
+                onStart: function () { header.classList.add('rm-animating'); },
                 onComplete: function () {
-                    onAnimDone.call(this);
+                    header.classList.remove('rm-animating');
+                    header.classList.add('rm-anim-done');
                     header.classList.remove('reveal-clip');
                 }
             });
@@ -400,9 +394,13 @@
                 parallaxTweens.push(tw);
             });
         }
-        // Section divider waves + research metric icons drift = depth cues.
+        // Research metric icons drift = depth cues.
         // (Hero blobs are owned by the mouse-parallax system — we skip them.)
-        addParallax('.section-divider', -40);
+        // NOTE: .section-divider parallax is intentionally NOT done here.
+        // morph-motion.js owns the dividers (injects+scrubs an SVG path, sweep
+        // and yPercent parallax on the inner SVG). Adding a competing transform
+        // on the divider element here caused the two ScrollTriggers to fight,
+        // producing jitter. Single-owner = clean. (Boss review fix #1.)
         addParallax('.research-overview .metric-icon', -24);
         addParallax('.about .education-card-modern', -20);
 

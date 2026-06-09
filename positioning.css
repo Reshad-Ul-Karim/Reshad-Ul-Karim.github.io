@@ -201,6 +201,26 @@
 }
 
 /* ==========================================================================
+   Accessibility — visible keyboard focus for the new interactive elements.
+   The base site had no focus-visible indicator on buttons/links; these new
+   research CTAs/links/pills must show focus for keyboard users. (Boss fix #8.)
+   ========================================================================== */
+.research-cta-btn:focus-visible,
+.hero-buttons-research .btn:focus-visible,
+.research-interest-pill:focus-visible,
+.footer-links a:focus-visible,
+.doi-info a:focus-visible {
+    outline: 3px solid var(--primary-color, #6366f1);
+    outline-offset: 3px;
+    border-radius: 6px;
+}
+
+.research-cta-btn:focus-visible,
+.hero-buttons-research .btn:focus-visible {
+    border-radius: 999px;
+}
+
+/* ==========================================================================
    Responsive
    ========================================================================== */
 @media (max-width: 768px) {

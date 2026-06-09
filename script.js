@@ -344,11 +344,10 @@ function initTypingEffect() {
     if (!typingElement) return;
 
     const texts = [
-        'AI & Robotics Engineer | Global Competition Winner | Healthcare Innovator',
-        'Computer Vision Specialist | Mars Rover Team Member | IEEE Researcher',
-        'Autonomous Systems Developer | Cultural Leader | Innovation Pioneer',
-        'Machine Learning Engineer | Accessibility Advocate | Global Finalist',
-        'AI Solutions Architect | Research Scholar | Competition Champion'
+        'AI & Computer Vision Researcher | IEEE Author',
+        'Explainable AI for Healthcare | Multimodal Learning',
+        'First Author, IEEE Access | 3 Publications',
+        'Assistive Perception & Autonomous Vision | Seeking PhD'
     ];
     
     let textIndex = 0;
