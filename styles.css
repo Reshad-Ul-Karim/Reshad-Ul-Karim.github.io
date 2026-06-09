@@ -7170,26 +7170,14 @@ section {
 }
 
 
-/* ===== PERF: CONTENT-VISIBILITY FOR BELOW-THE-FOLD SECTIONS =====
-   Skip rendering/layout for offscreen sections until they scroll near the
-   viewport. contain-intrinsic-size reserves an approximate height so the
-   scrollbar stays stable and anchor jumps land correctly. Hero (#home) and
-   #about stay always-rendered to avoid first-paint / above-fold flashes. */
-#experience,
-#cultural,
-#certifications,
-#projects,
-#research,
-#contact {
-  content-visibility: auto;
-}
-
-#experience      { contain-intrinsic-size: 1px 1400px; }
-#cultural        { contain-intrinsic-size: 1px 1400px; }
-#certifications  { contain-intrinsic-size: 1px 600px; }
-#projects        { contain-intrinsic-size: 1px 2600px; }
-#research        { contain-intrinsic-size: 1px 1600px; }
-#contact         { contain-intrinsic-size: 1px 900px; }
+/* ===== PERF NOTE: content-visibility was removed =====
+   content-visibility:auto on the animated sections caused ScrollTrigger to
+   mis-measure trigger positions (off-screen sections reported their
+   contain-intrinsic-size placeholder height, not real layout), which left
+   section headers / cards stuck hidden when scrolled to after the one-time
+   reveal failsafe. Lenis + GSAP already keep scrolling smooth, so the modest
+   perf gain wasn't worth the visibility bug. (Reveal robustness is now also
+   backed by an IntersectionObserver safety net in reveal-motion.js.) */
 
 
 /* ===== GLASSMORPHISM CARD UPGRADE ===== */

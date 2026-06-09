@@ -520,6 +520,55 @@
     // Quick pass shortly after init for anything above the fold.
     setTimeout(revealIfInView, 700);
 
+    /* ---------------------------------------------------------------------
+       CONTINUOUS SAFETY NET (IntersectionObserver).
+       The timed passes above only fire twice. If a reveal ScrollTrigger
+       mis-measures (e.g. a section that was offscreen at refresh time) a
+       managed element could otherwise stay hidden when the user scrolls to it
+       LATER. This observer watches every managed element and, once it enters
+       the viewport, gives the normal reveal a short grace period — then force-
+       reveals if it's still hidden. Pinned/scrubbed items (inside .rm-pin-stage)
+       are skipped so we don't stomp the cinematic scene.
+       --------------------------------------------------------------------- */
+    if ('IntersectionObserver' in window) {
+        var safetyIO = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (!entry.isIntersecting) return;
+                var el = entry.target;
+                // Don't touch scrub-driven items in the pinned scene.
+                if (el.closest && el.closest('.rm-pin-stage')) {
+                    safetyIO.unobserve(el);
+                    return;
+                }
+                // Give ScrollTrigger's own onEnter a chance first.
+                setTimeout(function () {
+                    if (!el.hasAttribute('data-rm-hide')) { safetyIO.unobserve(el); return; }
+                    if (el.classList.contains('rm-animating')) return;
+                    var cs = window.getComputedStyle(el);
+                    if (parseFloat(cs.opacity) < 0.05) {
+                        gsap.to(el, {
+                            opacity: 1, y: 0, x: 0, clipPath: 'inset(0 0% 0 0)',
+                            duration: 0.45, ease: 'power2.out',
+                            onComplete: function () { forceVisible(el); }
+                        });
+                    } else {
+                        // Already visible via ScrollTrigger — stop watching.
+                        forceVisible(el);
+                    }
+                    safetyIO.unobserve(el);
+                }, 450);
+            });
+        }, { threshold: 0.08, rootMargin: '0px 0px -5% 0px' });
+
+        // Observe after the build pass has tagged everything managed.
+        setTimeout(function () {
+            $all('[data-rm-hide]').forEach(function (el) {
+                if (el.closest && el.closest('.rm-pin-stage')) return;
+                safetyIO.observe(el);
+            });
+        }, 300);
+    }
+
     // Absolute backstop: 1.8s -> force EVERYTHING visible (well under the 3s
     // site safety timeout). Adding `rm-failsafe` to <html> makes the CSS rule
     //   html.rm-failsafe [data-rm-hide]{opacity:1!important;...}
