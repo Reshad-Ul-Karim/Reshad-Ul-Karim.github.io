@@ -39,8 +39,8 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- AOS Animation Library -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- AOS removed: reveal-motion.js (GSAP) fully replaces it; the library was
+         dead weight (neutralised at runtime). Saves a render-blocking CSS+JS. -->
 
     <!-- Reveal fail-safe: if JS is disabled, never leave AOS/reveal content
          stuck at opacity:0. (JS-enabled timeouts in script.js handle the
@@ -55,8 +55,8 @@
     <!-- Vanilla Tilt 3D -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js" defer></script>
     
-    <!-- PDF.js Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- PDF.js Library (deferred — only needed when a PDF modal is opened) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
 
     <!-- Lenis Smooth Scroll (global: Lenis) — single owner of smooth scrolling -->
     <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js"></script>
@@ -74,6 +74,7 @@
     <link rel="stylesheet" href="positioning.css?v=1.1.0">
     <link rel="stylesheet" href="accent-theme.css?v=1.0.0">
     <link rel="stylesheet" href="three-scene.css?v=1.1.0">
+    <link rel="stylesheet" href="three-extra.css?v=1.0.0">
     <!-- fixes.css loads LAST so its layout/sizing overrides win the cascade -->
     <link rel="stylesheet" href="fixes.css?v=1.0.0">
 
@@ -82,6 +83,7 @@
     <script src="morph-motion.js?v=1.0.0" defer></script>
     <script src="accent-theme.js?v=1.0.0" defer></script>
     <script src="three-scene.js?v=1.1.0" defer></script>
+    <script src="three-extra.js?v=1.0.0" defer></script>
     <script src="scholar-citations.js?v=1.0.0" defer></script>
 </head>
 <body>
@@ -161,10 +163,10 @@
                         <span class="stat-number">4</span>
                         <span class="stat-label">Publications</span>
                     </div>
-                    <div class="stat">
-                        <span class="stat-number">30%</span>
-                        <span class="stat-label">Faster AI Inference</span>
-                    </div>
+                    <a class="stat stat-link" href="https://scholar.google.com/citations?user=2ssVmugAAAAJ" target="_blank" rel="noopener noreferrer" title="Live Google Scholar citations">
+                        <span class="stat-number" id="hero-citation-count">24</span>
+                        <span class="stat-label">Citations <span class="stat-live-dot" aria-hidden="true"></span></span>
+                    </a>
                 </div>
                 <div class="hero-buttons hero-buttons-research">
                     <a href="#research" class="btn btn-primary">
@@ -2266,8 +2268,10 @@
     </footer>
 
     <!-- Scripts -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-    <script src="script.js?v=2.1.0"></script>
+    <!-- AOS + particles.js removed for faster load: AOS is replaced by GSAP
+         reveal-motion; the hero now uses the lightweight Three.js layer + CSS
+         blobs instead of the heavier particles.js canvas. Both init functions
+         are guarded, so their absence is a clean no-op. -->
+    <script src="script.js?v=2.2.0"></script>
 </body>
 </html> 

@@ -27,12 +27,17 @@
     var countEl = document.getElementById('scholar-count');
     if (!wrap || !countEl) return;
 
+    var heroCountEl = document.getElementById('hero-citation-count');
+
     function setCount(n, when) {
         if (n === null || n === undefined || isNaN(n)) return;
         n = parseInt(n, 10);
         if (n < 0) return;
-        countEl.textContent = n.toLocaleString();
+        var pretty = n.toLocaleString();
+        countEl.textContent = pretty;
         wrap.classList.add('has-count');
+        // Also drive the hero "Citations" stat (live).
+        if (heroCountEl) heroCountEl.textContent = pretty;
         if (when) {
             try {
                 wrap.setAttribute('title', 'Google Scholar citations · updated ' + when);
