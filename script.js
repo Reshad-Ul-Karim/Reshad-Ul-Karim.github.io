@@ -231,6 +231,32 @@ function initNavigation() {
         }
     });
 
+    // Hero scroll-down arrow: scroll to #about (route through Lenis for smooth,
+    // accurate landing — matches the anchor handler offset of -80).
+    const scrollIndicator = document.querySelector('.scroll-indicator');
+    if (scrollIndicator) {
+        scrollIndicator.style.cursor = 'pointer';
+        scrollIndicator.setAttribute('role', 'button');
+        scrollIndicator.setAttribute('aria-label', 'Scroll to About section');
+        scrollIndicator.setAttribute('tabindex', '0');
+        const goToAbout = () => {
+            const about = document.getElementById('about');
+            if (!about) return;
+            if (window._lenis && typeof window._lenis.scrollTo === 'function') {
+                window._lenis.scrollTo(about, { offset: -80, duration: 1.2 });
+            } else {
+                window.scrollTo({ top: about.offsetTop - 80, behavior: 'smooth' });
+            }
+        };
+        scrollIndicator.addEventListener('click', goToAbout);
+        scrollIndicator.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                goToAbout();
+            }
+        });
+    }
+
     // Navbar scroll effect (optimized)
     let lastScrollTop = 0;
     let navbarTicking = false;
