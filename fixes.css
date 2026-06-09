@@ -264,3 +264,128 @@
   cursor: default;
 }
 .action-btn.upcoming-btn:hover { transform: none; }
+
+/* ===========================================================
+   AWARDS SECTION (new) — Honor & Awards
+   Theme-aware (uses CSS vars), works in light/dark + all accents.
+   Mobile-safe: auto-fit grid, no fixed widths, no overflow @390px.
+   =========================================================== */
+
+.awards {
+  padding: clamp(3rem, 8vw, 6rem) 0;
+  background:
+    linear-gradient(135deg, var(--bg-secondary) 0%, rgba(99, 102, 241, 0.03) 100%),
+    radial-gradient(circle at 70% 30%, rgba(6, 182, 212, 0.05) 0%, transparent 55%);
+  position: relative;
+}
+
+.awards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: clamp(1rem, 2.5vw, 1.75rem);
+  margin-top: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.award-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  min-width: 0;                       /* prevent grid blowout / overflow */
+  padding: clamp(1.1rem, 3vw, 1.6rem);
+  border-radius: 18px;
+  border: 1px solid var(--border-color);
+  background: color-mix(in srgb, var(--bg-primary) 78%, transparent);
+  backdrop-filter: blur(12px) saturate(120%);
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
+  box-shadow: var(--shadow-light);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.35s ease,
+              border-color 0.35s ease;
+}
+
+/* accent gradient edge */
+.award-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--primary-color), var(--accent-color));
+  opacity: 0.9;
+}
+
+.award-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-large);
+  border-color: var(--primary-color);
+}
+
+.award-icon {
+  flex: 0 0 auto;
+  width: 3rem;
+  height: 3rem;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  font-size: 1.35rem;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  box-shadow: 0 6px 16px -6px var(--primary-color);
+}
+
+.award-body {
+  min-width: 0;                       /* allow long org text to wrap, no overflow */
+  flex: 1 1 auto;
+}
+
+.award-title {
+  margin: 0 0 0.3rem;
+  font-size: clamp(1rem, 2.4vw, 1.15rem);
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.award-org {
+  margin: 0 0 0.55rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.award-date {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  color: var(--primary-color);
+  background: color-mix(in srgb, var(--primary-color) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary-color) 30%, transparent);
+}
+
+@media (max-width: 480px) {
+  .award-card {
+    gap: 0.85rem;
+    padding: 1.1rem;
+  }
+  .award-icon {
+    width: 2.6rem;
+    height: 2.6rem;
+    font-size: 1.15rem;
+  }
+}
+
+/* ===========================================================
+   NEW EXPERIENCE CARD — Undergraduate Research Assistant (DRISTEE)
+   This card has a single, longer highlight paragraph. Ensure it
+   reads comfortably and never clips; inherits .experience-card base.
+   =========================================================== */
+
+#experience .experience-card .highlight-content p {
+  overflow-wrap: anywhere;          /* long descriptive text wraps cleanly */
+}

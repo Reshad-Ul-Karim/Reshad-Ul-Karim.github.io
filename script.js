@@ -1667,7 +1667,7 @@ function initFloatingNav() {
     
     if (!floatingNav || !autoScrollBtn) return;
     
-    const sections = ['home', 'about', 'experience', 'cultural', 'projects', 'research', 'contact'];
+    const sections = ['home', 'about', 'experience', 'research', 'projects', 'awards', 'cultural', 'contact'];
     let currentSectionIndex = 0;
     let isAutoScrolling = false;
     let autoScrollInterval;
