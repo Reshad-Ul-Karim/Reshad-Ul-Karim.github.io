@@ -1,0 +1,8 @@
+{
+  "citations": null,
+  "hindex": null,
+  "i10index": null,
+  "updated": null,
+  "source": "pending",
+  "_note": "Auto-updated daily by .github/workflows/update-scholar-citations.yml. citations=null means not yet fetched; the site shows the Scholar button without a count until a real value lands."
+}

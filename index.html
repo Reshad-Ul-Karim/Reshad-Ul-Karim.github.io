@@ -82,6 +82,7 @@
     <script src="morph-motion.js?v=1.0.0" defer></script>
     <script src="accent-theme.js?v=1.0.0" defer></script>
     <script src="three-scene.js?v=1.0.0" defer></script>
+    <script src="scholar-citations.js?v=1.0.0" defer></script>
 </head>
 <body>
     <!-- SVG Grain Filter -->
@@ -157,8 +158,8 @@
                         <span class="stat-label">CGPA</span>
                     </div>
                     <div class="stat">
-                        <span class="stat-number">3</span>
-                        <span class="stat-label">IEEE Publications</span>
+                        <span class="stat-number">4</span>
+                        <span class="stat-label">Publications</span>
                     </div>
                     <div class="stat">
                         <span class="stat-number">30%</span>
@@ -290,11 +291,11 @@
                         </div>
                         <div class="profile-info">
                             <h3 class="profile-name">Reshad Ul Karim</h3>
-                            <p class="profile-title">AI & Computer Vision Researcher</p>
+                            <p class="profile-title">AI/ML Engineer &amp; Researcher</p>
                             <div class="profile-badges">
                                 <span class="badge badge-primary">
                                     <i class="fas fa-file-alt"></i>
-                                    3 IEEE Publications
+                                    4 Publications
                                 </span>
                                 <span class="badge badge-secondary">
                                     <i class="fas fa-trophy"></i>
@@ -306,7 +307,7 @@
                     
                     <div class="profile-description">
                         <p>
-                            Computer Science researcher with 3 IEEE publications (first author on IEEE Access) and a CGPA of 3.88/4.00. My work spans computer vision, Explainable AI (XAI), multimodal learning, medical imaging, and assistive/autonomous perception &mdash; combining methods such as Vision Transformers, SegFormer, YOLO, MediaPipe and SHAP. I build systems that are not only accurate but interpretable and deployable, and I am seeking PhD and research opportunities in machine learning.
+                            AI/ML engineer and researcher (CGPA 3.88/4.00) with 4 peer-reviewed publications &mdash; three IEEE, including a first-author IEEE Access journal, plus JCSSE 2026 to appear. I work across computer vision, multimodal deep learning, agentic systems, robotics and MLOps &mdash; using Vision Transformers, SegFormer, YOLO, MediaPipe, LSTMs and SHAP &mdash; and I ship systems that are accurate, interpretable, and deployable at the edge (95% fewer cloud calls, 30% faster inference). Open to AI/ML engineering roles and strong PhD/research opportunities.
                         </p>
                     </div>
                     
@@ -351,7 +352,7 @@
                                 <i class="fas fa-file-alt"></i>
                             </div>
                             <div class="stat-content">
-                                <span class="stat-number">3</span>
+                                <span class="stat-number">4</span>
                                 <span class="stat-label">Publications</span>
                             </div>
                         </div>
@@ -365,8 +366,29 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Academic Profiles + live Google Scholar citations -->
+                    <div class="academic-profiles">
+                        <a href="https://scholar.google.com/citations?user=2ssVmugAAAAJ" class="academic-btn scholar" target="_blank" rel="noopener noreferrer" title="Google Scholar">
+                            <i class="fas fa-graduation-cap"></i>
+                            <span class="academic-btn-label">Google Scholar</span>
+                            <span class="scholar-citations" id="scholar-citations" data-scholar-id="2ssVmugAAAAJ" aria-live="polite">
+                                <span class="scholar-count" id="scholar-count">—</span>
+                                <span class="scholar-cite-label">citations</span>
+                                <span class="scholar-live-dot" aria-hidden="true"></span>
+                            </span>
+                        </a>
+                        <a href="https://www.researchgate.net/profile/Reshad-Karim-2" class="academic-btn researchgate" target="_blank" rel="noopener noreferrer" title="ResearchGate">
+                            <i class="fab fa-researchgate"></i>
+                            <span class="academic-btn-label">ResearchGate</span>
+                        </a>
+                        <a href="https://orcid.org/0009-0000-8291-6749" class="academic-btn orcid" target="_blank" rel="noopener noreferrer" title="ORCID">
+                            <i class="fab fa-orcid"></i>
+                            <span class="academic-btn-label">ORCID</span>
+                        </a>
+                    </div>
                 </div>
-                
+
                 <!-- Interactive Skills Section -->
                 <div class="skills-section" data-aos="fade-left">
                     <div class="skills-header">
@@ -1640,7 +1662,7 @@
         <div class="container">
             <div class="section-header" data-aos="fade-up">
                 <h2 class="section-title">Research & Publications</h2>
-                <p class="section-subtitle">3 IEEE publications in Explainable AI, multimodal learning &amp; medical imaging</p>
+                <p class="section-subtitle">4 publications across Explainable AI, multimodal learning, gesture HCI &amp; medical imaging</p>
             </div>
 
             <!-- Research Interests -->
@@ -1680,9 +1702,9 @@
                             <i class="fas fa-file-alt"></i>
                         </div>
                         <div class="metric-content">
-                            <h3 class="metric-number">3</h3>
-                            <p class="metric-label">IEEE Publications</p>
-                            <span class="metric-description">Peer-reviewed research papers</span>
+                            <h3 class="metric-number">4</h3>
+                            <p class="metric-label">Publications</p>
+                            <span class="metric-description">Peer-reviewed (3 IEEE + JCSSE 2026)</span>
                         </div>
                     </div>
                     <div class="metric-card" data-aos="fade-up" data-aos-delay="300" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.2" data-tilt-scale="1.03">
@@ -1764,7 +1786,65 @@
             <!-- Publications Timeline -->
             <div class="publications-timeline" data-aos="fade-up" data-aos-delay="300">
                 <h3 class="timeline-title">Publication Timeline</h3>
-                
+
+                <!-- Upcoming Conference Paper — JCSSE 2026 -->
+                <div class="publication-item upcoming" data-aos="fade-up" data-aos-delay="350">
+                    <div class="publication-header">
+                        <div class="publication-type-badge conference">
+                            <i class="fas fa-microphone-lines"></i>
+                            <span>Conference Paper</span>
+                        </div>
+                        <div class="publication-date">
+                            <span class="pub-status-pill"><i class="fas fa-clock"></i> To be presented</span>
+                            June 24&ndash;27, 2026
+                        </div>
+                    </div>
+
+                    <div class="publication-content">
+                        <h4 class="publication-title">Vision-based Hand Gesture Virtual Keyboard-Mouse Framework with Bilingual Next-word Prediction</h4>
+
+                        <p class="publication-authors">Sammam Mahdi, <strong>Reshad Ul Karim</strong>, Tareq Sujat, Syeda Maliha Tabassum, Abrar Samin, Aniqua Nusrat Zereen</p>
+
+                        <div class="publication-details">
+                            <div class="venue-info">
+                                <i class="fas fa-building"></i>
+                                <span class="venue-name">JCSSE 2026 &mdash; 23rd Int'l Joint Conf. on Computer Science &amp; Software Engineering</span>
+                                <span class="impact-factor">To be presented</span>
+                            </div>
+                            <div class="doi-info">
+                                <i class="fas fa-calendar-check"></i>
+                                <span>To be presented at JCSSE 2026 &middot; 24&ndash;27 June 2026</span>
+                            </div>
+                        </div>
+
+                        <div class="publication-abstract">
+                            <p class="publication-contribution"><strong>Contribution:</strong> A modular, real-time touchless keyboard-mouse that pairs geometric encoding of MediaPipe hand landmarks with two-layer LSTM bilingual (English/Bangla) next-word prediction &mdash; 9 static gestures at 97.4%+ accuracy and up to 37.7&nbsp;FPS, with character error rates of 3.43% (English) and 8.34% (Bangla).</p>
+                        </div>
+
+                        <div class="publication-tags">
+                            <span class="research-tag primary">Gesture Recognition</span>
+                            <span class="research-tag secondary">MediaPipe</span>
+                            <span class="research-tag accent">Bilingual LSTM</span>
+                            <span class="research-tag neutral">Touchless HCI</span>
+                        </div>
+
+                        <div class="publication-actions">
+                            <span class="action-btn primary upcoming-btn" aria-disabled="true" title="Paper will be available after the conference">
+                                <i class="fas fa-clock"></i>
+                                <span>Paper &middot; JCSSE 2026</span>
+                            </span>
+                            <a href="https://github.com/Reshad-Ul-Karim/Autonomous-Keyboard-typing-test" class="action-btn secondary" target="_blank" rel="noopener noreferrer">
+                                <i class="fab fa-github"></i>
+                                <span>View Code</span>
+                            </a>
+                            <button class="action-btn tertiary" onclick="navigator.clipboard.writeText('Mahdi, S., Karim, R. U., Sujat, T., Tabassum, S. M., Samin, A., &amp; Zereen, A. N. (2026). Vision-based Hand Gesture Virtual Keyboard-Mouse Framework with Bilingual Next-word Prediction. JCSSE 2026.')">
+                                <i class="fas fa-copy"></i>
+                                <span>Copy Citation</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Journal Publication -->
                 <div class="publication-item featured" data-aos="fade-up" data-aos-delay="400">
                     <div class="publication-header">

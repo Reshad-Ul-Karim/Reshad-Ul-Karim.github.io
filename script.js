@@ -344,10 +344,10 @@ function initTypingEffect() {
     if (!typingElement) return;
 
     const texts = [
-        'AI & Computer Vision Researcher | IEEE Author',
-        'Explainable AI for Healthcare | Multimodal Learning',
-        'First Author, IEEE Access | 3 Publications',
-        'Assistive Perception & Autonomous Vision | Seeking PhD'
+        'I turn research into production AI that ships',
+        'Computer Vision · Multimodal Deep Learning · Agentic Systems',
+        'Edge-ready perception · 95% fewer cloud calls',
+        'From IEEE research to deployed MLOps pipelines'
     ];
     
     let textIndex = 0;
@@ -1728,12 +1728,17 @@ function initFloatingNav() {
         // Ensure we don't scroll beyond document bounds
         const maxScroll = document.documentElement.scrollHeight - viewportHeight;
         offsetTop = Math.max(0, Math.min(offsetTop, maxScroll));
-        
-        if (smooth) {
-            window.scrollTo({
-                top: offsetTop,
-                behavior: 'smooth'
+
+        // Lenis owns smooth scrolling — using native window.scrollTo({behavior:'smooth'})
+        // fights Lenis's RAF loop and produces janky / non-arriving navigation.
+        // Route through Lenis when present so section jumps land precisely.
+        if (window._lenis && typeof window._lenis.scrollTo === 'function') {
+            window._lenis.scrollTo(offsetTop, {
+                duration: smooth ? 1.1 : 0,
+                immediate: !smooth
             });
+        } else if (smooth) {
+            window.scrollTo({ top: offsetTop, behavior: 'smooth' });
         } else {
             window.scrollTo(0, offsetTop);
         }
