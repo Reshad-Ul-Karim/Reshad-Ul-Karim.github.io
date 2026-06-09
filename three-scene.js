@@ -82,6 +82,9 @@
   // The hero must exist to host the layer.
   var hero = document.getElementById('home') || document.querySelector('.hero');
   if (!hero) return;
+  // Dedicated centerpiece mount (right side of the hero). Falls back to the
+  // whole hero only if the mount is somehow absent.
+  var mountTarget = document.getElementById('hero-3d') || hero;
 
   /* ----------------------------------------------------------------------
      1. LOAD THREE.js ONCE, THEN INIT.
@@ -149,8 +152,8 @@
     var layer = document.createElement('div');
     layer.className = 'three-hero-layer';
     layer.setAttribute('aria-hidden', 'true');
-    // Append as the FIRST child so it sits under content in paint order too.
-    hero.insertBefore(layer, hero.firstChild);
+    // Mount INTO the dedicated centerpiece box (right side), not the whole hero.
+    mountTarget.appendChild(layer);
 
     /* ---- Sizing helper (uses the layer box, never window width directly,
             so the canvas can never exceed the clipped hero width) ---- */
@@ -185,9 +188,8 @@
     /* ---- Scene + camera ---- */
     var scene = new THREE.Scene();
     var camera = new THREE.PerspectiveCamera(50, dim.w / dim.h, 0.1, 100);
-    // Pushed back so the object reads as a small ambient background accent,
-    // not a giant centerpiece covering the hero card.
-    var BASE_CAM_Z = 9.5;
+    // Framed as the hero centerpiece inside its own right-side box.
+    var BASE_CAM_Z = 6.6;
     camera.position.set(0, 0, BASE_CAM_Z);
 
     var accents = readAccents(THREE);
@@ -195,7 +197,7 @@
     /* ==================================================================
        3a. DISPLACED ICOSAHEDRON CORE — custom GLSL with 3D simplex noise.
        ================================================================== */
-    var coreGeo = new THREE.IcosahedronGeometry(1.5, 24); // detail 24 ~ smooth blob
+    var coreGeo = new THREE.IcosahedronGeometry(1.5, 12); // detail 12 — smooth yet cheap
     var coreUniforms = {
       uTime:      { value: 0 },
       uDisperse:  { value: 0 },   // 0 = formed, 1 = scrolled-away
@@ -276,10 +278,10 @@
       '  col = mix(col, uColorC, smoothstep(0.55, 1.0, g) * 0.6);',
       // Fresnel rim glow — kept subtle so the core stays a soft accent, not a
       // bright white ball that washes out the hero.
-      '  float fres = pow(1.0 - max(dot(vNormalW, vViewDir), 0.0), 2.8);',
-      '  col += fres * 0.28;',
-      // overall low alpha so it sits behind the content as ambient light
-      '  float a = (0.18 + 0.38 * fres) * (1.0 - 0.45 * uDisperse);',
+      '  float fres = pow(1.0 - max(dot(vNormalW, vViewDir), 0.0), 2.6);',
+      '  col += fres * 0.45;',
+      // centerpiece presence — visible but not a harsh white ball
+      '  float a = (0.34 + 0.44 * fres) * (1.0 - 0.45 * uDisperse);',
       '  gl_FragColor = vec4(col, a);',
       '}'
     ].join('\n');
@@ -301,7 +303,7 @@
       color: accents.accent.clone(),
       wireframe: true,
       transparent: true,
-      opacity: 0.08,
+      opacity: 0.14,
       blending: THREE.AdditiveBlending,
       depthWrite: false
     });
@@ -311,7 +313,7 @@
     /* ==================================================================
        3b. PARTICLE HALO — points on a sphere, GLSL drift + scroll disperse.
        ================================================================== */
-    var COUNT = 900; // modest
+    var COUNT = 460; // modest — keeps the halo cheap for 60fps
     var pPos = new Float32Array(COUNT * 3);
     var pSeed = new Float32Array(COUNT);
     for (var i = 0; i < COUNT; i++) {
@@ -390,10 +392,9 @@
     group.add(particles);
     scene.remove(core); scene.remove(shell); scene.remove(particles);
     scene.add(group);
-    // Compose with the hero: sit up-and-right as an ambient halo behind the
-    // code card, well clear of the headline/CTA text on the left.
-    group.position.x = 1.6;
-    group.position.y = 0.5;
+    // Centered in its own centerpiece box.
+    group.position.x = 0;
+    group.position.y = 0;
 
     /* ----------------------------------------------------------------------
        4. MOUSE PARALLAX (gentle) — separate from the hero's own parallax.
