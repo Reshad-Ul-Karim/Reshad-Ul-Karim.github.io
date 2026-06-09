@@ -49,10 +49,17 @@ function initializeWebsite() {
 // ===== PARTICLES.JS CONFIGURATION =====
 function initParticles() {
     if (typeof particlesJS !== 'undefined') {
+        // Performance budget: cut particle count from 120 -> 56 on desktop,
+        // and further down to 24 on touch/coarse-pointer/small devices where
+        // the canvas + line-linking math is the heaviest jank source.
+        const isTouch = window.matchMedia('(hover: none), (pointer: coarse)').matches
+            || window.innerWidth < 768;
+        const particleCount = isTouch ? 24 : 56;
+
         particlesJS('particles-js', {
             particles: {
                 number: {
-                    value: 120,
+                    value: particleCount,
                     density: {
                         enable: true,
                         value_area: 900
@@ -165,6 +172,15 @@ function initAOS() {
             offset: 100
         });
     }
+
+    // Reveal fail-safe: if AOS fails to load or an observer never fires
+    // (e.g. element below an off-screen container), never leave content
+    // permanently invisible. Force-reveal anything still hidden after 3s.
+    setTimeout(() => {
+        document.querySelectorAll('[data-aos]:not(.aos-animate)').forEach(el => {
+            el.classList.add('aos-animate');
+        });
+    }, 3000);
 }
 
 // ===== NAVIGATION FUNCTIONALITY =====
@@ -249,19 +265,9 @@ function initNavigation() {
 
 // ===== SCROLL EFFECTS =====
 function initScrollEffects() {
-    // Smooth scrolling for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
-    });
+    // NOTE: smooth anchor scrolling is owned by Lenis (see initLenis()).
+    // The previous native scrollIntoView handlers were removed here so the
+    // two systems no longer both preventDefault and fight over scrolling.
 
     // Combined scroll handler for better performance
     window.addEventListener('scroll', throttle(() => {
@@ -2422,8 +2428,10 @@ function initHeroParallax() {
     const hero = document.getElementById('home');
     if (!hero) return;
 
-    const heroText = hero.querySelector('.hero-text');
-    const heroImage = hero.querySelector('.hero-image');
+    // Target dedicated inner parallax layers so we don't clobber the
+    // AOS entrance transforms on the outer .hero-text / .hero-image.
+    const heroText = hero.querySelector('.hero-text-parallax');
+    const heroImage = hero.querySelector('.hero-image-parallax');
     const floatingIcons = hero.querySelectorAll('.floating-icon');
     const avatarContainer = hero.querySelector('.avatar-container');
     const codeAnimation = hero.querySelector('.code-animation');
@@ -2708,19 +2716,30 @@ function initStaggeredCards() {
             c.style.transform = 'translateY(36px) scale(0.96)';
         });
 
-        const observer = new IntersectionObserver((entries) => {
-            if (!entries[0].isIntersecting) return;
-
+        const reveal = () => {
             cards.forEach((c, i) => {
                 setTimeout(() => {
                     c.style.opacity = '1';
                     c.style.transform = 'translateY(0) scale(1)';
                 }, i * 90);
             });
+        };
 
+        const observer = new IntersectionObserver((entries) => {
+            if (!entries[0].isIntersecting) return;
+            reveal();
             observer.disconnect();
         }, { threshold: 0.08 });
 
         observer.observe(container);
+
+        // Fail-safe: if the observer never fires, never leave the cards
+        // stuck at opacity:0. Force-reveal after 3s.
+        setTimeout(() => {
+            if (cards[0] && cards[0].style.opacity === '0') {
+                reveal();
+                observer.disconnect();
+            }
+        }, 3000);
     });
 }

@@ -42,14 +42,40 @@
     <!-- AOS Animation Library -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
+    <!-- Reveal fail-safe: if JS is disabled, never leave AOS/reveal content
+         stuck at opacity:0. (JS-enabled timeouts in script.js handle the
+         observer-never-fires case.) -->
+    <noscript>
+      <style>
+        [data-aos] { opacity: 1 !important; transform: none !important; }
+        .fade-in { opacity: 1 !important; transform: none !important; }
+      </style>
+    </noscript>
+
     <!-- Vanilla Tilt 3D -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js" defer></script>
     
     <!-- PDF.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    
+
+    <!-- Lenis Smooth Scroll (global: Lenis) — single owner of smooth scrolling -->
+    <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js"></script>
+
+    <!-- GSAP motion stack (global: gsap, ScrollTrigger, Flip) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Flip.min.js"></script>
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="styles.css?v=1.3.0">
+    <!-- Modular motion + positioning stylesheets (Phase 2/3 workers) -->
+    <link rel="stylesheet" href="reveal-motion.css?v=1.0.0">
+    <link rel="stylesheet" href="morph-motion.css?v=1.0.0">
+    <link rel="stylesheet" href="positioning.css?v=1.0.0">
+
+    <!-- Modular motion scripts — self-initializing, load after core script.js -->
+    <script src="reveal-motion.js?v=1.0.0" defer></script>
+    <script src="morph-motion.js?v=1.0.0" defer></script>
 </head>
 <body>
     <!-- SVG Grain Filter -->
@@ -107,6 +133,7 @@
         <div class="hero-blob hero-blob-2"></div>
         <div class="hero-content">
             <div class="hero-text" data-aos="fade-up" data-aos-delay="200">
+              <div class="hero-text-parallax">
                 <h1 class="hero-title">
                     <span class="gradient-text">
                         <span class="name-first">Reshad</span>
@@ -131,8 +158,10 @@
                     <a href="#contact" class="btn btn-primary">Get In Touch</a>
                     <a href="#projects" class="btn btn-secondary">View Work</a>
                 </div>
+              </div>
             </div>
             <div class="hero-image" data-aos="fade-left" data-aos-delay="400">
+              <div class="hero-image-parallax">
                 <div class="image-container">
                     <!-- Tech Grid Background -->
                     <div class="tech-grid"></div>
@@ -187,6 +216,7 @@
                         <div class="chart-bar" style="--height: 70%; --delay: 0.8s"></div>
                     </div>
                 </div>
+              </div>
             </div>
         </div>
         <div class="scroll-indicator">
@@ -211,7 +241,10 @@
                         <div class="profile-avatar">
                             <div class="avatar-ring"></div>
                             <div class="avatar-pulse"></div>
-                            <img src="assets/headshot.png" alt="Reshad Ul Karim" class="avatar-image clickable-image" data-title="Reshad Ul Karim - Professional Headshot">
+                            <picture>
+                                <source srcset="assets/headshot.webp" type="image/webp">
+                                <img src="assets/headshot.png" alt="Reshad Ul Karim" class="avatar-image clickable-image" data-title="Reshad Ul Karim - Professional Headshot" width="1000" height="1000" loading="lazy" decoding="async">
+                            </picture>
 
                         </div>
                         <div class="profile-info">
@@ -581,19 +614,31 @@
                     <!-- Project Gallery -->
                     <div class="project-gallery">
                         <div class="gallery-item">
-                            <img src="assets/images/mongol-tori-phoenix.png" alt="MONGOL TORI Phoenix 9.0" class="gallery-image clickable-image" data-title="MONGOL TORI Phoenix 9.0">
+                            <picture>
+                                <source srcset="assets/images/mongol-tori-phoenix.webp" type="image/webp">
+                                <img src="assets/images/mongol-tori-phoenix.png" alt="MONGOL TORI Phoenix 9.0" class="gallery-image clickable-image" data-title="MONGOL TORI Phoenix 9.0" width="1536" height="2048" loading="lazy" decoding="async">
+                            </picture>
                             <div class="gallery-label">Phoenix 9.0</div>
                         </div>
                         <div class="gallery-item">
-                            <img src="assets/images/mongol-tori-hypersonic.png" alt="MONGOL TORI Hypersonic 10.0" class="gallery-image clickable-image" data-title="MONGOL TORI Hypersonic 10.0">
+                            <picture>
+                                <source srcset="assets/images/mongol-tori-hypersonic.webp" type="image/webp">
+                                <img src="assets/images/mongol-tori-hypersonic.png" alt="MONGOL TORI Hypersonic 10.0" class="gallery-image clickable-image" data-title="MONGOL TORI Hypersonic 10.0" width="3072" height="4080" loading="lazy" decoding="async">
+                            </picture>
                             <div class="gallery-label">Hypersonic 10.0</div>
                         </div>
                         <div class="gallery-item">
-                            <img src="assets/images/pcb-design.png" alt="PCB Design" class="gallery-image clickable-image" data-title="PCB Design">
+                            <picture>
+                                <source srcset="assets/images/pcb-design.webp" type="image/webp">
+                                <img src="assets/images/pcb-design.png" alt="PCB Design" class="gallery-image clickable-image" data-title="PCB Design" width="2876" height="1672" loading="lazy" decoding="async">
+                            </picture>
                             <div class="gallery-label">PCB Design</div>
                         </div>
                         <div class="gallery-item">
-                            <img src="assets/images/team-photo.jpg" alt="Mars Rover Team Photo" class="gallery-image clickable-image" data-title="Mars Rover Team Photo">
+                            <picture>
+                                <source srcset="assets/images/team-photo.webp" type="image/webp">
+                                <img src="assets/images/team-photo.jpg" alt="Mars Rover Team Photo" class="gallery-image clickable-image" data-title="Mars Rover Team Photo" width="3365" height="1246" loading="lazy" decoding="async">
+                            </picture>
                             <div class="gallery-label">Team Photo</div>
                         </div>
                         <div class="gallery-item certificate-item">
@@ -851,11 +896,17 @@
                     <!-- Cultural Gallery -->
                     <div class="cultural-gallery">
                         <div class="gallery-item">
-                            <img src="assets/images/singing-performance-1.jpg" alt="Cultural Performance - Singing" class="gallery-image clickable-image" data-title="Cultural Performance - Singing">
+                            <picture>
+                                <source srcset="assets/images/singing-performance-1.webp" type="image/webp">
+                                <img src="assets/images/singing-performance-1.jpg" alt="Cultural Performance - Singing" class="gallery-image clickable-image" data-title="Cultural Performance - Singing" width="2048" height="1365" loading="lazy" decoding="async">
+                            </picture>
                             <div class="gallery-label">Performance</div>
                         </div>
                         <div class="gallery-item">
-                            <img src="assets/images/singing-performance-2.jpg" alt="Event Leadership - Cultural Performance" class="gallery-image clickable-image" data-title="Event Leadership - Cultural Performance">
+                            <picture>
+                                <source srcset="assets/images/singing-performance-2.webp" type="image/webp">
+                                <img src="assets/images/singing-performance-2.jpg" alt="Event Leadership - Cultural Performance" class="gallery-image clickable-image" data-title="Event Leadership - Cultural Performance" width="2048" height="1366" loading="lazy" decoding="async">
+                            </picture>
                             <div class="gallery-label">Leadership</div>
                         </div>
                     </div>
@@ -1100,7 +1151,7 @@
                     <div class="project-image">
                         <!-- YouTube Video Preview -->
                         <div class="youtube-preview" data-video-id="vdP5qrJQqGc" data-start-time="131">
-                            <img src="https://img.youtube.com/vi/vdP5qrJQqGc/maxresdefault.jpg" alt="Mars Rover Keyboard Typing Demo" class="youtube-thumbnail">
+                            <img src="https://img.youtube.com/vi/vdP5qrJQqGc/maxresdefault.jpg" alt="Mars Rover Keyboard Typing Demo" class="youtube-thumbnail" width="1280" height="720" loading="lazy" decoding="async">
                             <div class="youtube-play-button">
                                 <i class="fab fa-youtube"></i>
                             </div>
@@ -1172,7 +1223,7 @@
                     <div class="project-image">
                         <!-- YouTube Video Preview -->
                         <div class="youtube-preview" data-video-id="BSgDdoiRlTY">
-                            <img src="https://img.youtube.com/vi/BSgDdoiRlTY/maxresdefault.jpg" alt="Matrimonial Hub Demo" class="youtube-thumbnail">
+                            <img src="https://img.youtube.com/vi/BSgDdoiRlTY/maxresdefault.jpg" alt="Matrimonial Hub Demo" class="youtube-thumbnail" width="1280" height="720" loading="lazy" decoding="async">
                             <div class="youtube-play-button">
                                 <i class="fab fa-youtube"></i>
                             </div>
@@ -1406,7 +1457,7 @@
                     <div class="project-image">
                         <!-- YouTube Video Preview -->
                         <div class="youtube-preview" data-video-id="WJUcASlT_to">
-                            <img src="https://img.youtube.com/vi/WJUcASlT_to/maxresdefault.jpg" alt="Autonomous Service Robot Demo" class="youtube-thumbnail">
+                            <img src="https://img.youtube.com/vi/WJUcASlT_to/maxresdefault.jpg" alt="Autonomous Service Robot Demo" class="youtube-thumbnail" width="1280" height="720" loading="lazy" decoding="async">
                             <div class="youtube-play-button">
                                 <i class="fab fa-youtube"></i>
                             </div>
@@ -1695,7 +1746,7 @@
                         <!-- Research Presentation Video -->
                         <div class="publication-media">
                             <div class="media-preview" data-video-id="nAP8e5IfGZI">
-                                <img src="https://img.youtube.com/vi/nAP8e5IfGZI/maxresdefault.jpg" alt="XAI Sleep Classification Research Presentation" class="media-thumbnail">
+                                <img src="https://img.youtube.com/vi/nAP8e5IfGZI/maxresdefault.jpg" alt="XAI Sleep Classification Research Presentation" class="media-thumbnail" width="1280" height="720" loading="lazy" decoding="async">
                                 <div class="media-play-button">
                                     <i class="fab fa-youtube"></i>
                                 </div>
@@ -1761,7 +1812,7 @@
                         <!-- Research Presentation Video -->
                         <div class="publication-media">
                             <div class="media-preview" data-video-id="FfUJttHAkyk">
-                                <img src="https://img.youtube.com/vi/FfUJttHAkyk/maxresdefault.jpg" alt="Machine Learning Sleep Classification Research Presentation" class="media-thumbnail">
+                                <img src="https://img.youtube.com/vi/FfUJttHAkyk/maxresdefault.jpg" alt="Machine Learning Sleep Classification Research Presentation" class="media-thumbnail" width="1280" height="720" loading="lazy" decoding="async">
                                 <div class="media-play-button">
                                     <i class="fab fa-youtube"></i>
                                 </div>
@@ -2021,7 +2072,6 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
     <script src="script.js?v=2.0.0"></script>
 </body>
 </html> 

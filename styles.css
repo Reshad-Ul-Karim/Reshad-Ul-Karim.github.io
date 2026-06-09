@@ -879,6 +879,20 @@ a {
   align-items: center;
 }
 
+/* Inner parallax layers: mouse-parallax JS writes transform here so it
+   never fights the AOS entrance transform on the outer .hero-text /
+   .hero-image. They are transparent layout pass-throughs. */
+.hero-image-parallax {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  will-change: transform;
+}
+
+.hero-text-parallax {
+  will-change: transform;
+}
+
 .image-container {
   width: 350px;
   height: 350px;
@@ -959,7 +973,10 @@ a {
   position: absolute;
   width: 50px;
   height: 50px;
-  background: rgba(255, 255, 255, 0.15);
+  /* Perf: backdrop-filter removed — these 5 icons animate + parallax every
+     frame, so blur compositing was a constant cost. Slightly more opaque
+     bg keeps the frosted look. */
+  background: rgba(255, 255, 255, 0.22);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -968,7 +985,6 @@ a {
   font-size: 1.2rem;
   animation: techFloat 4s ease-in-out infinite;
   animation-delay: var(--delay);
-  backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
   cursor: pointer;
@@ -1255,6 +1271,11 @@ section {
   border: 1px solid rgba(99, 102, 241, 0.3);
   border-radius: 50%;
   animation: avatarPulse 3s ease-in-out infinite;
+}
+
+.profile-avatar > picture {
+  display: block;
+  line-height: 0;
 }
 
 .avatar-image {
@@ -2031,8 +2052,9 @@ section {
 
 /* Experience Cards */
 .experience-card {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
+  /* Perf: backdrop-filter removed (numerous, scroll-heavy cards = jank);
+     bumped bg opacity to approximate the glass look cheaply. */
+  background: rgba(255, 255, 255, 0.88);
   border: 1px solid var(--border-color);
   border-radius: 20px;
   padding: 2rem;
@@ -2272,6 +2294,14 @@ section {
 .gallery-item:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* <picture> wrapper must fill the gallery-item so the inner img's
+   width/height:100% resolves against the tile, not the inline picture box. */
+.gallery-item > picture {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .gallery-image {
@@ -2558,8 +2588,8 @@ section {
 }
 
 .stat-card {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
+  /* Perf: backdrop-filter removed; opaque-ish bg approximates glass. */
+  background: rgba(255, 255, 255, 0.88);
   border: 1px solid var(--border-color);
   border-radius: 16px;
   padding: 2rem;
@@ -2787,7 +2817,7 @@ section {
   margin-bottom: 2rem;
   position: relative;
   overflow: hidden;
-  backdrop-filter: blur(10px);
+  /* Perf: backdrop-filter removed — bg is already opaque so blur was a no-op cost. */
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -2854,14 +2884,14 @@ section {
   align-items: center;
   gap: 1.25rem;
   padding: 1.25rem;
-  background: 
+  background:
     linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(236, 72, 153, 0.04)),
-    rgba(255, 255, 255, 0.5);
+    rgba(255, 255, 255, 0.85);
   border-radius: 16px;
   border: 1px solid rgba(99, 102, 241, 0.1);
   position: relative;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(5px);
+  /* Perf: backdrop-filter removed; raised bg opacity to compensate. */
 }
 
 .achievement-item::before {
@@ -4855,8 +4885,8 @@ section {
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem 2rem;
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(10px);
+  /* Perf: backdrop-filter removed; raised bg opacity to compensate. */
+  background: rgba(255, 255, 255, 0.85);
   border-bottom: 1px solid var(--border-color);
   position: relative;
   z-index: 2;
@@ -7140,23 +7170,43 @@ section {
 }
 
 
+/* ===== PERF: CONTENT-VISIBILITY FOR BELOW-THE-FOLD SECTIONS =====
+   Skip rendering/layout for offscreen sections until they scroll near the
+   viewport. contain-intrinsic-size reserves an approximate height so the
+   scrollbar stays stable and anchor jumps land correctly. Hero (#home) and
+   #about stay always-rendered to avoid first-paint / above-fold flashes. */
+#experience,
+#cultural,
+#certifications,
+#projects,
+#research,
+#contact {
+  content-visibility: auto;
+}
+
+#experience      { contain-intrinsic-size: 1px 1400px; }
+#cultural        { contain-intrinsic-size: 1px 1400px; }
+#certifications  { contain-intrinsic-size: 1px 600px; }
+#projects        { contain-intrinsic-size: 1px 2600px; }
+#research        { contain-intrinsic-size: 1px 1600px; }
+#contact         { contain-intrinsic-size: 1px 900px; }
+
+
 /* ===== GLASSMORPHISM CARD UPGRADE ===== */
+/* Perf: backdrop-filter removed from the 12 project cards (biggest
+   scroll-jank offender). Bumped bg opacity to keep a near-glass look
+   without the per-frame blur compositing cost. */
 .project-card {
-  background: rgba(var(--bg-primary-rgb, 255, 255, 255), 0.6) !important;
-  backdrop-filter: blur(16px) saturate(1.4);
-  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  background: rgba(var(--bg-primary-rgb, 255, 255, 255), 0.9) !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
 }
 
 [data-theme="dark"] .project-card {
-  background: rgba(15, 15, 30, 0.55) !important;
+  background: rgba(15, 15, 30, 0.88) !important;
   border: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
-.experience-card {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
+/* Perf: experience-card blur removed (see opaque bg in base rule above). */
 
 [data-theme="dark"] .experience-card {
   background: rgba(15, 15, 30, 0.6) !important;
@@ -7472,16 +7522,15 @@ html.lenis body {
 
   /* Hero parallax — disable on touch */
   .hero-text,
-  .hero-image {
+  .hero-image,
+  .hero-text-parallax,
+  .hero-image-parallax {
     transform: none !important;
     will-change: auto;
   }
 
-  /* Glassmorphism — reduce blur cost on mobile */
-  .project-card {
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-  }
+  /* Perf: project-card backdrop-filter fully removed (desktop + mobile)
+     to eliminate scroll jank on the 12-card grid. */
 }
 
 /* Very small screens */
