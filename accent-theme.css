@@ -41,16 +41,86 @@ html[data-accent="orange"] {
   --accent-tertiary-rgb:  251, 146, 60;
 }
 
-/* MONO — cohesive slate/grayscale. Reads well on #ffffff and #0f172a;
-   white button text passes contrast. */
+/* MONO — neutral, high-contrast grayscale (NO blue tint), theme-aware so the
+   gradient is a stark black<->white that's always on the readable side of the
+   background:
+     • light theme -> near-black to grey  (dark ink on white)
+     • dark theme  -> near-white to grey  (silver on near-black)
+   The light defaults live here; the dark override follows. */
 html[data-accent="mono"] {
-  --primary-color:   #475569;
-  --primary-dark:    #334155;
-  --secondary-color: #64748b;
-  --accent-color:    #94a3b8;
-  --accent-primary-rgb:   71, 85, 105;
-  --accent-secondary-rgb: 100, 116, 139;
-  --accent-tertiary-rgb:  148, 163, 184;
+  --primary-color:   #0a0a0a;
+  --primary-dark:    #000000;
+  --secondary-color: #595959;
+  --accent-color:    #1f1f1f;
+  --accent-primary-rgb:   10, 10, 10;
+  --accent-secondary-rgb: 89, 89, 89;
+  --accent-tertiary-rgb:  31, 31, 31;
+}
+html[data-accent="mono"][data-theme="dark"] {
+  --primary-color:   #fafafa;
+  --primary-dark:    #d4d4d4;
+  --secondary-color: #9e9e9e;
+  --accent-color:    #ededed;
+  --accent-primary-rgb:   250, 250, 250;
+  --accent-secondary-rgb: 158, 158, 158;
+  --accent-tertiary-rgb:  237, 237, 237;
+}
+
+/* Dark-mono: accent backgrounds turn light, so white text/icons on them
+   must flip to near-black to stay legible. Auto-derived from every rule that
+   paints white text on an accent background. */
+html[data-accent="mono"][data-theme="dark"] [data-theme="dark"] .achievement,
+html[data-accent="mono"][data-theme="dark"] [data-theme="dark"] .gpa,
+html[data-accent="mono"][data-theme="dark"] .btn-primary,
+html[data-accent="mono"][data-theme="dark"] .btn-secondary:hover,
+html[data-accent="mono"][data-theme="dark"] .btn-accent,
+html[data-accent="mono"][data-theme="dark"] .avatar-content,
+html[data-accent="mono"][data-theme="dark"] .badge-primary,
+html[data-accent="mono"][data-theme="dark"] .badge-secondary,
+html[data-accent="mono"][data-theme="dark"] .stat-icon,
+html[data-accent="mono"][data-theme="dark"] .category-icon,
+html[data-accent="mono"][data-theme="dark"] .education-icon,
+html[data-accent="mono"][data-theme="dark"] .achievement-badge,
+html[data-accent="mono"][data-theme="dark"] .honor-badge,
+html[data-accent="mono"][data-theme="dark"] .profile-placeholder,
+html[data-accent="mono"][data-theme="dark"] .gpa,
+html[data-accent="mono"][data-theme="dark"] .achievement,
+html[data-accent="mono"][data-theme="dark"] .experience-card.featured::after,
+html[data-accent="mono"][data-theme="dark"] .company-logo,
+html[data-accent="mono"][data-theme="dark"] .highlight-item:hover,
+html[data-accent="mono"][data-theme="dark"] .highlight-icon,
+html[data-accent="mono"][data-theme="dark"] .certificate-button-container .btn-primary,
+html[data-accent="mono"][data-theme="dark"] .certificate-button-container .btn-secondary:hover,
+html[data-accent="mono"][data-theme="dark"] [data-theme="dark"] .certificate-button-container .btn-secondary:hover,
+html[data-accent="mono"][data-theme="dark"] .stat-card .stat-icon,
+html[data-accent="mono"][data-theme="dark"] .cultural-card.featured::after,
+html[data-accent="mono"][data-theme="dark"] .organization-logo,
+html[data-accent="mono"][data-theme="dark"] .leadership-period,
+html[data-accent="mono"][data-theme="dark"] .achievement-item:hover i,
+html[data-accent="mono"][data-theme="dark"] .cultural-placeholder,
+html[data-accent="mono"][data-theme="dark"] .cultural-stats .stat-card .stat-icon,
+html[data-accent="mono"][data-theme="dark"] .banner-badge,
+html[data-accent="mono"][data-theme="dark"] .btn-banner,
+html[data-accent="mono"][data-theme="dark"] .auto-scroll-btn,
+html[data-accent="mono"][data-theme="dark"] .pdf-control-btn:hover,
+html[data-accent="mono"][data-theme="dark"] .metric-icon,
+html[data-accent="mono"][data-theme="dark"] .area-icon,
+html[data-accent="mono"][data-theme="dark"] .tech-badge:hover,
+html[data-accent="mono"][data-theme="dark"] .action-btn.primary,
+html[data-accent="mono"][data-theme="dark"] .action-btn.secondary:hover,
+html[data-accent="mono"][data-theme="dark"] .impact-icon,
+html[data-accent="mono"][data-theme="dark"] .contact-icon,
+html[data-accent="mono"][data-theme="dark"] .social-link:hover,
+html[data-accent="mono"][data-theme="dark"] .tech-tag:hover,
+html[data-accent="mono"][data-theme="dark"] .scholar-citations,
+html[data-accent="mono"][data-theme="dark"] .pub-status-pill,
+html[data-accent="mono"][data-theme="dark"] .award-icon,
+html[data-accent="mono"][data-theme="dark"] .research-statement-icon,
+html[data-accent="mono"][data-theme="dark"] .research-cta-btn,
+html[data-accent="mono"][data-theme="dark"] .btn.btn-icon:hover,
+html[data-accent="mono"][data-theme="dark"] .award-card-v2[data-rank="finalist"].award-card-v2 .award-rank,
+html[data-accent="mono"][data-theme="dark"] .award-cert-btn:not(.award-cert-btn--pending) {
+  color: #0a0a0a;
 }
 
 /* ---------------------------------------------------------------------
@@ -76,6 +146,39 @@ html[data-accent="mono"] .hero {
     linear-gradient(135deg, rgba(var(--accent-primary-rgb), 0.08), rgba(var(--accent-secondary-rgb), 0.08)),
     radial-gradient(circle at 20% 80%, rgba(var(--accent-tertiary-rgb), 0.10) 0%, transparent 50%),
     radial-gradient(circle at 80% 20%, rgba(var(--accent-primary-rgb), 0.10) 0%, transparent 50%);
+}
+
+
+/* Faint SVG-pattern textures bake indigo/pink/cyan into data-URIs (var() can't
+   reach inside a data-URI), so re-issue them in neutral grey for monochrome. */
+html[data-accent="mono"] .hero::before {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(140,140,140,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+}
+html[data-accent="mono"] .about::before {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60"><circle cx="30" cy="30" r="1" fill="rgba(140,140,140,0.1)"/></svg>');
+}
+html[data-accent="mono"] .cultural::before {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="cultural-grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M20,0 L20,40 M0,20 L40,20" fill="none" stroke="rgba(140,140,140,0.06)" stroke-width="0.5"/><circle cx="20" cy="20" r="1.5" fill="rgba(170,170,170,0.08)"/></pattern></defs><rect width="100" height="100" fill="url(%23cultural-grid)"/></svg>');
+}
+html[data-accent="mono"] .current-role::before {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="role-pattern" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="0.8" fill="rgba(140,140,140,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23role-pattern)"/></svg>');
+}
+html[data-accent="mono"] .projects::before {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><polygon points="20,5 35,15 35,25 20,35 5,25 5,15" fill="none" stroke="rgba(140,140,140,0.1)" stroke-width="0.5"/></svg>');
+}
+html[data-accent="mono"] .contact::before {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><path d="M25,5 L45,25 L25,45 L5,25 Z" fill="none" stroke="rgba(140,140,140,0.1)" stroke-width="0.5"/></svg>');
+}
+
+/* Monochrome: the publication type-badges bake green (journal) / blue
+   (conference) — neutralize them to the grayscale ramp so mono stays pure. */
+html[data-accent="mono"] .publication-type-badge.journal,
+html[data-accent="mono"] .publication-type-badge.conference {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+html[data-accent="mono"][data-theme="dark"] .publication-type-badge.journal,
+html[data-accent="mono"][data-theme="dark"] .publication-type-badge.conference {
+  color: #0a0a0a;
 }
 
 /* =====================================================================
@@ -167,7 +270,7 @@ html[data-theme="light"] #accent-switcher .accent-tray {
 #accent-switcher .accent-swatch[data-swatch="blue"]   { background: linear-gradient(135deg, #6366f1, #ec4899); }
 #accent-switcher .accent-swatch[data-swatch="red"]    { background: linear-gradient(135deg, #e11d48, #fb7185); }
 #accent-switcher .accent-swatch[data-swatch="orange"] { background: linear-gradient(135deg, #ea580c, #f59e0b); }
-#accent-switcher .accent-swatch[data-swatch="mono"]   { background: linear-gradient(135deg, #334155, #94a3b8); }
+#accent-switcher .accent-swatch[data-swatch="mono"]   { background: linear-gradient(135deg, #111111, #f5f5f5); }
 
 #accent-switcher .accent-swatch:hover {
   transform: scale(1.18);
@@ -178,7 +281,7 @@ html[data-theme="light"] #accent-switcher .accent-tray {
 #accent-switcher .accent-swatch[data-swatch="blue"].active   { color: #6366f1; }
 #accent-switcher .accent-swatch[data-swatch="red"].active    { color: #e11d48; }
 #accent-switcher .accent-swatch[data-swatch="orange"].active { color: #ea580c; }
-#accent-switcher .accent-swatch[data-swatch="mono"].active   { color: #475569; }
+#accent-switcher .accent-swatch[data-swatch="mono"].active   { color: #9e9e9e; }
 
 /* Keyboard accessibility */
 #accent-switcher .accent-trigger:focus-visible,

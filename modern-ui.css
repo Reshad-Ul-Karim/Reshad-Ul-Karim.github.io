@@ -482,7 +482,31 @@
 }
 
 /* =========================================================================
-   4. RESPONSIVE
+   4. PUBLICATION CARDS — consistency fixes.
+   - The header was hardcoded white (a bright bar in dark mode); make it
+     theme-aware so it adapts to light/dark.
+   - The "accent" research tag was hardcoded GREEN — off-palette and a leak in
+     non-blue themes. Tie it to the real accent color (theme-aware).
+   ========================================================================= */
+.publication-header {
+  background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+}
+[data-theme="dark"] .publication-header {
+  background: color-mix(in srgb, var(--bg-secondary) 78%, transparent);
+}
+.publication-abstract {
+  background: color-mix(in srgb, var(--bg-secondary) 55%, transparent);
+}
+
+.research-tag.accent {
+  background: linear-gradient(135deg,
+    rgba(var(--accent-tertiary-rgb), 0.15), rgba(var(--accent-tertiary-rgb), 0.1));
+  color: var(--accent-color);
+  border: 1px solid rgba(var(--accent-tertiary-rgb), 0.3);
+}
+
+/* =========================================================================
+   5. RESPONSIVE
    ========================================================================= */
 @media (max-width: 768px) {
   .hero-panel {
