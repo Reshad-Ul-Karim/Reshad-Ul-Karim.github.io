@@ -57,13 +57,14 @@
     ? window.matchMedia('(max-width: 768px)')
     : { matches: false };
 
-  // Coarse-only pointer (touch phones/tablets) — skip the heavy 3D.
+  // Coarse-only pointer (touch phones/tablets).
   var mqCoarse = window.matchMedia
     ? window.matchMedia('(hover: none) and (pointer: coarse)')
     : { matches: false };
 
-  // Bail on small screens / touch-only devices entirely (CSS handles fallback).
-  if (mqSmall.matches || mqCoarse.matches) return;
+  // Mobile / touch devices still get the 3D, but at a lighter quality tier
+  // (lower geometry detail, fewer particles, lower DPR cap). We do NOT bail.
+  var isMobile = mqSmall.matches || mqCoarse.matches;
 
   // Feature-detect WebGL without leaving a context lying around.
   function hasWebGL() {
@@ -179,7 +180,7 @@
       layer.parentNode && layer.parentNode.removeChild(layer);
       return;
     }
-    var DPR = Math.min(window.devicePixelRatio || 1, 2);
+    var DPR = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2);
     renderer.setPixelRatio(DPR);
     renderer.setSize(dim.w, dim.h, false);
     renderer.setClearColor(0x000000, 0); // transparent
@@ -197,7 +198,8 @@
     /* ==================================================================
        3a. DISPLACED ICOSAHEDRON CORE — custom GLSL with 3D simplex noise.
        ================================================================== */
-    var coreGeo = new THREE.IcosahedronGeometry(1.5, 12); // detail 12 — smooth yet cheap
+    // Lower the subdivision on mobile to keep the vertex/displacement cost down.
+    var coreGeo = new THREE.IcosahedronGeometry(1.5, isMobile ? 5 : 12);
     var coreUniforms = {
       uTime:      { value: 0 },
       uDisperse:  { value: 0 },   // 0 = formed, 1 = scrolled-away
@@ -313,7 +315,7 @@
     /* ==================================================================
        3b. PARTICLE HALO — points on a sphere, GLSL drift + scroll disperse.
        ================================================================== */
-    var COUNT = 460; // modest — keeps the halo cheap for 60fps
+    var COUNT = isMobile ? 200 : 460; // fewer particles on mobile for 60fps
     var pPos = new Float32Array(COUNT * 3);
     var pSeed = new Float32Array(COUNT);
     for (var i = 0; i < COUNT; i++) {
@@ -460,11 +462,6 @@
       if (resizeRAF) return;
       resizeRAF = requestAnimationFrame(function () {
         resizeRAF = null;
-        // If we've crossed into mobile/coarse, tear down to save resources.
-        if (mqSmall.matches || mqCoarse.matches) {
-          destroy();
-          return;
-        }
         var d = size();
         camera.aspect = d.w / d.h;
         camera.updateProjectionMatrix();

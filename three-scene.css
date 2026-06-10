@@ -73,8 +73,9 @@
   .three-hero-layer { transition: none; }
 }
 
-/* Mobile: JS disables WebGL under 768px — hide any canvas, keep the orb. */
+/* Mobile: the 3D now renders at a lighter quality tier — keep the canvas
+   visible (the CSS orb still shows behind the transparent canvas as fallback
+   when WebGL is genuinely unavailable). Just tighten the centerpiece sizing. */
 @media (max-width: 768px) {
-  .three-hero-layer { display: none !important; }
   #hero-3d { min-height: 220px; max-width: 300px; }
 }

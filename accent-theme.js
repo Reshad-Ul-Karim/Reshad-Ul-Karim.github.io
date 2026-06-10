@@ -10,9 +10,9 @@
 (function () {
   'use strict';
 
-  var ACCENTS = ['blue', 'red', 'orange'];
+  var ACCENTS = ['blue', 'red', 'orange', 'mono'];
   var STORAGE_KEY = 'accent';
-  var LABELS = { blue: 'Blue accent', red: 'Red accent', orange: 'Orange accent' };
+  var LABELS = { blue: 'Blue accent', red: 'Red accent', orange: 'Orange accent', mono: 'Monochrome accent' };
 
   /* ---- 1. Apply persisted accent ASAP (minimise flash) ---- */
   function readAccent() {

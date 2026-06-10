@@ -72,12 +72,13 @@
   .section-3d { transition: none; }
 }
 
-/* Mobile: JS skips WebGL; keep a faint static gradient accent, smaller. */
+/* Mobile: the 3D accents now render (lighter quality tier). Keep the canvas
+   visible; just widen the accent band a touch for the narrower column. The
+   gradient fallback still shows behind the transparent canvas / when WebGL is
+   genuinely unavailable. */
 @media (max-width: 768px) {
   .section-3d {
     width: 70%;
-    opacity: 0.5 !important;
     mix-blend-mode: screen;
   }
-  .section-3d canvas { display: none !important; }
 }

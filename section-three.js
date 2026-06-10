@@ -38,8 +38,9 @@
   var mqSmall = mq('(max-width: 768px)');
   var mqCoarse = mq('(hover: none) and (pointer: coarse)');
 
-  // Mobile / touch-only: skip WebGL entirely; CSS fallback handles the slot.
-  if (mqSmall.matches || mqCoarse.matches) return;
+  // Mobile / touch devices still render the accents, at a lighter quality tier
+  // (lower DPR cap). We do NOT bail.
+  var isMobile = mqSmall.matches || mqCoarse.matches;
 
   function hasWebGL() {
     try {
@@ -376,7 +377,7 @@
     try {
       renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'low-power' });
     } catch (e) { return null; }
-    var DPR = Math.min(window.devicePixelRatio || 1, 1.75);
+    var DPR = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 1.75);
     renderer.setPixelRatio(DPR);
 
     function size() {
@@ -505,11 +506,6 @@
 
     var resizeRAF = null;
     window.addEventListener('resize', function () {
-      if (mqSmall.matches || mqCoarse.matches) {
-        instances.forEach(function (i) { i.destroy(); });
-        instances.length = 0;
-        return;
-      }
       if (resizeRAF) return;
       resizeRAF = requestAnimationFrame(function () {
         resizeRAF = null;

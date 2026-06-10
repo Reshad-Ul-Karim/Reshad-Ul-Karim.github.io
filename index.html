@@ -1872,60 +1872,132 @@
                 <p class="section-subtitle">Recognition across research, innovation &amp; leadership</p>
             </div>
 
-            <div class="awards-grid" data-aos="fade-up" data-aos-delay="100">
-                <div class="award-card">
-                    <div class="award-icon"><i class="fas fa-trophy"></i></div>
-                    <div class="award-body">
+            <!-- ===================================================================
+                 AWARDS GRID — each card has a photocard (certificate preview) and
+                 a certificate button.
+
+                 TO ADD A CERTIFICATE LATER (per card):
+                   1) Photo: inside `.award-photo`, add
+                        <img class="award-photo-img" src="assets/certificates/FILE.jpg" alt="...">
+                      (the gradient/icon fallback hides automatically when an img is present).
+                   2) Button: swap the pending <button> for a link, e.g.
+                        <a class="award-cert-btn" href="assets/certificates/FILE.pdf"
+                           target="_blank" rel="noopener noreferrer">
+                          <i class="fas fa-certificate"></i><span>View Certificate</span>
+                          <i class="fas fa-arrow-up-right-from-square award-cert-ext"></i>
+                        </a>
+                 =================================================================== -->
+            <div class="awards-grid-v2" data-aos="fade-up" data-aos-delay="100">
+
+                <article class="award-card-v2" data-rank="honor">
+                    <div class="award-photo">
+                        <!-- <img class="award-photo-img" src="assets/certificates/deans-list.jpg" alt="Dean's & VC's List certificate"> -->
+                        <div class="award-photo-fallback" aria-hidden="true"><i class="fas fa-trophy"></i></div>
+                        <span class="award-rank">Honor</span>
+                    </div>
+                    <div class="award-content">
                         <h3 class="award-title">Dean's List &amp; Vice Chancellor's List</h3>
                         <p class="award-org">BRAC University</p>
-                        <span class="award-date">Jan 2023 - Present</span>
+                        <span class="award-date"><i class="far fa-calendar"></i> Jan 2023 &ndash; Present</span>
                     </div>
-                </div>
+                    <div class="award-actions">
+                        <button class="award-cert-btn award-cert-btn--pending" type="button" disabled aria-label="Certificate coming soon" title="Certificate will be added soon">
+                            <i class="fas fa-certificate"></i><span>View Certificate</span>
+                            <span class="award-cert-soon">soon</span>
+                        </button>
+                    </div>
+                </article>
 
-                <div class="award-card">
-                    <div class="award-icon"><i class="fas fa-medal"></i></div>
-                    <div class="award-body">
+                <article class="award-card-v2" data-rank="runner-up">
+                    <div class="award-photo">
+                        <div class="award-photo-fallback" aria-hidden="true"><i class="fas fa-medal"></i></div>
+                        <span class="award-rank">1st Runner-Up</span>
+                    </div>
+                    <div class="award-content">
                         <h3 class="award-title">First Runner-Up</h3>
                         <p class="award-org">System Analysis &amp; Design Project, Summer 2025 &mdash; School of Data &amp; Sciences, BRAC University</p>
-                        <span class="award-date">2025</span>
+                        <span class="award-date"><i class="far fa-calendar"></i> 2025</span>
                     </div>
-                </div>
+                    <div class="award-actions">
+                        <button class="award-cert-btn award-cert-btn--pending" type="button" disabled aria-label="Certificate coming soon" title="Certificate will be added soon">
+                            <i class="fas fa-certificate"></i><span>View Certificate</span>
+                            <span class="award-cert-soon">soon</span>
+                        </button>
+                    </div>
+                </article>
 
-                <div class="award-card">
-                    <div class="award-icon"><i class="fas fa-futbol"></i></div>
-                    <div class="award-body">
+                <article class="award-card-v2" data-rank="runner-up">
+                    <div class="award-photo">
+                        <div class="award-photo-fallback" aria-hidden="true"><i class="fas fa-futbol"></i></div>
+                        <span class="award-rank">2nd Runner-Up</span>
+                    </div>
+                    <div class="award-content">
                         <h3 class="award-title">Second Runner-Up</h3>
                         <p class="award-org">Robosoccer, TECHSPECTRA &mdash; Robotics Club of BRAC University</p>
-                        <span class="award-date">2024</span>
+                        <span class="award-date"><i class="far fa-calendar"></i> 2024</span>
                     </div>
-                </div>
+                    <div class="award-actions">
+                        <button class="award-cert-btn award-cert-btn--pending" type="button" disabled aria-label="Certificate coming soon" title="Certificate will be added soon">
+                            <i class="fas fa-certificate"></i><span>View Certificate</span>
+                            <span class="award-cert-soon">soon</span>
+                        </button>
+                    </div>
+                </article>
 
-                <div class="award-card">
-                    <div class="award-icon"><i class="fas fa-chart-line"></i></div>
-                    <div class="award-body">
+                <article class="award-card-v2" data-rank="finalist">
+                    <div class="award-photo">
+                        <div class="award-photo-fallback" aria-hidden="true"><i class="fas fa-chart-line"></i></div>
+                        <span class="award-rank">Grand Finalist</span>
+                    </div>
+                    <div class="award-content">
                         <h3 class="award-title">Third Runner-Up &amp; Grand Finalist</h3>
                         <p class="award-org">EXCELERATE 2025 &mdash; Finance &amp; Accounting Club, BRAC University</p>
-                        <span class="award-date">2025</span>
+                        <span class="award-date"><i class="far fa-calendar"></i> 2025</span>
                     </div>
-                </div>
+                    <div class="award-actions">
+                        <button class="award-cert-btn award-cert-btn--pending" type="button" disabled aria-label="Certificate coming soon" title="Certificate will be added soon">
+                            <i class="fas fa-certificate"></i><span>View Certificate</span>
+                            <span class="award-cert-soon">soon</span>
+                        </button>
+                    </div>
+                </article>
 
-                <div class="award-card">
-                    <div class="award-icon"><i class="fas fa-lightbulb"></i></div>
-                    <div class="award-body">
+                <article class="award-card-v2" data-rank="finalist">
+                    <div class="award-photo">
+                        <div class="award-photo-fallback" aria-hidden="true"><i class="fas fa-lightbulb"></i></div>
+                        <span class="award-rank">Semi-Finalist</span>
+                    </div>
+                    <div class="award-content">
                         <h3 class="award-title">Semi-Finalist</h3>
                         <p class="award-org">On-Campus Rounds &mdash; Hult Prize BRAC University 2023</p>
-                        <span class="award-date">2023</span>
+                        <span class="award-date"><i class="far fa-calendar"></i> 2023</span>
                     </div>
-                </div>
+                    <div class="award-actions">
+                        <button class="award-cert-btn award-cert-btn--pending" type="button" disabled aria-label="Certificate coming soon" title="Certificate will be added soon">
+                            <i class="fas fa-certificate"></i><span>View Certificate</span>
+                            <span class="award-cert-soon">soon</span>
+                        </button>
+                    </div>
+                </article>
 
-                <div class="award-card">
-                    <div class="award-icon"><i class="fas fa-award"></i></div>
-                    <div class="award-body">
+                <article class="award-card-v2" data-rank="bronze">
+                    <div class="award-photo">
+                        <div class="award-photo-fallback" aria-hidden="true"><i class="fas fa-award"></i></div>
+                        <span class="award-rank">Bronze</span>
+                    </div>
+                    <div class="award-content">
                         <h3 class="award-title">Bronze Award</h3>
                         <p class="award-org">The Duke of Edinburgh's International Award</p>
-                        <span class="award-date">May 2023 - Mar 2024</span>
+                        <span class="award-date"><i class="far fa-calendar"></i> May 2023 &ndash; Mar 2024</span>
                     </div>
-                </div>
+                    <div class="award-actions">
+                        <button class="award-cert-btn award-cert-btn--pending" type="button" disabled aria-label="Certificate coming soon" title="Certificate will be added soon">
+                            <i class="fas fa-certificate"></i><span>View Certificate</span>
+                            <span class="award-cert-soon">soon</span>
+                        </button>
+                    </div>
+                </article>
+
             </div>
         </div>
     </section>

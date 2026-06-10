@@ -41,6 +41,18 @@ html[data-accent="orange"] {
   --accent-tertiary-rgb:  251, 146, 60;
 }
 
+/* MONO — cohesive slate/grayscale. Reads well on #ffffff and #0f172a;
+   white button text passes contrast. */
+html[data-accent="mono"] {
+  --primary-color:   #475569;
+  --primary-dark:    #334155;
+  --secondary-color: #64748b;
+  --accent-color:    #94a3b8;
+  --accent-primary-rgb:   71, 85, 105;
+  --accent-secondary-rgb: 100, 116, 139;
+  --accent-tertiary-rgb:  148, 163, 184;
+}
+
 /* ---------------------------------------------------------------------
    Re-tint the most visible HARDCODED indigo/pink rgba() accents.
    styles.css bakes rgb(99,102,241) / rgb(236,72,153) / rgb(6,182,212)
@@ -50,14 +62,16 @@ html[data-accent="orange"] {
    blue stays byte-identical to today.
    --------------------------------------------------------------------- */
 html[data-accent="red"]  .auto-scroll-btn,
-html[data-accent="orange"] .auto-scroll-btn {
+html[data-accent="orange"] .auto-scroll-btn,
+html[data-accent="mono"] .auto-scroll-btn {
   box-shadow: 0 8px 32px rgba(var(--accent-primary-rgb), 0.3);
 }
 
 /* Hero background wash uses the baked indigo/pink. Soft, low-alpha —
    re-tint for cohesion. */
 html[data-accent="red"]  .hero,
-html[data-accent="orange"] .hero {
+html[data-accent="orange"] .hero,
+html[data-accent="mono"] .hero {
   background-image:
     linear-gradient(135deg, rgba(var(--accent-primary-rgb), 0.08), rgba(var(--accent-secondary-rgb), 0.08)),
     radial-gradient(circle at 20% 80%, rgba(var(--accent-tertiary-rgb), 0.10) 0%, transparent 50%),
@@ -153,6 +167,7 @@ html[data-theme="light"] #accent-switcher .accent-tray {
 #accent-switcher .accent-swatch[data-swatch="blue"]   { background: linear-gradient(135deg, #6366f1, #ec4899); }
 #accent-switcher .accent-swatch[data-swatch="red"]    { background: linear-gradient(135deg, #e11d48, #fb7185); }
 #accent-switcher .accent-swatch[data-swatch="orange"] { background: linear-gradient(135deg, #ea580c, #f59e0b); }
+#accent-switcher .accent-swatch[data-swatch="mono"]   { background: linear-gradient(135deg, #334155, #94a3b8); }
 
 #accent-switcher .accent-swatch:hover {
   transform: scale(1.18);
@@ -163,6 +178,7 @@ html[data-theme="light"] #accent-switcher .accent-tray {
 #accent-switcher .accent-swatch[data-swatch="blue"].active   { color: #6366f1; }
 #accent-switcher .accent-swatch[data-swatch="red"].active    { color: #e11d48; }
 #accent-switcher .accent-swatch[data-swatch="orange"].active { color: #ea580c; }
+#accent-switcher .accent-swatch[data-swatch="mono"].active   { color: #475569; }
 
 /* Keyboard accessibility */
 #accent-switcher .accent-trigger:focus-visible,
