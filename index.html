@@ -74,14 +74,18 @@
     <link rel="stylesheet" href="positioning.css?v=1.1.0">
     <link rel="stylesheet" href="accent-theme.css?v=1.0.0">
     <link rel="stylesheet" href="three-scene.css?v=1.2.0">
+    <link rel="stylesheet" href="section-three.css?v=1.0.0">
     <!-- fixes.css loads LAST so its layout/sizing overrides win the cascade -->
     <link rel="stylesheet" href="fixes.css?v=1.0.0">
+    <!-- modern-ui.css loads AFTER fixes.css: hero redesign + UI modernization win -->
+    <link rel="stylesheet" href="modern-ui.css?v=1.0.0">
 
     <!-- Modular motion scripts — self-initializing, load after core script.js -->
     <script src="reveal-motion.js?v=1.1.0" defer></script>
     <script src="morph-motion.js?v=1.0.0" defer></script>
     <script src="accent-theme.js?v=1.0.0" defer></script>
     <script src="three-scene.js?v=1.2.0" defer></script>
+    <script src="section-three.js?v=1.0.0" defer></script>
     <script src="scholar-citations.js?v=1.0.0" defer></script>
 </head>
 <body>
@@ -135,13 +139,25 @@
     </nav>
 
     <!-- Hero Section -->
-    <section id="home" class="hero">
+    <section id="home" class="hero hero--immersive">
         <!-- Morphing blob backgrounds -->
         <div class="hero-blob hero-blob-1"></div>
         <div class="hero-blob hero-blob-2"></div>
-        <div class="hero-content">
-            <div class="hero-text" data-aos="fade-up" data-aos-delay="200">
+
+        <!-- Full-bleed ambient 3D backdrop (Three.js mounts into #hero-3d).
+             A CSS fallback orb glows here if WebGL is unavailable / on
+             reduced-motion / mobile, so the slot is never empty. -->
+        <div class="hero-3d hero-3d--bg" id="hero-3d">
+            <div class="hero-3d-fallback" aria-hidden="true"></div>
+        </div>
+
+        <div class="hero-content hero-content--center">
+            <div class="hero-panel" data-aos="fade-up" data-aos-delay="150">
               <div class="hero-text-parallax">
+                <div class="hero-status">
+                    <span class="hero-status-dot" aria-hidden="true"></span>
+                    <span>Available for AI/ML roles &amp; PhD research</span>
+                </div>
                 <h1 class="hero-title">
                     <span class="gradient-text">
                         <span class="name-first">Reshad</span>
@@ -176,24 +192,12 @@
                         <i class="fas fa-download"></i>
                         <span>Download CV</span>
                     </a>
-                    <a href="https://github.com/Reshad-Ul-Karim" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+                    <a href="https://github.com/Reshad-Ul-Karim" class="btn btn-icon" target="_blank" rel="noopener noreferrer" title="GitHub" aria-label="GitHub">
                         <i class="fab fa-github"></i>
-                        <span>GitHub</span>
                     </a>
-                    <a href="https://www.linkedin.com/in/reshad-ul-karim" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+                    <a href="https://www.linkedin.com/in/reshad-ul-karim" class="btn btn-icon" target="_blank" rel="noopener noreferrer" title="LinkedIn" aria-label="LinkedIn">
                         <i class="fab fa-linkedin-in"></i>
-                        <span>LinkedIn</span>
                     </a>
-                </div>
-              </div>
-            </div>
-            <div class="hero-image" data-aos="fade-left" data-aos-delay="400">
-              <div class="hero-image-parallax">
-                <!-- Single refined 3D centerpiece (Three.js mounts here).
-                     Replaces the old code-card clutter. A CSS fallback orb shows
-                     if WebGL is unavailable / on reduced-motion. -->
-                <div class="hero-3d" id="hero-3d">
-                    <div class="hero-3d-fallback" aria-hidden="true"></div>
                 </div>
               </div>
             </div>

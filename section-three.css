@@ -1,0 +1,83 @@
+/* =========================================================================
+   section-three.css  —  Per-section 3D accent mounts (section-three.js).
+   The <canvas> is created at runtime and appended INTO `.section-3d`, which
+   sits behind the section's `.container`. A CSS gradient fallback fills the
+   slot on mobile / no-WebGL so it's never empty.
+   ========================================================================= */
+
+/* The sections that host a 3D accent must establish a positioning context so
+   the absolutely-positioned canvas is contained within the section. (No
+   overflow:hidden — it would clip existing hover/scale card effects, and the
+   canvas is already bounded by its mount, so it can't overflow anyway.) */
+#about, #experience, #research, #projects, #awards, #cultural, #contact {
+  position: relative;
+}
+
+/* Section content always paints above the accent. */
+#about > .container,
+#experience > .container,
+#research > .container,
+#projects > .container,
+#awards > .container,
+#cultural > .container,
+#contact > .container {
+  position: relative;
+  z-index: 1;
+}
+
+/* The accent layer: a wide band on one side of the section. */
+.section-3d {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 56%;
+  max-width: 720px;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.1s ease;
+  mix-blend-mode: screen;
+  /* A soft radial fallback shows behind the (transparent) canvas and is the
+     sole visual on mobile / no-WebGL. */
+  background: radial-gradient(circle at 50% 45%,
+    color-mix(in srgb, var(--primary-color) 22%, transparent),
+    color-mix(in srgb, var(--secondary-color) 12%, transparent) 45%,
+    transparent 70%);
+  /* Fade the inner edge so the motif dissolves toward the text column. */
+  -webkit-mask-image: linear-gradient(to var(--mask-dir, left), #000 55%, transparent 100%);
+          mask-image: linear-gradient(to var(--mask-dir, left), #000 55%, transparent 100%);
+}
+.section-3d.is-ready { opacity: 0.9; }
+
+.section-3d--right { right: 0; --mask-dir: left; }
+.section-3d--left  { left: 0;  --mask-dir: right; }
+
+.section-3d canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none;
+}
+
+/* Light theme: additive screen blend can wash out — soften. */
+[data-theme="light"] .section-3d,
+:root:not([data-theme="dark"]) .section-3d {
+  mix-blend-mode: normal;
+  opacity: 0;
+}
+[data-theme="light"] .section-3d.is-ready,
+:root:not([data-theme="dark"]) .section-3d.is-ready { opacity: 0.6; }
+
+@media (prefers-reduced-motion: reduce) {
+  .section-3d { transition: none; }
+}
+
+/* Mobile: JS skips WebGL; keep a faint static gradient accent, smaller. */
+@media (max-width: 768px) {
+  .section-3d {
+    width: 70%;
+    opacity: 0.5 !important;
+    mix-blend-mode: screen;
+  }
+  .section-3d canvas { display: none !important; }
+}

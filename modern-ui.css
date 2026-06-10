@@ -1,0 +1,291 @@
+/* =========================================================================
+   modern-ui.css  —  Loaded LAST. Centered-immersive hero + modernized UI.
+
+   Two jobs:
+     1) Re-stage the hero as a centered, immersive composition: a full-bleed
+        ambient 3D backdrop (#hero-3d.hero-3d--bg) with the identity in a
+        frosted-glass panel floating over it.
+     2) A light, site-wide modernization pass (glass section headers, refined
+        section titles, smoother section dividers) that harmonizes with the new
+        per-section 3D accents (section-three.css).
+
+   Everything keys off the existing CSS custom properties so light/dark themes
+   and the live accent system keep working.
+   ========================================================================= */
+
+/* =========================================================================
+   1. HERO — centered immersive
+   ========================================================================= */
+
+.hero--immersive {
+  text-align: center;
+}
+
+/* ---- Full-bleed ambient 3D backdrop ----
+   Overrides the right-side centerpiece sizing from three-scene.css so the
+   Three.js layer fills the whole hero behind the content. The #id selector is
+   needed to beat three-scene.css's `#hero-3d` (specificity 100). */
+#hero-3d.hero-3d--bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  min-height: 0;
+  margin: 0;
+  aspect-ratio: auto;
+  display: block;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* The backdrop glow is brightest in the centre, falling off to the edges so
+   text stays legible and the panel reads as floating in front of it. */
+.hero-3d--bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 48%,
+    transparent 30%,
+    color-mix(in srgb, var(--bg-primary) 55%, transparent) 72%,
+    var(--bg-primary) 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Larger, centred fallback orb for the full-bleed slot (mobile / no-WebGL). */
+.hero-3d--bg .hero-3d-fallback {
+  inset: 22% 30%;
+  filter: blur(46px);
+  opacity: 0.55;
+}
+@media (max-width: 768px) {
+  .hero-3d--bg .hero-3d-fallback { inset: 18% 18%; filter: blur(38px); }
+}
+
+/* ---- Centered content column ---- */
+.hero-content.hero-content--center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  grid-template-columns: none;   /* cancel the old 2-col grid */
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+
+/* ---- Frosted glass identity panel ---- */
+.hero-panel {
+  position: relative;
+  width: min(94vw, 780px);
+  text-align: center;
+  padding: clamp(1.75rem, 4vw, 3.25rem) clamp(1.5rem, 4vw, 3.25rem);
+  border-radius: 30px;
+  background: color-mix(in srgb, var(--bg-primary) 62%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary-color) 22%, var(--border-color));
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+          backdrop-filter: blur(20px) saturate(150%);
+  box-shadow:
+    0 40px 90px -30px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 1px 0 rgba(255, 255, 255, 0.08) inset;
+  overflow: hidden;
+}
+[data-theme="dark"] .hero-panel {
+  background: color-mix(in srgb, var(--bg-primary) 58%, transparent);
+  box-shadow:
+    0 50px 110px -35px rgba(0, 0, 0, 0.75),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 1px 0 rgba(255, 255, 255, 0.07) inset;
+}
+
+/* Animated accent hairline sweeping along the panel's top edge. */
+.hero-panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent,
+    var(--primary-color),
+    var(--secondary-color),
+    var(--accent-color),
+    transparent);
+  background-size: 200% 100%;
+  animation: heroPanelSweep 6s linear infinite;
+  opacity: 0.9;
+}
+@keyframes heroPanelSweep {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-panel::before { animation: none; }
+}
+
+/* ---- Availability status pill ---- */
+.hero-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 1.4rem;
+  padding: 0.4rem 0.95rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--text-secondary, var(--text-primary));
+  background: color-mix(in srgb, var(--accent-color) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-color) 35%, transparent);
+  border-radius: 999px;
+}
+.hero-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6);
+  animation: heroStatusPulse 2s ease-out infinite;
+}
+@keyframes heroStatusPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55); }
+  70%  { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-status-dot { animation: none; }
+}
+
+/* ---- Centre the existing hero internals inside the panel ---- */
+.hero--immersive .hero-title { margin-bottom: 1rem; }
+.hero--immersive .hero-title .gradient-text {
+  font-size: clamp(2.6rem, 7vw, 5rem);
+  line-height: 1.02;
+}
+.hero--immersive .name-first,
+.hero--immersive .name-last { display: inline-block; }
+
+.hero--immersive .hero-research-tag {
+  margin: 0 auto 1rem;
+}
+
+.hero--immersive .hero-subtitle {
+  font-size: clamp(1.15rem, 2.4vw, 1.6rem);
+  margin: 0 auto 1rem;
+}
+
+.hero--immersive .hero-description {
+  max-width: 56ch;
+  margin: 0 auto 2rem;
+}
+
+/* ---- Stats as glass cards, centered ---- */
+.hero--immersive .hero-stats {
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+.hero--immersive .hero-stats .stat {
+  min-width: 104px;
+  padding: 0.85rem 1.1rem;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--bg-secondary) 55%, transparent);
+  border: 1px solid var(--border-color);
+  transition: transform var(--transition-fast, 0.2s ease),
+              border-color var(--transition-fast, 0.2s ease),
+              box-shadow var(--transition-fast, 0.2s ease);
+}
+.hero--immersive .hero-stats .stat:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--primary-color) 50%, transparent);
+  box-shadow: 0 12px 30px -12px color-mix(in srgb, var(--primary-color) 60%, transparent);
+}
+.hero--immersive .hero-stats .stat-number {
+  font-size: 1.9rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ---- Buttons centered; icon-only social chips ---- */
+.hero--immersive .hero-buttons.hero-buttons-research {
+  justify-content: center;
+  align-items: center;
+}
+.btn.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--bg-secondary) 60%, transparent);
+  border: 1px solid var(--border-color);
+  transition: transform var(--transition-fast, 0.2s ease),
+              color var(--transition-fast, 0.2s ease),
+              border-color var(--transition-fast, 0.2s ease),
+              box-shadow var(--transition-fast, 0.2s ease);
+}
+.btn.btn-icon:hover {
+  transform: translateY(-3px);
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  box-shadow: 0 12px 26px -10px color-mix(in srgb, var(--primary-color) 70%, transparent);
+}
+
+/* =========================================================================
+   2. SITE-WIDE MODERN POLISH
+   ========================================================================= */
+
+/* Section titles: tighter, gradient underline accent. */
+.section-header { position: relative; }
+.section-title {
+  letter-spacing: -0.02em;
+}
+.section-header .section-title::after {
+  content: "";
+  display: block;
+  width: 64px;
+  height: 4px;
+  margin: 0.9rem auto 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+  background-size: 200% 100%;
+  animation: heroPanelSweep 5s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .section-header .section-title::after { animation: none; }
+}
+
+/* Give the live-citation dot a gentle pulse to echo the hero status dot. */
+.stat-live-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  vertical-align: middle;
+  animation: heroStatusPulse 2.4s ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .stat-live-dot { animation: none; }
+}
+
+/* =========================================================================
+   3. RESPONSIVE
+   ========================================================================= */
+@media (max-width: 768px) {
+  .hero-panel {
+    width: min(96vw, 560px);
+    padding: 1.5rem 1.25rem;
+    border-radius: 22px;
+  }
+  .hero--immersive .hero-stats .stat { min-width: 88px; padding: 0.7rem 0.8rem; }
+  .hero-status { font-size: 0.74rem; }
+}
