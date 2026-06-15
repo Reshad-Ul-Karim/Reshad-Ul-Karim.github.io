@@ -160,8 +160,7 @@
     ];
     var MEDIA = [
         '.gallery-item',
-        '.project-image',
-        '.banner-preview'
+        '.project-image'
     ];
 
     /* ----------- DESKTOP / TABLET (>768px, motion ok) -------------------- */
@@ -248,25 +247,52 @@
             built.push(st);
         });
 
-        /* Featured banners: lift + fade --------------------------------- */
-        $all('.featured-banner').forEach(function (banner, i) {
-            manage(banner);
-            var st = ScrollTrigger.create({
-                trigger: banner,
-                start: 'top 85%',
-                once: true,
-                onEnter: function () {
-                    gsap.fromTo(banner,
-                        { y: 60, opacity: 0, scale: 0.98 },
-                        {
-                            y: 0, opacity: 1, scale: 1,
-                            duration: 0.9, ease: 'power3.out',
-                            onComplete: function () { forceVisible(banner); }
-                        });
-                }
+        /* About section: banner-style fly-ins ----------------------------
+           Sweep the About blocks in from alternating sides (the "banner"
+           motion the redesign calls for): research statement from the left,
+           profile card from the right, then the rest rise + fade. ---------- */
+        (function aboutFlyIns() {
+            var about = document.querySelector('#about');
+            if (!about) return;
+            var sweeps = [
+                { el: about.querySelector('.research-statement'), x: -90, rot: -3 },
+                { el: about.querySelector('.about-content .profile-card'), x: 90, rot: 3 }
+            ];
+            sweeps.forEach(function (item) {
+                if (!item.el) return;
+                manage(item.el);
+                var st = ScrollTrigger.create({
+                    trigger: item.el,
+                    start: 'top 86%',
+                    once: true,
+                    onEnter: function () {
+                        gsap.fromTo(item.el,
+                            { x: item.x, opacity: 0, rotateZ: item.rot, transformPerspective: 900 },
+                            {
+                                x: 0, opacity: 1, rotateZ: 0,
+                                duration: 1, ease: 'power4.out',
+                                onStart: function () { item.el.classList.add('rm-animating'); },
+                                onComplete: function () { item.el.classList.remove('rm-animating'); forceVisible(item.el); }
+                            });
+                    }
+                });
+                built.push(st);
             });
-            built.push(st);
-        });
+            // Stat items + section blocks: staggered rise.
+            var risers = $all('.about .stat-item, .about .skills-header, .about .academic-actions');
+            risers.forEach(function (el, i) {
+                manage(el);
+                var st = ScrollTrigger.create({
+                    trigger: el, start: 'top 90%', once: true,
+                    onEnter: function () {
+                        gsap.fromTo(el, { y: 34, opacity: 0 },
+                            { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out', delay: (i % 4) * 0.06,
+                              onComplete: function () { forceVisible(el); } });
+                    }
+                });
+                built.push(st);
+            });
+        })();
 
         /* Media / images: clip-path inset wipe -------------------------- */
         MEDIA.forEach(function (sel) {
@@ -295,82 +321,51 @@
         });
 
         /* ----------------------------------------------------------------
-           3. FLAGSHIP PINNED CINEMATIC SCENE  —  Research / Publications
-           Pin the publications timeline; as the user scrubs through:
-             - the timeline title scales up + brightens
-             - each publication-item slides/stacks in from depth
-             - a progress bar fills
-           ---------------------------------------------------------------- */
+           3. PUBLICATIONS  —  smooth per-item fly-ins (NO pin).
+           The old version PINNED the timeline and scrubbed every publication
+           in over ~1500px, which made the page feel jammed/stuck on the way
+           down. Here each publication simply flies up + fades as it enters
+           the viewport (once), so the page scrolls naturally and freely. ---- */
         var research = document.querySelector('#research');
         var timeline = research && research.querySelector('.publications-timeline');
         var pubs = timeline ? $all('.publication-item', timeline) : [];
-        var pinStage = null, scrubST = null, progressEl = null;
+        var progressEl = null;
 
         if (timeline && pubs.length) {
-            // Build a progress bar element on the fly (no HTML edit needed).
-            progressEl = document.createElement('div');
-            progressEl.className = 'rm-pub-progress';
-            progressEl.setAttribute('aria-hidden', 'true');
-            progressEl.style.cssText =
-                'position:absolute;left:0;top:0;height:3px;width:0%;' +
-                'background:linear-gradient(90deg,#6366f1,#ec4899);' +
-                'border-radius:3px;z-index:5;pointer-events:none;' +
-                'box-shadow:0 0 14px rgba(99,102,241,0.5);';
-            // Anchor it relative to the timeline.
-            var tlPos = window.getComputedStyle(timeline).position;
-            if (tlPos === 'static') timeline.style.position = 'relative';
-            timeline.appendChild(progressEl);
-
             var title = timeline.querySelector('.timeline-title');
-            timeline.classList.add('rm-pin-stage');
-
-            // Pre-set pub start states (depth + offset) and mark managed.
-            pubs.forEach(function (p, i) {
-                manage(p);
-                gsap.set(p, {
-                    y: 80,
-                    opacity: 0,
-                    scale: 0.94,
-                    transformPerspective: 1000,
-                    transformOrigin: 'center top'
-                });
-            });
             if (title) {
                 manage(title);
-                gsap.set(title, { scale: 0.9, opacity: 0.001, y: 20 });
-            }
-
-            var scrubTl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: timeline,
-                    start: 'top top+=80',
-                    end: '+=' + (pubs.length * 320 + 260),
-                    pin: true,
-                    pinSpacing: true,
-                    scrub: 0.6,
-                    anticipatePin: 1,
-                    invalidateOnRefresh: true,
-                    onUpdate: function (self) {
-                        if (progressEl) {
-                            progressEl.style.width = (self.progress * 100).toFixed(2) + '%';
-                        }
+                var tst = ScrollTrigger.create({
+                    trigger: title, start: 'top 88%', once: true,
+                    onEnter: function () {
+                        gsap.fromTo(title, { y: 24, opacity: 0, scale: 0.94 },
+                            { y: 0, opacity: 1, scale: 1, duration: 0.7, ease: 'power3.out',
+                              onComplete: function () { forceVisible(title); } });
                     }
-                }
-            });
-
-            if (title) {
-                scrubTl.to(title, { scale: 1, opacity: 1, y: 0, ease: 'power2.out', duration: 0.6 }, 0);
+                });
+                built.push(tst);
             }
-            pubs.forEach(function (p, i) {
-                scrubTl.to(p, {
-                    y: 0, opacity: 1, scale: 1,
-                    ease: 'power3.out',
-                    duration: 1
-                }, 0.4 + i * 0.7);
-            });
 
-            scrubST = scrubTl.scrollTrigger;
-            built.push(scrubST);
+            pubs.forEach(function (p, i) {
+                manage(p);
+                var fromLeft = (i % 2 === 0);
+                var st = ScrollTrigger.create({
+                    trigger: p,
+                    start: 'top 85%',
+                    once: true,
+                    onEnter: function () {
+                        gsap.fromTo(p,
+                            { y: 56, x: fromLeft ? -36 : 36, opacity: 0, scale: 0.97, transformPerspective: 1000 },
+                            {
+                                y: 0, x: 0, opacity: 1, scale: 1,
+                                duration: 0.8, ease: 'power4.out',
+                                onStart: function () { p.classList.add('rm-animating'); },
+                                onComplete: function () { p.classList.remove('rm-animating'); forceVisible(p); }
+                            });
+                    }
+                });
+                built.push(st);
+            });
         }
 
         /* ----------------------------------------------------------------

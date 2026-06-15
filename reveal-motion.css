@@ -27,11 +27,6 @@ html.rm-ready [data-rm-hide] {
     will-change: auto;
 }
 
-/* Pinned cinematic scene wrapper (research). Keeps GPU compositing clean. */
-.rm-pin-stage {
-    will-change: transform;
-}
-
 /* =========================================================================
    FAIL-SAFE / REDUCED MOTION
    If the user prefers reduced motion, neutralise everything: full visibility,

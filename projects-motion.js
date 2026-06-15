@@ -33,6 +33,8 @@
 
   ready(function () {
     buildReel();
+    buildFilter();
+    buildVideoHover();
     buildCountUp();
     buildCursor();
     buildMagnetic();
@@ -80,7 +82,7 @@
           end: function () { return '+=' + distance(); },
           pin: true,
           pinSpacing: true,
-          scrub: 0.6,
+          scrub: 1,            // higher scrub = smoother catch-up to the scroll
           anticipatePin: 1,
           invalidateOnRefresh: true,
           onUpdate: function (self) {
@@ -210,6 +212,130 @@
       });
       el.addEventListener('pointerleave', function () {
         cursor.classList.remove('is-active');
+      });
+    });
+  }
+
+  /* ======================================================================
+     5. CATEGORY FILTER — chips + GSAP Flip reorder of the projects grid.
+     ====================================================================== */
+  function buildFilter() {
+    var grid = document.querySelector('.projects-grid');
+    if (!grid) return;
+    var cards = Array.prototype.slice.call(grid.querySelectorAll('.project-card'));
+    if (cards.length < 4) return;
+
+    var CATS = [
+      { id: 'cv', label: 'Computer Vision', kw: ['vision', 'yolo', 'segformer', 'mediapipe', 'vit', 'transformer', 'vlm', 'ocr', 'gesture', 'detection', 'image'] },
+      { id: 'robotics', label: 'Robotics & IoT', kw: ['robot', 'rover', 'aruco', 'arduino', 'iot', 'esp32', 'gps', 'terrain', 'wearable', 'sensor'] },
+      { id: 'health', label: 'Healthcare', kw: ['health', 'medical', 'sleep', 'stroke', 'autism', 'telemedicine', 'fall', 'clinical', 'weheal', 'impaired', 'assistive'] },
+      { id: 'ml', label: 'ML & XAI', kw: ['shap', 'lime', 'xai', 'explainable', 'machine learning', 'classification', 'prediction', 'data analysis', 'nlp', 'lstm'] },
+      { id: 'systems', label: 'Systems & Apps', kw: ['php', 'mysql', 'mern', 'database', 'hub', 'game', 'opengl', 'c++', 'platform', 'ajax', 'web'] }
+    ];
+
+    var counts = {};
+    cards.forEach(function (card) {
+      var text = (card.textContent || '').toLowerCase();
+      var cats = [];
+      CATS.forEach(function (c) {
+        if (c.kw.some(function (k) { return text.indexOf(k) >= 0; })) cats.push(c.id);
+      });
+      if (!cats.length) cats.push('systems');
+      card.dataset.cat = cats.join(' ');
+      cats.forEach(function (id) { counts[id] = (counts[id] || 0) + 1; });
+    });
+
+    var bar = document.createElement('div');
+    bar.className = 'project-filters';
+    bar.setAttribute('role', 'group');
+    bar.setAttribute('aria-label', 'Filter projects by category');
+    var chips = [];
+    function makeChip(id, lbl, count) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'project-filter' + (id === 'all' ? ' is-active' : '');
+      b.setAttribute('data-filter', id);
+      b.innerHTML = lbl + (count != null ? ' <span class="pf-count">' + count + '</span>' : '');
+      b.addEventListener('click', function () {
+        applyFilter(id);
+        chips.forEach(function (c) { c.classList.toggle('is-active', c === b); });
+      });
+      chips.push(b); bar.appendChild(b);
+    }
+    makeChip('all', 'All', cards.length);
+    CATS.forEach(function (c) { if (counts[c.id]) makeChip(c.id, c.label, counts[c.id]); });
+    grid.parentNode.insertBefore(bar, grid);
+
+    var HAS_FLIP = !!(window.gsap && window.Flip);
+    if (HAS_FLIP) { try { window.gsap.registerPlugin(window.Flip); } catch (e) {} }
+
+    function unhide() {
+      cards.forEach(function (c) {
+        c.removeAttribute('data-rm-hide');
+        if (window.gsap) window.gsap.set(c, { clearProps: 'opacity,transform,visibility' });
+        c.style.opacity = ''; c.style.transform = '';
+      });
+    }
+
+    function applyFilter(cat) {
+      unhide();
+      var state = HAS_FLIP ? window.Flip.getState(cards) : null;
+      cards.forEach(function (c) {
+        var show = cat === 'all' || (' ' + (c.dataset.cat || '') + ' ').indexOf(' ' + cat + ' ') >= 0;
+        c.style.display = show ? '' : 'none';
+      });
+      if (window.ScrollTrigger) window.ScrollTrigger.refresh();
+      if (!HAS_FLIP || REDUCED) return;
+      window.Flip.from(state, {
+        duration: 0.55, ease: 'power2.inOut', scale: true, absolute: true,
+        onEnter: function (els) { return window.gsap.fromTo(els, { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.4, ease: 'power2.out' }); },
+        onLeave: function (els) { return window.gsap.to(els, { opacity: 0, scale: 0.8, duration: 0.3, ease: 'power2.in' }); }
+      });
+    }
+  }
+
+  /* ======================================================================
+     6. VIDEO-ON-HOVER — muted looping preview over YouTube thumbnails.
+     ====================================================================== */
+  function buildVideoHover() {
+    if (!FINE || REDUCED) return;
+    var previews = document.querySelectorAll('.youtube-preview[data-video-id]');
+    if (!previews.length) return;
+    var active = null, timer = null;
+
+    function clearActive() {
+      if (!active) return;
+      var f = active.querySelector('.yt-hover-frame');
+      if (f && f.parentNode) f.parentNode.removeChild(f);
+      active.classList.remove('is-previewing');
+      active = null;
+    }
+
+    previews.forEach(function (p) {
+      p.addEventListener('pointerenter', function (e) {
+        if (e.pointerType && e.pointerType !== 'mouse') return;
+        if (p === active) return;
+        timer = setTimeout(function () {
+          clearActive();
+          var id = p.getAttribute('data-video-id');
+          var start = p.getAttribute('data-start-time') || 0;
+          var f = document.createElement('iframe');
+          f.className = 'yt-hover-frame';
+          f.setAttribute('allow', 'autoplay; encrypted-media');
+          f.setAttribute('loading', 'lazy');
+          f.setAttribute('tabindex', '-1');
+          f.src = 'https://www.youtube.com/embed/' + id +
+            '?autoplay=1&mute=1&loop=1&playlist=' + id +
+            '&controls=0&modestbranding=1&playsinline=1&rel=0&start=' + start;
+          p.appendChild(f);
+          p.classList.add('is-previewing');
+          requestAnimationFrame(function () { f.classList.add('is-in'); });
+          active = p;
+        }, 240);
+      });
+      p.addEventListener('pointerleave', function () {
+        if (timer) { clearTimeout(timer); timer = null; }
+        if (p === active) clearActive();
       });
     });
   }

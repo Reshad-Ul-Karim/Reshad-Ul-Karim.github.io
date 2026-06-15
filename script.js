@@ -2576,9 +2576,10 @@ function initScrollProgressRing() {
 function initLenis() {
     if (typeof Lenis === 'undefined') return;
 
+    // lerp-based smoothing (frame-rate independent) feels smoother and more
+    // responsive than fixed-duration easing — momentum without the lag.
     const lenis = new Lenis({
-        duration: 1.15,
-        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        lerp: 0.1,
         smoothWheel: true,
         wheelMultiplier: 1,
         touchMultiplier: 1.5,
@@ -2591,12 +2592,6 @@ function initLenis() {
         requestAnimationFrame(raf);
     }
     requestAnimationFrame(raf);
-
-    // Keep existing scroll listeners working by using lenis scroll event
-    lenis.on('scroll', () => {
-        // AOS refresh on Lenis scroll ticks
-        if (typeof AOS !== 'undefined') AOS.refresh();
-    });
 
     // Pause Lenis when a modal is open (prevents scroll-through)
     const modalObserver = new MutationObserver(() => {
