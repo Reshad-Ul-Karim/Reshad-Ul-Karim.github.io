@@ -75,6 +75,7 @@
     <link rel="stylesheet" href="accent-theme.css?v=1.0.0">
     <link rel="stylesheet" href="three-scene.css?v=1.2.0">
     <link rel="stylesheet" href="section-three.css?v=1.0.0">
+    <link rel="stylesheet" href="projects-motion.css?v=1.0.0">
     <!-- fixes.css loads LAST so its layout/sizing overrides win the cascade -->
     <link rel="stylesheet" href="fixes.css?v=1.0.0">
     <!-- modern-ui.css loads AFTER fixes.css: hero redesign + UI modernization win -->
@@ -86,6 +87,9 @@
     <script src="accent-theme.js?v=1.0.0" defer></script>
     <script src="three-scene.js?v=1.2.0" defer></script>
     <script src="section-three.js?v=1.0.0" defer></script>
+    <!-- Projects motion: flagship reel pin + cursor + magnetic + count-up.
+         After reveal-motion.js so gsap/ScrollTrigger + Lenis bridge are ready. -->
+    <script src="projects-motion.js?v=1.0.0" defer></script>
     <script src="scholar-citations.js?v=1.0.0" defer></script>
 </head>
 <body>
@@ -1292,74 +1296,98 @@
                 <p class="section-subtitle">Research-grade systems: ViT, SegFormer, YOLO, SHAP, multimodal fusion &amp; edge inference</p>
             </div>
             
-            <!-- WeHeal Banner -->
-            <div class="featured-banner" data-aos="fade-up" data-aos-delay="50">
-                <div class="banner-content">
-                    <div class="banner-text">
-                        <div class="banner-badge">
-                            <i class="fas fa-star"></i>
-                            <span>Featured Work</span>
-                        </div>
-                        <h3 class="banner-title">WeHeal - Healthcare Innovation Platform</h3>
-                        <p class="banner-description">Advanced AI-powered healthcare solution transforming patient care and medical diagnostics</p>
-                        <a href="https://weheal.live/" target="_blank" rel="noopener noreferrer" class="btn-banner">
-                            <span>Visit WeHeal Platform</span>
-                            <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                    <div class="banner-preview">
-                        <div class="preview-container">
-                            <iframe 
-                                src="https://drive.google.com/file/d/1_STPLhD4QR5JOwDBOnxY3ONKBZdJJp88/preview" 
-                                allow="autoplay"
-                                class="preview-frame"
-                                loading="lazy"
-                            ></iframe>
-                            <div class="preview-overlay">
-                                <i class="fas fa-play-circle"></i>
-                            </div>
-                        </div>
-                    </div>
+            <!-- ===================================================================
+                 FLAGSHIP REEL — a pinned, horizontally-scrubbed showcase of the
+                 top projects (projects-motion.js + .css). Progressive enhancement:
+                 desktop + motion-ok => horizontal pinned reel; mobile / reduced-
+                 motion / no-JS => the panels simply stack vertically.
+                 =================================================================== -->
+            <div class="flagship-reel">
+                <div class="flagship-reel-head">
+                    <span>Flagship Work</span>
+                    <span class="flagship-hint"><span>scroll to explore</span> <i class="fas fa-arrow-right-long"></i></span>
                 </div>
-            </div>
-            
-            <!-- Service Robot Banner -->
-            <div class="featured-banner" data-aos="fade-up" data-aos-delay="100">
-                <div class="banner-content">
-                    <div class="banner-text">
-                        <div class="banner-badge">
-                            <i class="fas fa-star"></i>
-                            <span>Featured Work</span>
-                        </div>
-                        <h3 class="banner-title">Autonomous Multi-Terrain Service Robot</h3>
-                        <p class="banner-description">Low-cost autonomous robot for indoor equipment handling with ArUco marker navigation and robotic manipulation capabilities</p>
-                        <div class="banner-buttons">
-                            <a href="https://github.com/Reshad-Ul-Karim/Autonomous-ArUco-Marker-Based-Multi-Terrain-Equipment-Service-Bot" target="_blank" rel="noopener noreferrer" class="btn-banner">
-                                <span>View on GitHub</span>
-                                <i class="fab fa-github"></i>
+                <div class="flagship-viewport">
+                    <div class="flagship-track">
+
+                        <!-- LUMENAA -->
+                        <article class="flagship-panel">
+                            <a class="flagship-media flagship-media--placeholder" href="https://github.com/Reshad-Ul-Karim" target="_blank" rel="noopener noreferrer" data-cursor="Code" aria-label="LUMENAA on GitHub">
+                                <i class="fas fa-lightbulb"></i>
                             </a>
-                            <button class="btn-banner btn-banner-secondary youtube-modal-btn" data-video-id="WJUcASlT_to">
-                                <span>Watch Demo</span>
-                                <i class="fab fa-youtube"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="banner-preview">
-                        <div class="preview-container">
-                            <iframe 
-                                src="https://www.youtube.com/embed/WJUcASlT_to" 
-                                allow="autoplay; encrypted-media"
-                                class="preview-frame"
-                                loading="lazy"
-                            ></iframe>
-                            <div class="preview-overlay">
-                                <i class="fas fa-play-circle"></i>
+                            <div class="flagship-content">
+                                <span class="flagship-badge is-ongoing"><i class="fas fa-circle-notch"></i> Ongoing</span>
+                                <h3 class="flagship-title">LUMENAA &mdash; Edge-Native Assistive Vision Agent</h3>
+                                <p class="flagship-desc">An edge-native multimodal assistive vision agent that runs perception on-device and only escalates to the cloud when needed &mdash; preserving responsiveness and privacy for visually impaired users.</p>
+                                <div class="flagship-metrics">
+                                    <div class="flagship-metric"><span class="flagship-metric-num" data-countup="95" data-suffix="%+">0</span><span class="flagship-metric-label">Cloud-Call Reduction</span></div>
+                                    <div class="flagship-metric"><span class="flagship-metric-num" data-countup="30" data-suffix="%">0</span><span class="flagship-metric-label">Faster Inference</span></div>
+                                </div>
+                                <div class="flagship-tech"><span>Edge Inference</span><span>Multimodal</span><span>VLM</span></div>
+                                <div class="flagship-links">
+                                    <a class="flagship-link" data-magnetic="0.3" href="https://github.com/Reshad-Ul-Karim" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i><span>View Code</span></a>
+                                </div>
                             </div>
-                        </div>
+                        </article>
+
+                        <!-- WeHeal -->
+                        <article class="flagship-panel">
+                            <a class="flagship-media flagship-media--placeholder" href="https://weheal.live/" target="_blank" rel="noopener noreferrer" data-cursor="Visit" aria-label="Visit WeHeal platform">
+                                <i class="fas fa-heart-pulse"></i>
+                            </a>
+                            <div class="flagship-content">
+                                <span class="flagship-badge"><i class="fas fa-star"></i> Featured</span>
+                                <h3 class="flagship-title">WeHeal &mdash; Healthcare Innovation Platform</h3>
+                                <p class="flagship-desc">An AI-powered healthcare platform transforming patient care and medical diagnostics with accessible, real-time clinical tooling.</p>
+                                <div class="flagship-tech"><span>Applied AI</span><span>Healthcare</span><span>Diagnostics</span></div>
+                                <div class="flagship-links">
+                                    <a class="flagship-link" data-magnetic="0.3" href="https://weheal.live/" target="_blank" rel="noopener noreferrer"><span>Visit Platform</span><i class="fas fa-arrow-right"></i></a>
+                                </div>
+                            </div>
+                        </article>
+
+                        <!-- Autonomous Service Robot -->
+                        <article class="flagship-panel">
+                            <button class="flagship-media youtube-modal-btn" type="button" data-video-id="WJUcASlT_to" data-cursor="Watch" aria-label="Watch Service Robot demo">
+                                <img src="https://img.youtube.com/vi/WJUcASlT_to/maxresdefault.jpg" alt="Autonomous Multi-Terrain Service Robot demo" width="1280" height="720" loading="lazy" decoding="async">
+                            </button>
+                            <div class="flagship-content">
+                                <span class="flagship-badge"><i class="fas fa-star"></i> Featured</span>
+                                <h3 class="flagship-title">Autonomous Multi-Terrain Service Robot</h3>
+                                <p class="flagship-desc">A low-cost autonomous robot for indoor equipment handling with ArUco-marker navigation and robotic manipulation.</p>
+                                <div class="flagship-tech"><span>ArUco Nav</span><span>Autonomy</span><span>Manipulation</span></div>
+                                <div class="flagship-links">
+                                    <a class="flagship-link is-ghost" data-magnetic="0.3" href="https://github.com/Reshad-Ul-Karim/Autonomous-ArUco-Marker-Based-Multi-Terrain-Equipment-Service-Bot" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i><span>GitHub</span></a>
+                                    <button class="flagship-link youtube-modal-btn" type="button" data-magnetic="0.3" data-video-id="WJUcASlT_to"><i class="fab fa-youtube"></i><span>Watch Demo</span></button>
+                                </div>
+                            </div>
+                        </article>
+
+                        <!-- Mars Rover -->
+                        <article class="flagship-panel">
+                            <button class="flagship-media youtube-modal-btn" type="button" data-video-id="vdP5qrJQqGc" data-start-time="131" data-cursor="Watch" aria-label="Watch Mars Rover demo">
+                                <img src="https://img.youtube.com/vi/vdP5qrJQqGc/maxresdefault.jpg" alt="Mars Rover Autonomous Keyboard Typing demo" width="1280" height="720" loading="lazy" decoding="async">
+                            </button>
+                            <div class="flagship-content">
+                                <span class="flagship-badge"><i class="fas fa-robot"></i> Vision Autonomy</span>
+                                <h3 class="flagship-title">Mars Rover Autonomous Keyboard Typing</h3>
+                                <p class="flagship-desc">Vision-guided autonomous typing for Mars Rover missions &mdash; YOLOv8 keyboard detection with PaddleOCR key recognition, improving on-rover inference by up to 30%.</p>
+                                <div class="flagship-metrics">
+                                    <div class="flagship-metric"><span class="flagship-metric-num" data-countup="30" data-suffix="%">0</span><span class="flagship-metric-label">Faster On-Rover Inference</span></div>
+                                </div>
+                                <div class="flagship-tech"><span>YOLOv8</span><span>PaddleOCR</span><span>Computer Vision</span></div>
+                                <div class="flagship-links">
+                                    <a class="flagship-link is-ghost" data-magnetic="0.3" href="https://github.com/Reshad-Ul-Karim/Autonomous-Keyboard-typing-test" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i><span>GitHub</span></a>
+                                    <button class="flagship-link youtube-modal-btn" type="button" data-magnetic="0.3" data-video-id="vdP5qrJQqGc" data-start-time="131"><i class="fab fa-youtube"></i><span>Watch Demo</span></button>
+                                </div>
+                            </div>
+                        </article>
+
                     </div>
+                    <div class="flagship-progress" aria-hidden="true"></div>
                 </div>
             </div>
-            
+
             <div class="projects-grid">
                 <div class="project-card" data-aos="fade-up" data-aos-delay="50" data-tilt data-tilt-max="8" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.15" data-tilt-scale="1.02">
                     <div class="project-image">

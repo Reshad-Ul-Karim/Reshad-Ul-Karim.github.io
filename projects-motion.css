@@ -1,0 +1,353 @@
+/* =========================================================================
+   projects-motion.css  —  Motion-graphic enhancements for the Projects area.
+
+   1) FLAGSHIP REEL — a pinned, horizontally-scrubbed showcase of the top
+      projects. Progressive enhancement:
+        • default (mobile / no-JS / reduced-motion)  -> panels STACK vertically
+          (safe, no overflow, fully readable)
+        • desktop + motion-ok (JS adds .is-horizontal) -> horizontal pinned reel
+   2) CUSTOM CURSOR — a follower ring that morphs to a "View / Watch / Code"
+      pill over [data-cursor] media. Desktop + fine-pointer only.
+   3) MAGNETIC BUTTONS — handled in JS; this file only hides nothing.
+
+   Everything recolors via the live accent vars (blue/red/orange/mono).
+   ========================================================================= */
+
+/* ----------------------------------------------------------------------
+   1. FLAGSHIP REEL
+   --------------------------------------------------------------------- */
+.flagship-reel {
+  position: relative;
+  margin: 0 0 clamp(2rem, 5vw, 3.5rem);
+}
+
+.flagship-reel-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.flagship-reel-head::before {
+  content: "";
+  width: 26px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+.flagship-hint {
+  display: none;            /* shown only in horizontal mode */
+  margin-left: auto;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: var(--text-light);
+}
+.flagship-hint i { animation: fpHintNudge 1.4s ease-in-out infinite; }
+@keyframes fpHintNudge { 0%,100%{transform:translateX(0);} 50%{transform:translateX(5px);} }
+
+.flagship-viewport { position: relative; }
+
+/* Default = vertical stack (the safe baseline). */
+.flagship-track {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.25rem, 3vw, 2rem);
+}
+
+/* Panel */
+.flagship-panel {
+  position: relative;
+  flex: 0 0 auto;
+  border-radius: 22px;
+  overflow: hidden;
+  min-height: 320px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  box-shadow: var(--shadow-medium);
+  isolation: isolate;
+}
+
+/* Panel media (image / video poster / gradient placeholder).
+   May be a <div>, <a> or <button> (clickable hero) — reset UA chrome. */
+.flagship-media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  -webkit-appearance: none;
+          appearance: none;
+}
+a.flagship-media, button.flagship-media { cursor: pointer; }
+.flagship-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  /* slightly oversized so JS parallax has room to move without gaps */
+  transform: scale(1.08);
+  will-change: transform;
+}
+.flagship-media--placeholder {
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(120% 120% at 20% 0%, rgba(var(--accent-primary-rgb), 0.40), transparent 60%),
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--primary-color) 36%, var(--bg-dark)),
+      color-mix(in srgb, var(--secondary-color) 30%, var(--bg-dark)));
+}
+.flagship-media--placeholder i {
+  font-size: clamp(3rem, 8vw, 5.5rem);
+  color: rgba(255, 255, 255, 0.85);
+  filter: drop-shadow(0 8px 30px rgba(0, 0, 0, 0.4));
+}
+/* Legibility scrim so overlaid text always reads. */
+.flagship-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(8, 10, 24, 0.15) 0%, rgba(8, 10, 24, 0.55) 55%, rgba(8, 10, 24, 0.88) 100%);
+  z-index: 1;
+}
+
+/* Panel content overlay */
+.flagship-content {
+  position: relative;
+  z-index: 2;
+  margin-top: auto;
+  padding: clamp(1.4rem, 3vw, 2.4rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  color: #fff;
+}
+.flagship-panel { display: flex; flex-direction: column; }
+
+.flagship-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: fit-content;
+  padding: 0.32rem 0.8rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+.flagship-badge.is-ongoing {
+  background: color-mix(in srgb, var(--accent-color) 30%, transparent);
+  border: 1px solid var(--accent-color);
+}
+
+.flagship-title {
+  margin: 0;
+  font-size: clamp(1.4rem, 3.2vw, 2.3rem);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+.flagship-desc {
+  margin: 0;
+  max-width: 60ch;
+  font-size: clamp(0.92rem, 1.5vw, 1.05rem);
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.84);
+}
+
+/* Count-up metrics */
+.flagship-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.6rem;
+  margin: 0.3rem 0 0.2rem;
+}
+.flagship-metric { display: flex; flex-direction: column; }
+.flagship-metric-num {
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
+  font-weight: 800;
+  line-height: 1;
+  background: linear-gradient(135deg, #fff, var(--accent-color));
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.flagship-metric-label {
+  margin-top: 0.25rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.66);
+}
+
+.flagship-tech {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+.flagship-tech span {
+  padding: 0.28rem 0.7rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  -webkit-backdrop-filter: blur(4px);
+          backdrop-filter: blur(4px);
+}
+
+.flagship-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+}
+.flagship-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.6rem 1.05rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
+  border-radius: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  color: #0b0e1a;
+  background: #fff;
+  border: 1px solid transparent;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease, color 0.25s ease;
+}
+.flagship-link:hover { transform: translateY(-2px); box-shadow: 0 12px 26px -12px rgba(0,0,0,0.5); }
+.flagship-link.is-ghost {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+/* Per-panel progress dots (horizontal mode) */
+.flagship-progress {
+  display: none;
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  gap: 8px;
+  z-index: 6;
+}
+.flagship-progress span {
+  width: 26px;
+  height: 4px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--text-primary) 22%, transparent);
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+.flagship-progress span.is-active {
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  transform: scaleY(1.5);
+}
+
+/* ---- HORIZONTAL MODE (JS adds .is-horizontal on desktop, motion-ok) ---- */
+.flagship-reel.is-horizontal .flagship-viewport {
+  height: 100vh;
+  overflow: hidden;
+}
+.flagship-reel.is-horizontal .flagship-track {
+  flex-direction: row;
+  flex-wrap: nowrap;
+  width: max-content;
+  height: 100%;
+  align-items: center;
+  gap: clamp(1.5rem, 2.5vw, 2.5rem);
+  padding: 0 clamp(1.5rem, 4vw, 4rem);
+  will-change: transform;
+}
+.flagship-reel.is-horizontal .flagship-panel {
+  width: min(72vw, 980px);
+  height: 76vh;
+  min-height: 0;
+}
+.flagship-reel.is-horizontal .flagship-hint { display: inline-flex; }
+.flagship-reel.is-horizontal .flagship-progress { display: flex; }
+
+/* ----------------------------------------------------------------------
+   2. CUSTOM CURSOR (JS-driven; created at runtime)
+   --------------------------------------------------------------------- */
+.mg-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 99999;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 1.5px solid var(--primary-color);
+  background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+  transform: translate3d(-50%, -50%, 0);
+  transition: width 0.25s ease, height 0.25s ease, background 0.25s ease,
+              border-color 0.25s ease, opacity 0.25s ease;
+  opacity: 0;
+  mix-blend-mode: difference;
+}
+.mg-cursor.is-visible { opacity: 1; }
+.mg-cursor-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  white-space: nowrap;
+}
+/* Expanded "View" pill over media */
+.mg-cursor.is-active {
+  width: 84px;
+  height: 84px;
+  background: var(--primary-color);
+  border-color: transparent;
+  mix-blend-mode: normal;
+}
+.mg-cursor.is-active .mg-cursor-label { opacity: 1; transform: scale(1); }
+
+/* ----------------------------------------------------------------------
+   3. RESPONSIVE / SAFETY
+   --------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .flagship-panel { min-height: 280px; }
+  .flagship-content { padding: 1.25rem; }
+}
+
+/* No custom cursor on touch / coarse pointers (the element is never created
+   by JS there, but belt-and-suspenders). */
+@media (hover: none), (pointer: coarse) {
+  .mg-cursor { display: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flagship-media img { transform: none; }
+  .flagship-hint i { animation: none; }
+  .mg-cursor { transition: opacity 0.2s ease; }
+}
