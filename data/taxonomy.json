@@ -1,0 +1,58 @@
+{
+  "domains": {
+    "agentic-multimodal": {
+      "label": "Agentic & Multimodal AI",
+      "order": 1,
+      "icon": "fas fa-robot",
+      "blurb": "Assistive vision-language agents, planners with tool use, on-device reasoning."
+    },
+    "genai-llm": {
+      "label": "Generative AI & LLMs",
+      "order": 2,
+      "icon": "fas fa-wand-magic-sparkles",
+      "blurb": "LLM pretraining, positional encoding, RLHF, and embedding geometry."
+    },
+    "computer-vision": {
+      "label": "Computer Vision & Perception",
+      "order": 3,
+      "icon": "fas fa-eye",
+      "blurb": "Detection, OCR, segmentation, 3D perception, autonomous vision."
+    },
+    "xai": {
+      "label": "Explainable AI",
+      "order": 4,
+      "icon": "fas fa-lightbulb",
+      "blurb": "SHAP/LIME interpretability for high-stakes machine learning."
+    },
+    "healthcare-ai": {
+      "label": "Healthcare & Medical AI",
+      "order": 5,
+      "icon": "fas fa-heart-pulse",
+      "blurb": "Clinical prediction, biosignals, assistive and screening health tech."
+    },
+    "robotics-edge": {
+      "label": "Robotics & Edge / Embedded",
+      "order": 6,
+      "icon": "fas fa-microchip",
+      "blurb": "Rover autonomy, ESP32/Arduino, on-device inference."
+    },
+    "hci-signal": {
+      "label": "HCI & Gesture / Signal Interfaces",
+      "order": 7,
+      "icon": "fas fa-hand",
+      "blurb": "Touchless input, hand-landmark encoding, bilingual text entry."
+    },
+    "applied-ml": {
+      "label": "Applied ML (Tabular)",
+      "order": 8,
+      "icon": "fas fa-chart-line",
+      "blurb": "Classification and analysis on structured, tabular data."
+    },
+    "software-systems": {
+      "label": "Software Systems & Full-Stack",
+      "order": 9,
+      "icon": "fas fa-layer-group",
+      "blurb": "Full-stack platforms, databases, and interactive engineering builds."
+    }
+  }
+}

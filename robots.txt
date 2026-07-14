@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://reshad-ul-karim.github.io/MyWebsite/sitemap.xml

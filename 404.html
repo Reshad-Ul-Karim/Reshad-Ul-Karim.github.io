@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- PRE-PAINT theme+accent bootstrap — MUST be the first element in <head>, before any CSS,
+         so the saved dark/light theme and accent are applied before first paint (no flash). -->
+    <script>
+    (function(){try{
+      var t=localStorage.getItem('theme'), a=localStorage.getItem('accent');
+      if(t)document.documentElement.setAttribute('data-theme',t);
+      if(a)document.documentElement.setAttribute('data-accent',a);
+    }catch(e){}})();
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="robots" content="noindex, follow">
+    <meta name="description" content="Page not found — browse Reshad Ul Karim's projects and publications, or return home.">
+
+    <title>Page not found — Reshad Ul Karim</title>
+
+    <!-- Root-relative here (404.html is served at /MyWebsite/*, i.e. one level up from subpages) -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Motion stack (non-deferred, load-bearing order copied from index.html) -->
+    <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Flip.min.js"></script>
+
+    <!-- Shared CSS — root-relative on this page. modern-ui.css LAST so it wins the cascade.
+         three-scene.css / section-three.css are intentionally omitted (no hero / no Three.js here). -->
+    <link rel="stylesheet" href="styles.css?v=1.3.0">
+    <link rel="stylesheet" href="reveal-motion.css?v=1.0.0">
+    <link rel="stylesheet" href="morph-motion.css?v=1.0.0">
+    <link rel="stylesheet" href="positioning.css?v=1.1.0">
+    <link rel="stylesheet" href="accent-theme.css?v=1.0.0">
+    <link rel="stylesheet" href="projects-motion.css?v=1.0.0">
+    <link rel="stylesheet" href="fixes.css?v=1.0.0">
+    <link rel="stylesheet" href="modern-ui.css?v=1.0.0">
+
+    <!-- Self-initializing motion modules (deferred). Dropped on subpages per plan §6:
+         three-scene.js, section-three.js, scholar-citations.js, projects-motion.js (no grid), render.js. -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js" defer></script>
+    <script src="reveal-motion.js?v=1.1.0" defer></script>
+    <script src="morph-motion.js?v=1.0.0" defer></script>
+    <script src="accent-theme.js?v=1.0.0" defer></script>
+
+    <!-- No-JS fail-safe: never leave reveal content stuck at opacity:0. -->
+    <noscript>
+      <style>
+        [data-aos] { opacity: 1 !important; transform: none !important; }
+        .fade-in, .reveal { opacity: 1 !important; transform: none !important; }
+      </style>
+    </noscript>
+
+    <style>
+      /* Centered, on-brand 404 block. Scoped local styling only — colors/typography
+         inherit from the shared stylesheets via CSS variables. */
+      .notfound {
+        min-height: 80vh;
+        padding: calc(6rem + var(--safe-area-inset-top, 0px)) 1.5rem 4rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+      .notfound__code {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: clamp(5rem, 22vw, 11rem);
+        font-weight: 600;
+        line-height: 0.9;
+        margin: 0 0 0.5rem;
+        letter-spacing: -0.04em;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .notfound__title {
+        font-size: clamp(1.5rem, 5vw, 2.25rem);
+        font-weight: 700;
+        margin: 0 0 0.75rem;
+        color: var(--text-primary);
+      }
+      .notfound__text {
+        max-width: 34rem;
+        margin: 0 auto 2rem;
+        font-size: 1.05rem;
+        line-height: 1.6;
+        color: var(--text-secondary);
+      }
+      .notfound__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: center;
+      }
+      @media (max-width: 480px) {
+        .notfound__actions { flex-direction: column; width: 100%; max-width: 22rem; }
+        .notfound__actions .btn { width: 100%; justify-content: center; }
+      }
+    </style>
+</head>
+<body>
+    <!-- Shared chrome (nav / footer / modals / cursor / grain) injected here.
+         BLOCKING and placed before script.js so nav/cursor/modals exist when script.js initializes.
+         Root-relative on this page (404 is served one level up from /projects/ and /publications/). -->
+    <div id="shell-chrome"></div>
+    <script src="site-shell.js"></script>
+
+    <main class="detail-page">
+      <section class="notfound">
+        <div class="notfound__code" aria-hidden="true">404</div>
+        <h1 class="notfound__title">This page wandered off.</h1>
+        <p class="notfound__text">
+          The link may be broken or the page may have moved. Let's get you back to
+          something real — explore the work by research domain or head home.
+        </p>
+        <div class="notfound__actions">
+          <a href="index.html" class="btn btn-primary">
+            <i class="fas fa-house"></i>&nbsp; Home
+          </a>
+          <a href="projects/" class="btn btn-secondary">
+            <i class="fas fa-diagram-project"></i>&nbsp; Projects
+          </a>
+          <a href="publications/" class="btn btn-secondary">
+            <i class="fas fa-file-lines"></i>&nbsp; Publications
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <!-- Shared footer injected here by site-shell.js -->
+    <div id="shell-footer"></div>
+
+    <!-- LAST tag, non-deferred: builds window._lenis, cursor, nav, modals. Root-relative. -->
+    <script src="script.js?v=2.2.0"></script>
+</body>
+</html>
