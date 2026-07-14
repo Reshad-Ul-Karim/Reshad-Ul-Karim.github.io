@@ -1137,6 +1137,16 @@
       "RBF interpolation",
       "ESP32 (embedded)",
       "TCP/IP over Wi-Fi"
+    ],
+    "figures": [
+      {
+        "src": "assets/images/project-cards/aruco-marker-robot-block-diagram.jpg",
+        "caption": "System block diagram — the differential-drive navigation and the 2-DOF arm run on separate ESP32 units, coordinated over WiFi by the central vision computer."
+      },
+      {
+        "src": "assets/images/project-cards/aruco-marker-robot-ckt-diagram.jpg",
+        "caption": "Circuit / wiring diagram — sensors, ESP32 controllers, MG996R servos and the motor-driver power domains."
+      }
     ]
   },
   {
