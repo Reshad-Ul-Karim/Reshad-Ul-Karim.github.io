@@ -44,19 +44,21 @@
     var self = document.currentScript;
     var base = (self && self.src ? self.src : '').replace(/site-shell\.js.*$/, '');
 
-    // --- Nav model: [hash, label] for the 8 single-pager sections. ------------
+    // --- Nav model: [href-relative-to-base, label]. Research + Projects point at
+    //     the dedicated multi-page index pages; the rest deep-link back into the
+    //     single-pager sections. ------------------------------------------------
     var NAV = [
-        ['home', 'Home'],
-        ['about', 'About'],
-        ['experience', 'Experience'],
-        ['research', 'Research'],
-        ['projects', 'Projects'],
-        ['awards', 'Awards'],
-        ['cultural', 'Cultural'],
-        ['contact', 'Contact']
+        ['index.html#home', 'Home'],
+        ['index.html#about', 'About'],
+        ['index.html#experience', 'Experience'],
+        ['publications/', 'Research'],
+        ['projects/', 'Projects'],
+        ['index.html#awards', 'Awards'],
+        ['index.html#cultural', 'Cultural'],
+        ['index.html#contact', 'Contact']
     ];
     var navLinksHtml = NAV.map(function (n) {
-        return '<a href="' + base + 'index.html#' + n[0] + '" class="nav-link">' + n[1] + '</a>';
+        return '<a href="' + base + n[0] + '" class="nav-link">' + n[1] + '</a>';
     }).join('\n                ');
 
     // --- #shell-chrome: grain + cursor + scroll ring + navbar -----------------

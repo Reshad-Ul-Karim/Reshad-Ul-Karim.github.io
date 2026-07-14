@@ -520,3 +520,17 @@
 @media (max-width: 480px) {
   .awards-grid-v2 { grid-template-columns: 1fr; }
 }
+
+/* =========================================================================
+   SKILLS GRID — now 4 category cards (added Generative AI/LLMs). Drop the old
+   "3rd card spans full width" rule so all four sit in a clean, even 2x2 grid.
+   ========================================================================= */
+.skills-container {
+  align-items: stretch;                 /* equal-height cards per row */
+}
+.skills-container .skill-category-card:nth-child(3) {
+  grid-column: auto;                    /* was 1 / -1 (full-width) — cancel it */
+}
+.skills-container .skill-category-card {
+  height: 100%;                         /* fill the grid cell for even rows */
+}
