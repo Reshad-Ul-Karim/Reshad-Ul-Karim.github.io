@@ -174,9 +174,11 @@
       "Ongoing · for publication"
     ],
     "media": {
-      "type": "icon",
-      "icon": "fas fa-scale-balanced",
-      "label": "JuktiLLM"
+      "type": "image",
+      "src": "assets/images/project-cards/jukti-llm.png",
+      "alt": "JuktiLLM — Bangla mathematical reasoning",
+      "label": "JuktiLLM",
+      "icon": "fas fa-scale-balanced"
     },
     "metrics": [],
     "links": {
@@ -380,9 +382,11 @@
       "4 architectures compared"
     ],
     "media": {
-      "type": "icon",
-      "icon": "fas fa-paw",
-      "label": "Pet Seg + Classify"
+      "type": "image",
+      "src": "assets/images/project-cards/pet-segmentation.png",
+      "alt": "Pet segmentation and breed classification",
+      "label": "Pet Seg + Classify",
+      "icon": "fas fa-paw"
     },
     "metrics": [
       {
