@@ -466,3 +466,41 @@ a.flagship-media, button.flagship-media { cursor: pointer; }
 }
 .youtube-preview .yt-hover-frame.is-in { opacity: 1; }
 .youtube-preview.is-previewing .youtube-overlay { opacity: 0; }
+
+/* ----------------------------------------------------------------------
+   7. PROJECT CARD THUMBNAILS
+   Real card images fill the .project-image area, behind the hover overlay
+   (links) and the tech-stack chips. When a thumb is present the Font Awesome
+   .project-placeholder is hidden; cards without a thumb are unaffected.
+   --------------------------------------------------------------------- */
+/* Real image fills the .project-image area, sitting behind the hover overlay + tech chips */
+.project-image .project-thumb {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  z-index: 0;
+  transition: transform var(--transition-medium, 0.3s ease);
+}
+
+/* When a real image is present, hide the Font Awesome icon placeholder */
+.project-image:has(.project-thumb) .project-placeholder {
+  display: none;
+}
+
+/* Keep the hover-links overlay and the tech-stack chips above the image.
+   Both use the same z-index so DOM order is preserved (chips stay above the
+   dark overlay on hover, matching current behavior). */
+.project-image .project-overlay {
+  z-index: 2;
+}
+.project-image .project-tech-stack {
+  z-index: 2;
+}
+
+/* Subtle zoom on hover, consistent with the existing .youtube-thumbnail effect */
+.project-card:hover .project-thumb {
+  transform: scale(1.05);
+}

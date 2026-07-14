@@ -226,6 +226,7 @@
     if (cards.length < 4) return;
 
     var CATS = [
+      { id: 'genai', label: 'Generative AI & LLMs', kw: ['llm', 'rope', 'rlhf', 'agentic', 'reward', 'policy', 'embedding', 'dinov2', 'pretrain', 'pre-train'] },
       { id: 'cv', label: 'Computer Vision', kw: ['vision', 'yolo', 'segformer', 'mediapipe', 'vit', 'transformer', 'vlm', 'ocr', 'gesture', 'detection', 'image'] },
       { id: 'robotics', label: 'Robotics & IoT', kw: ['robot', 'rover', 'aruco', 'arduino', 'iot', 'esp32', 'gps', 'terrain', 'wearable', 'sensor'] },
       { id: 'health', label: 'Healthcare', kw: ['health', 'medical', 'sleep', 'stroke', 'autism', 'telemedicine', 'fall', 'clinical', 'weheal', 'impaired', 'assistive'] },
