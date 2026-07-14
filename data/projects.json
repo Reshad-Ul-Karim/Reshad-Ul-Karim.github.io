@@ -7,18 +7,77 @@
     "flagship": true,
     "weight": 100,
     "date": "2026-03",
-    "domains": ["agentic-multimodal", "healthcare-ai", "robotics-edge"],
-    "description": "An edge-native, agentic multimodal assistive vision agent for visually impaired users. A <strong>planner/router</strong> with tool use and <strong>vector memory</strong> orchestrates multi-LLM/VLM reasoning (Mistral, OpenRouter) with <strong>RAG-style retrieval</strong>, a structured evaluation harness, and anti-fabrication guardrails — running perception on-device and escalating to the cloud only when needed to achieve a <strong>95%+ reduction in cloud vision API calls</strong>.",
-    "techTags": ["Agentic AI", "Multimodal", "RAG"],
-    "features": ["95%+ Cloud-Call Reduction", "On-Device Perception", "Agentic Planner + Vector Memory"],
-    "media": { "type": "icon", "icon": "fas fa-lightbulb", "label": "LUMENAA" },
-    "metrics": [
-      { "value": 95, "suffix": "%+", "label": "Cloud-Call Reduction" }
+    "domains": [
+      "agentic-multimodal",
+      "healthcare-ai",
+      "robotics-edge"
     ],
-    "links": { "github": null, "youtube": null, "pdf": null, "paper": null, "poster": null, "live": null },
+    "description": "An edge-native, agentic multimodal assistive vision agent for visually impaired users. A <strong>planner/router</strong> with tool use and <strong>vector memory</strong> orchestrates multi-LLM/VLM reasoning (Mistral, OpenRouter) with <strong>RAG-style retrieval</strong>, a structured evaluation harness, and anti-fabrication guardrails — running perception on-device and escalating to the cloud only when needed to achieve a <strong>95%+ reduction in cloud vision API calls</strong>.",
+    "techTags": [
+      "Agentic AI",
+      "Multimodal",
+      "RAG"
+    ],
+    "features": [
+      "95%+ Cloud-Call Reduction",
+      "On-Device Perception",
+      "Agentic Planner + Vector Memory"
+    ],
+    "media": {
+      "type": "icon",
+      "icon": "fas fa-lightbulb",
+      "label": "LUMENAA"
+    },
+    "metrics": [
+      {
+        "value": "0",
+        "suffix": "",
+        "label": "Invented distances (audited)"
+      },
+      {
+        "value": "~90",
+        "suffix": "%",
+        "label": "Fewer repeat cloud calls"
+      },
+      {
+        "value": "5",
+        "suffix": " tiers",
+        "label": "Desktop → 4W iPhone"
+      }
+    ],
+    "links": {
+      "github": null,
+      "youtube": null,
+      "pdf": null,
+      "paper": null,
+      "poster": null,
+      "live": null
+    },
     "relatedPublications": [],
-    "detailStatus": "coming-soon",
-    "seo": { "description": "LUMENAA: an edge-native agentic multimodal assistive vision agent that cuts cloud vision API calls 95%+ for visually impaired users.", "ogImage": null }
+    "detailStatus": "ready",
+    "seo": {
+      "description": "LUMENAA: an assistive vision-language agent for blind and low-vision users that runs on-device first, escalates to the cloud only when needed, and never fabricates a distance.",
+      "ogImage": null
+    },
+    "badge": "Research",
+    "sections": [
+      {
+        "title": "Overview",
+        "body": "LUMENAA is an assistive AI agent for blind and low-vision users. It describes what's ahead, reads labels and text, flags hazards, and remembers where objects were last seen — the kind of help that bears on independence and safety, not just convenience."
+      },
+      {
+        "title": "The challenge",
+        "body": "Vision-language models make this possible, but two things block dependable real-world use. Running everything in the cloud is expensive, slow, and useless offline while a person is on the move. And these models sometimes state things confidently that aren't true — a wrong distance, a misnamed person — which a blind user has no easy way to catch."
+      },
+      {
+        "title": "Approach",
+        "body": "LUMENAA is built around one idea: do the least the situation actually needs, and only claim what it can back up. It answers each request at the cheapest capable level on the device, and only reaches out to the cloud when the on-device answer genuinely isn't enough. On the trust side it never invents a distance — it states only what it can verify, hedges when it's unsure who or what it's looking at, and always voices hazards first."
+      },
+      {
+        "title": "Results",
+        "body": "On 150 real questions written by blind users, LUMENAA handled about half of them fully on-device with no meaningful loss in accuracy. A lightweight visual memory means it rarely re-describes the same object, cutting repeat cloud calls by roughly 90%. An audit of every answer found zero invented distances — and these cost and safety guarantees held across five hardware tiers, from a desktop down to a 4-watt iPhone."
+      }
+    ]
   },
   {
     "slug": "harp-rope",
@@ -28,16 +87,40 @@
     "flagship": false,
     "weight": 90,
     "date": "2026-02",
-    "domains": ["genai-llm"],
+    "domains": [
+      "genai-llm"
+    ],
     "description": "A novel <strong>hierarchically anchored rotary positional encoding</strong> for long and structured contexts. Pre-trained 160M and 420M-parameter LLMs from scratch in PyTorch with BF16 numerical-stability analysis.",
-    "techTags": ["PyTorch", "Transformers", "BF16"],
-    "features": ["160M / 420M Pre-trained", "Novel RoPE Design", "BF16 Stability"],
-    "media": { "type": "icon", "icon": "fas fa-arrows-spin", "label": "HARP-RoPE" },
+    "techTags": [
+      "PyTorch",
+      "Transformers",
+      "BF16"
+    ],
+    "features": [
+      "160M / 420M Pre-trained",
+      "Novel RoPE Design",
+      "BF16 Stability"
+    ],
+    "media": {
+      "type": "icon",
+      "icon": "fas fa-arrows-spin",
+      "label": "HARP-RoPE"
+    },
     "metrics": [],
-    "links": { "github": null, "youtube": null, "pdf": null, "paper": null, "poster": null, "live": null },
+    "links": {
+      "github": null,
+      "youtube": null,
+      "pdf": null,
+      "paper": null,
+      "poster": null,
+      "live": null
+    },
     "relatedPublications": [],
     "detailStatus": "coming-soon",
-    "seo": { "description": "HARP-RoPE: a hierarchically anchored rotary positional encoding for long contexts, with 160M/420M LLMs pre-trained from scratch in PyTorch.", "ogImage": null }
+    "seo": {
+      "description": "HARP-RoPE: a hierarchically anchored rotary positional encoding for long contexts, with 160M/420M LLMs pre-trained from scratch in PyTorch.",
+      "ogImage": null
+    }
   },
   {
     "slug": "juktillm",
@@ -47,16 +130,40 @@
     "flagship": false,
     "weight": 85,
     "date": "2026-01",
-    "domains": ["genai-llm"],
+    "domains": [
+      "genai-llm"
+    ],
     "description": "Applied <strong>decoupled reward–policy optimization</strong> (reinforcement learning) to improve LLM mathematical reasoning in low-resource Bangla.",
-    "techTags": ["RLHF", "PyTorch", "Bangla NLP"],
-    "features": ["Reward–Policy Decoupling", "RL for LLMs", "Low-Resource Bangla"],
-    "media": { "type": "icon", "icon": "fas fa-scale-balanced", "label": "JuktiLLM" },
+    "techTags": [
+      "RLHF",
+      "PyTorch",
+      "Bangla NLP"
+    ],
+    "features": [
+      "Reward–Policy Decoupling",
+      "RL for LLMs",
+      "Low-Resource Bangla"
+    ],
+    "media": {
+      "type": "icon",
+      "icon": "fas fa-scale-balanced",
+      "label": "JuktiLLM"
+    },
     "metrics": [],
-    "links": { "github": null, "youtube": null, "pdf": null, "paper": null, "poster": null, "live": null },
+    "links": {
+      "github": null,
+      "youtube": null,
+      "pdf": null,
+      "paper": null,
+      "poster": null,
+      "live": null
+    },
     "relatedPublications": [],
     "detailStatus": "coming-soon",
-    "seo": { "description": "JuktiLLM: decoupled reward–policy reinforcement learning to improve LLM mathematical reasoning in low-resource Bangla.", "ogImage": null }
+    "seo": {
+      "description": "JuktiLLM: decoupled reward–policy reinforcement learning to improve LLM mathematical reasoning in low-resource Bangla.",
+      "ogImage": null
+    }
   },
   {
     "slug": "paraphrase-geometry",
@@ -66,17 +173,41 @@
     "flagship": false,
     "weight": 80,
     "date": "2025-12",
-    "domains": ["genai-llm"],
+    "domains": [
+      "genai-llm"
+    ],
     "description": "A <strong>model-agnostic</strong> method that leverages paraphrase geometry to improve text embeddings and retrieval / vector-search quality.",
-    "techTags": ["Embeddings", "Vector Search", "Retrieval"],
-    "features": ["Model-Agnostic", "Embedding Enhancement", "Retrieval Quality"],
-    "media": { "type": "icon", "icon": "fas fa-vector-square", "label": "Paraphrase Geometry" },
+    "techTags": [
+      "Embeddings",
+      "Vector Search",
+      "Retrieval"
+    ],
+    "features": [
+      "Model-Agnostic",
+      "Embedding Enhancement",
+      "Retrieval Quality"
+    ],
+    "media": {
+      "type": "icon",
+      "icon": "fas fa-vector-square",
+      "label": "Paraphrase Geometry"
+    },
     "metrics": [],
-    "links": { "github": null, "youtube": null, "pdf": null, "paper": null, "poster": null, "live": null },
+    "links": {
+      "github": null,
+      "youtube": null,
+      "pdf": null,
+      "paper": null,
+      "poster": null,
+      "live": null
+    },
     "relatedPublications": [],
     "detailStatus": "coming-soon",
     "_note": "Owner listed genai-llm as 'HARP, CSP and JuktiLLM'. 'CSP' is interpreted here as this Paraphrase-Geometry embedding project. Correct this slug/title if the interpretation is wrong.",
-    "seo": { "description": "A model-agnostic method that uses paraphrase geometry to improve text embeddings and vector-search / retrieval quality.", "ogImage": null }
+    "seo": {
+      "description": "A model-agnostic method that uses paraphrase geometry to improve text embeddings and vector-search / retrieval quality.",
+      "ogImage": null
+    }
   },
   {
     "slug": "camdet",
@@ -86,16 +217,67 @@
     "flagship": false,
     "weight": 85,
     "date": "2026-02",
-    "domains": ["computer-vision", "robotics-edge"],
-    "description": "A monocular <strong>3D object-detection</strong> framework that generalizes across cameras without retraining — DINOv2 backbone, canonical camera-space transform, and geometric-consistency metric-depth fusion, optimized for real-time edge inference.",
-    "techTags": ["DINOv2", "Metric Depth", "Monocular 3D"],
-    "features": ["DINOv2 Backbone", "Metric Depth", "Camera-Agnostic"],
-    "media": { "type": "icon", "icon": "fas fa-cube", "label": "CAMDet" },
-    "metrics": [],
-    "links": { "github": null, "youtube": null, "pdf": null, "paper": null, "poster": null, "live": null },
+    "domains": [
+      "computer-vision",
+      "robotics-edge"
+    ],
+    "description": "Camera-agnostic 3D object detection: a single transformer model reads an object's size, distance and 3D position from one ordinary photo — and keeps working across different cameras, from desktop GPUs down to edge devices.",
+    "techTags": [
+      "Monocular 3D",
+      "DETR + ViT",
+      "Edge Inference"
+    ],
+    "features": [
+      "Camera-agnostic",
+      "Real-time · 128 FPS",
+      "Single RGB image"
+    ],
+    "media": {
+      "type": "icon",
+      "icon": "fas fa-cube",
+      "label": "CAMDet"
+    },
+    "metrics": [
+      {
+        "value": "128",
+        "suffix": " FPS",
+        "label": "Real-time (smallest model)"
+      },
+      {
+        "value": "1",
+        "suffix": " model",
+        "label": "Desktop → edge, unchanged"
+      }
+    ],
+    "links": {
+      "github": null,
+      "youtube": null,
+      "pdf": null,
+      "paper": null,
+      "poster": null,
+      "live": null
+    },
     "relatedPublications": [],
-    "detailStatus": "coming-soon",
-    "seo": { "description": "CAMDet: a camera-agnostic monocular 3D object-detection framework with a DINOv2 backbone and metric-depth fusion, optimized for edge inference.", "ogImage": null }
+    "detailStatus": "ready",
+    "seo": {
+      "description": "CAMDet: camera-agnostic monocular 3D object detection from a single RGB image — real-time and edge-deployable across different cameras.",
+      "ogImage": null
+    },
+    "badge": "Research",
+    "sections": [
+      {
+        "title": "Overview",
+        "body": "CAMDet works out where objects are in 3D — their size, distance and position — from a single ordinary photo, with no depth sensor. The catch it tackles: most single-image 3D detectors are quietly tuned to one specific camera, so pointing a different camera at the same scene drops their accuracy, because every lens “sees” the world a little differently."
+      },
+      {
+        "title": "Approach",
+        "body": "It's a single transformer-based detector that predicts each object's 2D box, its distance, and its full 3D box together from one shared set of queries — reusing the predicted depth as the object's 3D centre. The key move is training the model to be robust to the camera itself, so one set of weights generalises to sensors it never saw during training instead of overfitting to the camera it was trained on."
+      },
+      {
+        "title": "Results",
+        "body": "CAMDet beats strong prior methods at every model size and runs in real time — up to about 128 frames per second at its smallest scale. On cameras deliberately held out of training it outperforms a standard baseline by a wide margin, and the exact same exported model runs unchanged all the way from a desktop GPU down to a battery-powered edge device."
+      }
+    ]
   },
   {
     "slug": "pet-segmentation",
@@ -105,16 +287,40 @@
     "flagship": false,
     "weight": 65,
     "date": "2026-04",
-    "domains": ["computer-vision"],
+    "domains": [
+      "computer-vision"
+    ],
     "description": "A multi-task CNN on the Oxford-IIIT Pet dataset (7,349 images, 37 breeds): a shared encoder jointly performs binary foreground/background segmentation (from trimap masks) and 37-class breed classification. Base U-Net and Attention U-Net (soft attention gates on skip connections) are implemented and compared. <em>CSE428 — Computer Vision Laboratory, Spring 2026.</em>",
-    "techTags": ["Attention U-Net", "Segmentation", "Multi-Task"],
-    "features": ["Multi-Task Learning", "37-Breed Classification", "Attention U-Net"],
-    "media": { "type": "icon", "icon": "fas fa-paw", "label": "Pet Seg + Classify" },
+    "techTags": [
+      "Attention U-Net",
+      "Segmentation",
+      "Multi-Task"
+    ],
+    "features": [
+      "Multi-Task Learning",
+      "37-Breed Classification",
+      "Attention U-Net"
+    ],
+    "media": {
+      "type": "icon",
+      "icon": "fas fa-paw",
+      "label": "Pet Seg + Classify"
+    },
     "metrics": [],
-    "links": { "github": null, "youtube": null, "pdf": "assets/papers/cse428-pet-segmentation-slides.pdf", "paper": null, "poster": null, "live": null },
+    "links": {
+      "github": null,
+      "youtube": null,
+      "pdf": "assets/papers/cse428-pet-segmentation-slides.pdf",
+      "paper": null,
+      "poster": null,
+      "live": null
+    },
     "relatedPublications": [],
     "detailStatus": "ready",
-    "seo": { "description": "A multi-task CNN on Oxford-IIIT Pet (37 breeds): shared-encoder foreground/background segmentation plus breed classification, comparing base and Attention U-Net.", "ogImage": null }
+    "seo": {
+      "description": "A multi-task CNN on Oxford-IIIT Pet (37 breeds): shared-encoder foreground/background segmentation plus breed classification, comparing base and Attention U-Net.",
+      "ogImage": null
+    }
   },
   {
     "slug": "mars-rover-keyboard-typing",
@@ -124,18 +330,48 @@
     "flagship": true,
     "weight": 100,
     "date": "2024-06",
-    "domains": ["computer-vision", "robotics-edge"],
-    "description": "Autonomous keyboard typing prototype for Mars Rover missions using YOLOv8 for real-time keyboard detection and PaddleOCR for precise key recognition. Part of the vision-guided autonomy work that improved on-rover inference performance by up to 30%.",
-    "techTags": ["YOLOv8", "PaddleOCR", "Computer Vision"],
-    "features": ["Real-time Detection", "Angle Mapping", "Rover Integration"],
-    "media": { "type": "youtube", "videoId": "vdP5qrJQqGc", "startTime": 131, "alt": "Mars Rover Keyboard Typing demo" },
-    "metrics": [
-      { "value": 30, "suffix": "%", "label": "Faster On-Rover Inference" }
+    "domains": [
+      "computer-vision",
+      "robotics-edge"
     ],
-    "links": { "github": "https://github.com/Reshad-Ul-Karim/Autonomous-Keyboard-typing-test", "youtube": "vdP5qrJQqGc", "pdf": null, "paper": null, "poster": null, "live": null },
+    "description": "Autonomous keyboard typing prototype for Mars Rover missions using YOLOv8 for real-time keyboard detection and PaddleOCR for precise key recognition. Part of the vision-guided autonomy work that improved on-rover inference performance by up to 30%.",
+    "techTags": [
+      "YOLOv8",
+      "PaddleOCR",
+      "Computer Vision"
+    ],
+    "features": [
+      "Real-time Detection",
+      "Angle Mapping",
+      "Rover Integration"
+    ],
+    "media": {
+      "type": "youtube",
+      "videoId": "vdP5qrJQqGc",
+      "startTime": 131,
+      "alt": "Mars Rover Keyboard Typing demo"
+    },
+    "metrics": [
+      {
+        "value": 30,
+        "suffix": "%",
+        "label": "Faster On-Rover Inference"
+      }
+    ],
+    "links": {
+      "github": "https://github.com/Reshad-Ul-Karim/Autonomous-Keyboard-typing-test",
+      "youtube": "vdP5qrJQqGc",
+      "pdf": null,
+      "paper": null,
+      "poster": null,
+      "live": null
+    },
     "relatedPublications": [],
     "detailStatus": "ready",
-    "seo": { "description": "Vision-guided autonomous keyboard typing for Mars Rover missions: YOLOv8 detection with PaddleOCR key recognition, up to 30% faster on-rover inference.", "ogImage": null }
+    "seo": {
+      "description": "Vision-guided autonomous keyboard typing for Mars Rover missions: YOLOv8 detection with PaddleOCR key recognition, up to 30% faster on-rover inference.",
+      "ogImage": null
+    }
   },
   {
     "slug": "sleep-stage-xai",
@@ -145,16 +381,45 @@
     "flagship": false,
     "weight": 90,
     "date": "2024-03",
-    "domains": ["xai", "healthcare-ai", "applied-ml"],
+    "domains": [
+      "xai",
+      "healthcare-ai",
+      "applied-ml"
+    ],
     "description": "Explainable AI for photoplethysmography-based sleep analysis with four-stage sleep classification and enhanced accuracy through ensemble methods.",
-    "techTags": ["Machine Learning", "SHAP", "LIME"],
-    "features": ["IEEE Published", "Explainable AI", "Healthcare"],
-    "media": { "type": "image", "src": "assets/images/project-cards/sleep-card.webp", "alt": "Explainable AI sleep stage classification from photoplethysmography signals" },
+    "techTags": [
+      "Machine Learning",
+      "SHAP",
+      "LIME"
+    ],
+    "features": [
+      "IEEE Published",
+      "Explainable AI",
+      "Healthcare"
+    ],
+    "media": {
+      "type": "image",
+      "src": "assets/images/project-cards/sleep-card.webp",
+      "alt": "Explainable AI sleep stage classification from photoplethysmography signals"
+    },
     "metrics": [],
-    "links": { "github": "https://github.com/Reshad-Ul-Karim/Sleep-Detection/tree/main/Code", "youtube": null, "pdf": null, "paper": "https://ieeexplore.ieee.org/document/10898858/", "poster": null, "live": null },
-    "relatedPublications": ["ppg-sleep-4stage-xai", "ppg-sleep-ml"],
+    "links": {
+      "github": "https://github.com/Reshad-Ul-Karim/Sleep-Detection/tree/main/Code",
+      "youtube": null,
+      "pdf": null,
+      "paper": "https://ieeexplore.ieee.org/document/10898858/",
+      "poster": null,
+      "live": null
+    },
+    "relatedPublications": [
+      "ppg-sleep-4stage-xai",
+      "ppg-sleep-ml"
+    ],
     "detailStatus": "ready",
-    "seo": { "description": "Explainable AI for PPG-based four-stage sleep classification, with SHAP/LIME interpretability and ensemble methods. IEEE-published.", "ogImage": null }
+    "seo": {
+      "description": "Explainable AI for PPG-based four-stage sleep classification, with SHAP/LIME interpretability and ensemble methods. IEEE-published.",
+      "ogImage": null
+    }
   },
   {
     "slug": "matrimonial-hub",
@@ -164,16 +429,40 @@
     "flagship": false,
     "weight": 80,
     "date": "2023-12",
-    "domains": ["software-systems"],
+    "domains": [
+      "software-systems"
+    ],
     "description": "Secure matchmaking platform with advanced features, encrypted user data, dynamic search algorithms, and real-time interactions. Won 1st place in competition.",
-    "techTags": ["PHP", "MySQL", "AJAX"],
-    "features": ["🥇 1st Place", "Secure", "Real-time"],
-    "media": { "type": "youtube", "videoId": "BSgDdoiRlTY", "alt": "Matrimonial Hub demo" },
+    "techTags": [
+      "PHP",
+      "MySQL",
+      "AJAX"
+    ],
+    "features": [
+      "🥇 1st Place",
+      "Secure",
+      "Real-time"
+    ],
+    "media": {
+      "type": "youtube",
+      "videoId": "BSgDdoiRlTY",
+      "alt": "Matrimonial Hub demo"
+    },
     "metrics": [],
-    "links": { "github": "https://github.com/Reshad-Ul-Karim/Matrimonial-Project-370", "youtube": "BSgDdoiRlTY", "pdf": null, "paper": null, "poster": null, "live": null },
+    "links": {
+      "github": "https://github.com/Reshad-Ul-Karim/Matrimonial-Project-370",
+      "youtube": "BSgDdoiRlTY",
+      "pdf": null,
+      "paper": null,
+      "poster": null,
+      "live": null
+    },
     "relatedPublications": [],
     "detailStatus": "ready",
-    "seo": { "description": "Matrimonial Hub: a secure PHP/MySQL matchmaking platform with encrypted user data, dynamic search, and real-time interactions. 1st-place winner.", "ogImage": null }
+    "seo": {
+      "description": "Matrimonial Hub: a secure PHP/MySQL matchmaking platform with encrypted user data, dynamic search, and real-time interactions. 1st-place winner.",
+      "ogImage": null
+    }
   },
   {
     "slug": "weheal",
@@ -183,16 +472,41 @@
     "flagship": true,
     "weight": 100,
     "date": "2025-02",
-    "domains": ["software-systems", "healthcare-ai"],
+    "domains": [
+      "software-systems",
+      "healthcare-ai"
+    ],
     "description": "Engineered an end-to-end telemedicine platform featuring OTP-secured authentication, role-based dashboards, appointment scheduling with video consultations, EMR and e-prescription management, emergency services, payment and insurance integration, online medicine and lab ordering, and feedback.",
-    "techTags": ["MERN Stack", "Telemedicine", "Video Consultation"],
-    "features": ["Telemedicine", "Video Consultation", "EMR System"],
-    "media": { "type": "image", "src": "assets/images/project-cards/weheal-card.png", "alt": "WeHeal all-in-one telemedicine and healthcare platform interface" },
+    "techTags": [
+      "MERN Stack",
+      "Telemedicine",
+      "Video Consultation"
+    ],
+    "features": [
+      "Telemedicine",
+      "Video Consultation",
+      "EMR System"
+    ],
+    "media": {
+      "type": "image",
+      "src": "assets/images/project-cards/weheal-card.png",
+      "alt": "WeHeal all-in-one telemedicine and healthcare platform interface"
+    },
     "metrics": [],
-    "links": { "github": null, "youtube": null, "pdf": null, "paper": null, "poster": null, "live": "https://weheal.live/" },
+    "links": {
+      "github": null,
+      "youtube": null,
+      "pdf": null,
+      "paper": null,
+      "poster": null,
+      "live": "https://weheal.live/"
+    },
     "relatedPublications": [],
     "detailStatus": "ready",
-    "seo": { "description": "WeHeal: an end-to-end MERN telemedicine platform with video consultations, EMR and e-prescriptions, emergency services, and payment/insurance integration.", "ogImage": null }
+    "seo": {
+      "description": "WeHeal: an end-to-end MERN telemedicine platform with video consultations, EMR and e-prescriptions, emergency services, and payment/insurance integration.",
+      "ogImage": null
+    }
   },
   {
     "slug": "academic-success-prediction",
@@ -202,16 +516,40 @@
     "flagship": false,
     "weight": 70,
     "date": "2024-05",
-    "domains": ["applied-ml"],
+    "domains": [
+      "applied-ml"
+    ],
     "description": "Developed and evaluated multiple classification models leveraging socio-economic, demographic, and academic features to predict student outcomes as Graduate, Dropout, or Enrolled.",
-    "techTags": ["Machine Learning", "Classification", "Data Analysis"],
-    "features": ["Predictive Analytics", "Student Outcomes", "Classification Models"],
-    "media": { "type": "icon", "icon": "fas fa-graduation-cap", "label": "Academic Success Prediction" },
+    "techTags": [
+      "Machine Learning",
+      "Classification",
+      "Data Analysis"
+    ],
+    "features": [
+      "Predictive Analytics",
+      "Student Outcomes",
+      "Classification Models"
+    ],
+    "media": {
+      "type": "icon",
+      "icon": "fas fa-graduation-cap",
+      "label": "Academic Success Prediction"
+    },
     "metrics": [],
-    "links": { "github": null, "youtube": null, "pdf": null, "paper": null, "poster": null, "live": null },
+    "links": {
+      "github": null,
+      "youtube": null,
+      "pdf": null,
+      "paper": null,
+      "poster": null,
+      "live": null
+    },
     "relatedPublications": [],
     "detailStatus": "coming-soon",
-    "seo": { "description": "Academic Success Prediction: classification models over socio-economic, demographic, and academic features predicting Graduate/Dropout/Enrolled outcomes.", "ogImage": null }
+    "seo": {
+      "description": "Academic Success Prediction: classification models over socio-economic, demographic, and academic features predicting Graduate/Dropout/Enrolled outcomes.",
+      "ogImage": null
+    }
   },
   {
     "slug": "gesture-keyboard-mouse",
@@ -221,16 +559,43 @@
     "flagship": false,
     "weight": 85,
     "date": "2026-06",
-    "domains": ["hci-signal", "computer-vision"],
+    "domains": [
+      "hci-signal",
+      "computer-vision"
+    ],
     "description": "Developed a modular real-time pipeline integrating MediaPipe hand-landmark gesture recognition with bilingual LSTM next-word prediction in English and Bangla within a unified keyboard-mouse interface featuring performance monitoring, delivering a low-latency, resource-efficient touchless text entry solution for desktop and wearable devices.",
-    "techTags": ["MediaPipe", "LSTM", "Bilingual"],
-    "features": ["Hand Gesture Recognition", "Bilingual Prediction", "Touchless Interface"],
-    "media": { "type": "image", "src": "assets/images/project-cards/vision-based-hand-gesture.png", "alt": "Vision-based hand gesture virtual keyboard and mouse interface in use" },
+    "techTags": [
+      "MediaPipe",
+      "LSTM",
+      "Bilingual"
+    ],
+    "features": [
+      "Hand Gesture Recognition",
+      "Bilingual Prediction",
+      "Touchless Interface"
+    ],
+    "media": {
+      "type": "image",
+      "src": "assets/images/project-cards/vision-based-hand-gesture.png",
+      "alt": "Vision-based hand gesture virtual keyboard and mouse interface in use"
+    },
     "metrics": [],
-    "links": { "github": "https://github.com/Reshad-Ul-Karim/Autonomous-Keyboard-typing-test", "youtube": null, "pdf": "assets/papers/hand-gesture-keyboard-mouse-slides.pdf", "paper": null, "poster": null, "live": null },
-    "relatedPublications": ["gesture-keyboard-jcsse-2026"],
+    "links": {
+      "github": "https://github.com/Reshad-Ul-Karim/Autonomous-Keyboard-typing-test",
+      "youtube": null,
+      "pdf": "assets/papers/hand-gesture-keyboard-mouse-slides.pdf",
+      "paper": null,
+      "poster": null,
+      "live": null
+    },
+    "relatedPublications": [
+      "gesture-keyboard-jcsse-2026"
+    ],
     "detailStatus": "ready",
-    "seo": { "description": "A real-time touchless keyboard-mouse pairing MediaPipe hand-gesture recognition with bilingual (English/Bangla) LSTM next-word prediction. To appear at JCSSE 2026.", "ogImage": null }
+    "seo": {
+      "description": "A real-time touchless keyboard-mouse pairing MediaPipe hand-gesture recognition with bilingual (English/Bangla) LSTM next-word prediction. To appear at JCSSE 2026.",
+      "ogImage": null
+    }
   },
   {
     "slug": "dristee-navigation",
@@ -240,16 +605,42 @@
     "flagship": false,
     "weight": 75,
     "date": "2025-09",
-    "domains": ["computer-vision", "agentic-multimodal", "healthcare-ai"],
+    "domains": [
+      "computer-vision",
+      "agentic-multimodal",
+      "healthcare-ai"
+    ],
     "description": "Developing a real-time, cloud-based navigation assistant for visually impaired users that integrates depth-aware mapping, object detection and facial recognition and voice-command NLP in a modular architecture to deliver low-latency, personalized spatial awareness and navigation guidance.",
-    "techTags": ["Computer Vision", "NLP", "Cloud-based"],
-    "features": ["Accessibility", "Real-time Navigation", "Voice Commands"],
-    "media": { "type": "icon", "icon": "fas fa-eye", "label": "DRISTEE Navigation" },
+    "techTags": [
+      "Computer Vision",
+      "NLP",
+      "Cloud-based"
+    ],
+    "features": [
+      "Accessibility",
+      "Real-time Navigation",
+      "Voice Commands"
+    ],
+    "media": {
+      "type": "icon",
+      "icon": "fas fa-eye",
+      "label": "DRISTEE Navigation"
+    },
     "metrics": [],
-    "links": { "github": null, "youtube": null, "pdf": null, "paper": null, "poster": null, "live": null },
+    "links": {
+      "github": null,
+      "youtube": null,
+      "pdf": null,
+      "paper": null,
+      "poster": null,
+      "live": null
+    },
     "relatedPublications": [],
     "detailStatus": "coming-soon",
-    "seo": { "description": "DRISTEE: a real-time cloud-based navigation assistant for visually impaired users combining depth-aware mapping, object/face detection, and voice-command NLP.", "ogImage": null }
+    "seo": {
+      "description": "DRISTEE: a real-time cloud-based navigation assistant for visually impaired users combining depth-aware mapping, object/face detection, and voice-command NLP.",
+      "ogImage": null
+    }
   },
   {
     "slug": "vit-autism-detection",
@@ -259,16 +650,41 @@
     "flagship": false,
     "weight": 85,
     "date": "2025-10",
-    "domains": ["healthcare-ai", "computer-vision"],
+    "domains": [
+      "healthcare-ai",
+      "computer-vision"
+    ],
     "description": "A Vision Transformer (ViT) framework with multimodal fusion of facial and behavioral signals for scalable, early screening of Autism Spectrum Disorder in toddlers — targeting interpretable, low-friction screening deployable outside clinical settings.",
-    "techTags": ["Vision Transformer", "Multimodal Fusion", "Healthcare"],
-    "features": ["Early Detection", "Multimodal Analysis", "Healthcare AI"],
-    "media": { "type": "image", "src": "assets/images/project-cards/autism-card.png", "alt": "Vision Transformer-based autism spectrum disorder screening from facial and behavioral signals" },
+    "techTags": [
+      "Vision Transformer",
+      "Multimodal Fusion",
+      "Healthcare"
+    ],
+    "features": [
+      "Early Detection",
+      "Multimodal Analysis",
+      "Healthcare AI"
+    ],
+    "media": {
+      "type": "image",
+      "src": "assets/images/project-cards/autism-card.png",
+      "alt": "Vision Transformer-based autism spectrum disorder screening from facial and behavioral signals"
+    },
     "metrics": [],
-    "links": { "github": null, "youtube": null, "pdf": null, "paper": null, "poster": null, "live": null },
+    "links": {
+      "github": null,
+      "youtube": null,
+      "pdf": null,
+      "paper": null,
+      "poster": null,
+      "live": null
+    },
     "relatedPublications": [],
     "detailStatus": "coming-soon",
-    "seo": { "description": "A Vision Transformer framework with multimodal fusion of facial and behavioral signals for early, interpretable Autism Spectrum Disorder screening in toddlers.", "ogImage": null }
+    "seo": {
+      "description": "A Vision Transformer framework with multimodal fusion of facial and behavioral signals for early, interpretable Autism Spectrum Disorder screening in toddlers.",
+      "ogImage": null
+    }
   },
   {
     "slug": "wearable-fall-detection",
@@ -278,18 +694,47 @@
     "flagship": false,
     "weight": 80,
     "date": "2024-12",
-    "domains": ["healthcare-ai", "robotics-edge"],
-    "description": "Integrated wearable system combining vital sign monitoring (temperature, heart rate, SpO2, stress) with fall detection using MPU6050, GPS tracking, and real-time emergency alerts via SMS and Wi-Fi. Achieved 90% fall detection accuracy in field tests.",
-    "techTags": ["Arduino", "IoT Sensors", "GPS/GSM"],
-    "features": ["Elderly Care", "Real-time Alerts", "Multi-sensor Fusion"],
-    "media": { "type": "image", "src": "assets/images/project-cards/wearable-fall-detection.png", "alt": "Wearable health monitoring and fall detection device with IoT sensors" },
-    "metrics": [
-      { "value": 90, "suffix": "%", "label": "Fall Detection Accuracy" }
+    "domains": [
+      "healthcare-ai",
+      "robotics-edge"
     ],
-    "links": { "github": null, "youtube": null, "pdf": "assets/papers/G6_S10 (1).pdf", "paper": null, "poster": null, "live": null },
+    "description": "Integrated wearable system combining vital sign monitoring (temperature, heart rate, SpO2, stress) with fall detection using MPU6050, GPS tracking, and real-time emergency alerts via SMS and Wi-Fi. Achieved 90% fall detection accuracy in field tests.",
+    "techTags": [
+      "Arduino",
+      "IoT Sensors",
+      "GPS/GSM"
+    ],
+    "features": [
+      "Elderly Care",
+      "Real-time Alerts",
+      "Multi-sensor Fusion"
+    ],
+    "media": {
+      "type": "image",
+      "src": "assets/images/project-cards/wearable-fall-detection.png",
+      "alt": "Wearable health monitoring and fall detection device with IoT sensors"
+    },
+    "metrics": [
+      {
+        "value": 90,
+        "suffix": "%",
+        "label": "Fall Detection Accuracy"
+      }
+    ],
+    "links": {
+      "github": null,
+      "youtube": null,
+      "pdf": "assets/papers/G6_S10 (1).pdf",
+      "paper": null,
+      "poster": null,
+      "live": null
+    },
     "relatedPublications": [],
     "detailStatus": "ready",
-    "seo": { "description": "A wearable that fuses vital-sign monitoring (temp, HR, SpO2, stress) with MPU6050 fall detection, GPS, and SMS/Wi-Fi alerts — 90% fall-detection accuracy.", "ogImage": null }
+    "seo": {
+      "description": "A wearable that fuses vital-sign monitoring (temp, HR, SpO2, stress) with MPU6050 fall detection, GPS, and SMS/Wi-Fi alerts — 90% fall-detection accuracy.",
+      "ogImage": null
+    }
   },
   {
     "slug": "service-robot",
@@ -299,16 +744,41 @@
     "flagship": true,
     "weight": 100,
     "date": "2025-01",
-    "domains": ["robotics-edge", "computer-vision"],
+    "domains": [
+      "robotics-edge",
+      "computer-vision"
+    ],
     "description": "Low-cost autonomous service robot for indoor equipment handling using vision-based localization with ArUco markers. Features ESP32 microcontroller, robotic arm with pick-and-place capabilities, and multi-terrain navigation across laboratories and workshops.",
-    "techTags": ["ESP32", "ArUco Markers", "Computer Vision"],
-    "features": ["ArUco Navigation", "Robotic Manipulation", "Multi-Terrain"],
-    "media": { "type": "youtube", "videoId": "WJUcASlT_to", "alt": "Autonomous Service Robot demo" },
+    "techTags": [
+      "ESP32",
+      "ArUco Markers",
+      "Computer Vision"
+    ],
+    "features": [
+      "ArUco Navigation",
+      "Robotic Manipulation",
+      "Multi-Terrain"
+    ],
+    "media": {
+      "type": "youtube",
+      "videoId": "WJUcASlT_to",
+      "alt": "Autonomous Service Robot demo"
+    },
     "metrics": [],
-    "links": { "github": "https://github.com/Reshad-Ul-Karim/Autonomous-ArUco-Marker-Based-Multi-Terrain-Equipment-Service-Bot", "youtube": "WJUcASlT_to", "pdf": "assets/papers/F25_CSE461_3_4 (1).pdf", "paper": null, "poster": "assets/papers/GroupX_Poster.pdf", "live": null },
+    "links": {
+      "github": "https://github.com/Reshad-Ul-Karim/Autonomous-ArUco-Marker-Based-Multi-Terrain-Equipment-Service-Bot",
+      "youtube": "WJUcASlT_to",
+      "pdf": "assets/papers/F25_CSE461_3_4 (1).pdf",
+      "paper": null,
+      "poster": "assets/papers/GroupX_Poster.pdf",
+      "live": null
+    },
     "relatedPublications": [],
     "detailStatus": "ready",
-    "seo": { "description": "A low-cost autonomous service robot for indoor equipment handling: ArUco-marker vision localization, ESP32, a pick-and-place robotic arm, and multi-terrain navigation.", "ogImage": null }
+    "seo": {
+      "description": "A low-cost autonomous service robot for indoor equipment handling: ArUco-marker vision localization, ESP32, a pick-and-place robotic arm, and multi-terrain navigation.",
+      "ogImage": null
+    }
   },
   {
     "slug": "tower-defense-game",
@@ -318,16 +788,40 @@
     "flagship": false,
     "weight": 60,
     "date": "2024-08",
-    "domains": ["software-systems"],
+    "domains": [
+      "software-systems"
+    ],
     "description": "3D tower defense game built with OpenGL/GLUT featuring strategic defense mechanics. Defend the central rift against waves of attacking orcs using weapons, traps, turrets, and collectible powerups with increasing difficulty levels.",
-    "techTags": ["OpenGL", "GLUT", "C++"],
-    "features": ["3D Graphics", "Wave System", "Strategic Defense"],
-    "media": { "type": "image", "src": "assets/images/project-cards/rakkhosh-must-die.png", "alt": "Rakkhosh Must Die 3D OpenGL tower defense game scene" },
+    "techTags": [
+      "OpenGL",
+      "GLUT",
+      "C++"
+    ],
+    "features": [
+      "3D Graphics",
+      "Wave System",
+      "Strategic Defense"
+    ],
+    "media": {
+      "type": "image",
+      "src": "assets/images/project-cards/rakkhosh-must-die.png",
+      "alt": "Rakkhosh Must Die 3D OpenGL tower defense game scene"
+    },
     "metrics": [],
-    "links": { "github": null, "youtube": null, "pdf": null, "paper": null, "poster": null, "live": null },
+    "links": {
+      "github": null,
+      "youtube": null,
+      "pdf": null,
+      "paper": null,
+      "poster": null,
+      "live": null
+    },
     "relatedPublications": [],
     "detailStatus": "coming-soon",
-    "seo": { "description": "Rakkhosh Must Die: a 3D OpenGL/GLUT tower-defense game — defend the central rift against waves of orcs with weapons, traps, turrets, and powerups.", "ogImage": null }
+    "seo": {
+      "description": "Rakkhosh Must Die: a 3D OpenGL/GLUT tower-defense game — defend the central rift against waves of orcs with weapons, traps, turrets, and powerups.",
+      "ogImage": null
+    }
   },
   {
     "slug": "pedestrian-vehicle-conflict-risk",
@@ -337,17 +831,46 @@
     "flagship": false,
     "weight": 80,
     "date": "2025-11",
-    "domains": ["computer-vision", "xai"],
-    "description": "Multi-modal fusion framework combining SegFormer road segmentation with YOLO13 detection and MediaPipe pose estimation for predicting pedestrian-vehicle conflicts in Bangladeshi road scenes. Ensemble model achieved 95.48% accuracy with SHAP-based explainability.",
-    "techTags": ["SegFormer", "YOLOv13", "SHAP"],
-    "features": ["Traffic Safety", "Ensemble Learning", "Explainable AI"],
-    "media": { "type": "image", "src": "assets/images/project-cards/pedestrian-conflict.png", "alt": "Explainable pedestrian-vehicle conflict risk prediction on a Bangladeshi road scene" },
-    "metrics": [
-      { "value": 95.48, "suffix": "%", "label": "Ensemble Accuracy" }
+    "domains": [
+      "computer-vision",
+      "xai"
     ],
-    "links": { "github": null, "youtube": null, "pdf": null, "paper": null, "poster": null, "live": null },
+    "description": "Multi-modal fusion framework combining SegFormer road segmentation with YOLO13 detection and MediaPipe pose estimation for predicting pedestrian-vehicle conflicts in Bangladeshi road scenes. Ensemble model achieved 95.48% accuracy with SHAP-based explainability.",
+    "techTags": [
+      "SegFormer",
+      "YOLOv13",
+      "SHAP"
+    ],
+    "features": [
+      "Traffic Safety",
+      "Ensemble Learning",
+      "Explainable AI"
+    ],
+    "media": {
+      "type": "image",
+      "src": "assets/images/project-cards/pedestrian-conflict.png",
+      "alt": "Explainable pedestrian-vehicle conflict risk prediction on a Bangladeshi road scene"
+    },
+    "metrics": [
+      {
+        "value": 95.48,
+        "suffix": "%",
+        "label": "Ensemble Accuracy"
+      }
+    ],
+    "links": {
+      "github": null,
+      "youtube": null,
+      "pdf": null,
+      "paper": null,
+      "poster": null,
+      "live": null
+    },
     "relatedPublications": [],
     "detailStatus": "coming-soon",
-    "seo": { "description": "A multimodal fusion framework (SegFormer + YOLOv13 + MediaPipe) predicting pedestrian-vehicle conflicts in Bangladeshi road scenes — 95.48% accuracy with SHAP explainability.", "ogImage": null }
+    "seo": {
+      "description": "A multimodal fusion framework (SegFormer + YOLOv13 + MediaPipe) predicting pedestrian-vehicle conflicts in Bangladeshi road scenes — 95.48% accuracy with SHAP explainability.",
+      "ogImage": null
+    }
   }
 ]
