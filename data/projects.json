@@ -77,6 +77,16 @@
         "title": "Results",
         "body": "On 150 real questions written by blind users, LUMENAA handled about half of them fully on-device with no meaningful loss in accuracy. A lightweight visual memory means it rarely re-describes the same object, cutting repeat cloud calls by roughly 90%. An audit of every answer found zero invented distances — and these cost and safety guarantees held across five hardware tiers, from a desktop down to a 4-watt iPhone."
       }
+    ],
+    "skills": [
+      "Agentic AI",
+      "Vision-Language Models",
+      "On-device / edge inference",
+      "RAG + vector memory",
+      "Multi-LLM orchestration (Mistral, OpenRouter)",
+      "Evaluation harness",
+      "Anti-fabrication guardrails",
+      "Python"
     ]
   },
   {
@@ -90,16 +100,16 @@
     "domains": [
       "genai-llm"
     ],
-    "description": "A novel <strong>hierarchically anchored rotary positional encoding</strong> for long and structured contexts. Pre-trained 160M and 420M-parameter LLMs from scratch in PyTorch with BF16 numerical-stability analysis.",
+    "description": "A new positional encoding for transformers that replaces RoPE's single global phase schedule with hierarchical, anchored coordinates — aimed at stronger long-context behaviour and numerical stability, tested by pretraining 160M and 420M language models from scratch.",
     "techTags": [
-      "PyTorch",
-      "Transformers",
-      "BF16"
+      "Positional Encoding",
+      "LLM Pretraining",
+      "PyTorch · BF16"
     ],
     "features": [
-      "160M / 420M Pre-trained",
-      "Novel RoPE Design",
-      "BF16 Stability"
+      "Hierarchical RoPE",
+      "160M / 420M pretrained",
+      "Ongoing · for publication"
     ],
     "media": {
       "type": "icon",
@@ -116,11 +126,30 @@
       "live": null
     },
     "relatedPublications": [],
-    "detailStatus": "coming-soon",
+    "detailStatus": "ready",
     "seo": {
-      "description": "HARP-RoPE: a hierarchically anchored rotary positional encoding for long contexts, with 160M/420M LLMs pre-trained from scratch in PyTorch.",
+      "description": "HARP: an ongoing hierarchically-anchored rotary positional encoding for long-context transformers, validated by from-scratch pretraining of 160M/420M LLMs.",
       "ogImage": null
-    }
+    },
+    "badge": "Research",
+    "sections": [
+      {
+        "title": "The idea",
+        "body": "Transformers rely on positional encodings to sense word order and distance. The popular RoPE scheme packs local order, long-range distance and structure into one fixed global schedule — which recent analyses link to long-context retrieval failures and numerical fragility. HARP (Hierarchically Anchored Rotary Phases) is an ongoing project that instead factors a token's position into hierarchical coordinates — a coarse chunk index, a within-chunk offset and optional structure — each driving its own band of learnable phases, while leaving some channels unrotated as a content bypass."
+      },
+      {
+        "title": "Why it's promising",
+        "body": "HARP is set up to contain RoPE exactly as a special case, so training only departs from that strong baseline when it actually helps — and its design is meant to control the numerical error that plagues long-context models in BF16. It's being validated by pretraining 160M- and 420M-parameter models from scratch. (Full formulation is held back while the work is under submission.)"
+      }
+    ],
+    "skills": [
+      "LLM pretraining from scratch",
+      "Positional encodings (RoPE)",
+      "Transformer internals",
+      "BF16 numerical stability",
+      "PyTorch",
+      "160M / 420M models"
+    ]
   },
   {
     "slug": "juktillm",
@@ -133,16 +162,16 @@
     "domains": [
       "genai-llm"
     ],
-    "description": "Applied <strong>decoupled reward–policy optimization</strong> (reinforcement learning) to improve LLM mathematical reasoning in low-resource Bangla.",
+    "description": "A curriculum-trained small language model for mathematical reasoning in Bangla — a low-resource, morphologically rich language where even frontier models trail English by 20–30 points.",
     "techTags": [
-      "RLHF",
-      "PyTorch",
+      "LLM Reasoning",
+      "RL · Curriculum",
       "Bangla NLP"
     ],
     "features": [
-      "Reward–Policy Decoupling",
-      "RL for LLMs",
-      "Low-Resource Bangla"
+      "Low-resource reasoning",
+      "Sub-2B model",
+      "Ongoing · for publication"
     ],
     "media": {
       "type": "icon",
@@ -159,11 +188,31 @@
       "live": null
     },
     "relatedPublications": [],
-    "detailStatus": "coming-soon",
+    "detailStatus": "ready",
     "seo": {
-      "description": "JuktiLLM: decoupled reward–policy reinforcement learning to improve LLM mathematical reasoning in low-resource Bangla.",
+      "description": "JuktiLLM: an ongoing curriculum-trained small language model for mathematical reasoning in Bangla, a low-resource morphologically rich language.",
       "ogImage": null
-    }
+    },
+    "badge": "Research",
+    "sections": [
+      {
+        "title": "The idea",
+        "body": "Large language models reason well in English but fall sharply behind in Bangla — a language spoken by 230M+ people yet largely missing from the mathematical-reasoning literature. JuktiLLM (Bangla for “reasoning”) is an ongoing research project that trains a compact model to reason mathematically in Bangla through a staged curriculum, where each stage adds a progressively finer-grained learning signal. The goal is competitive Bangla math reasoning without frontier-scale model capacity."
+      },
+      {
+        "title": "Why it's hard",
+        "body": "Bangla's agglutinative morphology makes correct reasoning traces structurally longer, which quietly confounds the reward signals standard reinforcement-learning methods rely on. Jukti's approach is designed to separate “was the answer correct” from “was it wordy,” so valid Bangla reasoning isn't penalised for length. (Method details are held back while the work is under submission.)"
+      }
+    ],
+    "skills": [
+      "LLM post-training",
+      "Reinforcement learning",
+      "Curriculum learning",
+      "Process reward models",
+      "Bangla NLP",
+      "PyTorch",
+      "Qwen2.5-1.5B"
+    ]
   },
   {
     "slug": "paraphrase-geometry",
@@ -176,16 +225,16 @@
     "domains": [
       "genai-llm"
     ],
-    "description": "A <strong>model-agnostic</strong> method that leverages paraphrase geometry to improve text embeddings and retrieval / vector-search quality.",
+    "description": "A training-free, model-agnostic way to sharpen sentence embeddings at inference time — using a sentence's paraphrases to trace the local “geometry of meaning” around it and refine the embedding with closed-form projections, no fine-tuning.",
     "techTags": [
-      "Embeddings",
-      "Vector Search",
-      "Retrieval"
+      "Sentence Embeddings",
+      "Zero-shot · Inference-time",
+      "Retrieval · RAG"
     ],
     "features": [
-      "Model-Agnostic",
-      "Embedding Enhancement",
-      "Retrieval Quality"
+      "Training-free refinement",
+      "Model-agnostic",
+      "Ongoing · for publication"
     ],
     "media": {
       "type": "icon",
@@ -202,12 +251,31 @@
       "live": null
     },
     "relatedPublications": [],
-    "detailStatus": "coming-soon",
+    "detailStatus": "ready",
     "_note": "Owner listed genai-llm as 'HARP, CSP and JuktiLLM'. 'CSP' is interpreted here as this Paraphrase-Geometry embedding project. Correct this slug/title if the interpretation is wrong.",
     "seo": {
-      "description": "A model-agnostic method that uses paraphrase geometry to improve text embeddings and vector-search / retrieval quality.",
+      "description": "CSP: an ongoing training-free, model-agnostic method that refines sentence embeddings at inference time using paraphrase geometry.",
       "ogImage": null
-    }
+    },
+    "badge": "Research",
+    "sections": [
+      {
+        "title": "The idea",
+        "body": "Sentence embeddings power semantic search, retrieval-augmented generation and clustering — but even strong encoders often confuse surface-form overlap with true meaning. This ongoing project (CSP — Semantic Constraint-Specific Projections) treats a sentence's paraphrases as samples of a local, meaning-preserving manifold, and uses the geometry those paraphrases trace out to refine the embedding."
+      },
+      {
+        "title": "Why it matters",
+        "body": "It all happens at inference time — no labels, no extra training, and compatible with any frozen encoder — aiming for the kind of gains contrastive fine-tuning gives, but without the training cost or the loss of generality, which matters in privacy-, latency- or IP-constrained deployments. (Method details are held back while the work is under submission.)"
+      }
+    ],
+    "skills": [
+      "Sentence embeddings",
+      "PEGASUS paraphrasing",
+      "Linear-algebra projections",
+      "Zero-shot inference",
+      "Retrieval / RAG",
+      "NumPy"
+    ]
   },
   {
     "slug": "camdet",
@@ -277,6 +345,16 @@
         "title": "Results",
         "body": "CAMDet beats strong prior methods at every model size and runs in real time — up to about 128 frames per second at its smallest scale. On cameras deliberately held out of training it outperforms a standard baseline by a wide margin, and the exact same exported model runs unchanged all the way from a desktop GPU down to a battery-powered edge device."
       }
+    ],
+    "skills": [
+      "PyTorch",
+      "DETR",
+      "Vision Transformer (self-supervised)",
+      "Monocular 3D detection",
+      "Metric depth estimation",
+      "Intrinsic (FiLM) conditioning",
+      "Cross-sensor generalisation",
+      "Edge / ONNX deployment"
     ]
   },
   {
@@ -354,6 +432,18 @@
         "title": "Training & engineering",
         "body": "Beyond the models, this is a full, reproducible training toolkit. An Optuna hyperparameter search (with a learning-rate finder) tunes each model before its final run; offline augmentation, label smoothing and mixup regularise training; and mixed-precision (AMP), gradient clipping, plateau-based LR scheduling and early stopping keep runs fast and stable. Every run writes a timestamped folder with its exact config, checkpoints, per-epoch metrics and publication-style plots, and the code auto-selects device-specific settings so the same codebase runs on CUDA GPUs and Apple-Silicon (MPS) laptops."
       }
+    ],
+    "skills": [
+      "PyTorch",
+      "U-Net / Attention U-Net",
+      "BiFPN (EfficientDet)",
+      "Multi-task learning",
+      "Semantic segmentation",
+      "Transfer learning",
+      "Optuna (HP search)",
+      "Mixed precision (AMP)",
+      "Albumentations",
+      "Apple MPS / CUDA"
     ]
   },
   {
@@ -405,7 +495,15 @@
     "seo": {
       "description": "Vision-guided autonomous keyboard typing for Mars Rover missions: YOLOv8 detection with PaddleOCR key recognition, up to 30% faster on-rover inference.",
       "ogImage": null
-    }
+    },
+    "skills": [
+      "Python",
+      "YOLOv8",
+      "PaddleOCR",
+      "Computer vision",
+      "Real-time inference",
+      "Vision-guided autonomy"
+    ]
   },
   {
     "slug": "sleep-stage-xai",
@@ -453,7 +551,16 @@
     "seo": {
       "description": "Explainable AI for PPG-based four-stage sleep classification, with SHAP/LIME interpretability and ensemble methods. IEEE-published.",
       "ogImage": null
-    }
+    },
+    "skills": [
+      "Python",
+      "scikit-learn",
+      "SHAP / LIME",
+      "Explainable AI",
+      "PPG signal processing",
+      "Feature engineering",
+      "Multi-class classification"
+    ]
   },
   {
     "slug": "matrimonial-hub",
@@ -496,7 +603,15 @@
     "seo": {
       "description": "Matrimonial Hub: a secure PHP/MySQL matchmaking platform with encrypted user data, dynamic search, and real-time interactions. 1st-place winner.",
       "ogImage": null
-    }
+    },
+    "skills": [
+      "PHP",
+      "MySQL",
+      "AJAX",
+      "Full-stack web",
+      "Relational DB design",
+      "CRUD / auth"
+    ]
   },
   {
     "slug": "weheal",
@@ -540,7 +655,15 @@
     "seo": {
       "description": "WeHeal: an end-to-end MERN telemedicine platform with video consultations, EMR and e-prescriptions, emergency services, and payment/insurance integration.",
       "ogImage": null
-    }
+    },
+    "skills": [
+      "MERN (Mongo/Express/React/Node)",
+      "REST APIs",
+      "Telemedicine",
+      "Video consultation",
+      "Full-stack architecture",
+      "Auth / state management"
+    ]
   },
   {
     "slug": "academic-success-prediction",
@@ -553,23 +676,39 @@
     "domains": [
       "applied-ml"
     ],
-    "description": "Developed and evaluated multiple classification models leveraging socio-economic, demographic, and academic features to predict student outcomes as Graduate, Dropout, or Enrolled.",
+    "description": "Predicts whether a student will Graduate, Drop out, or stay Enrolled from 24 socio-economic, demographic and academic features — comparing six classifiers to flag at-risk students early. (CSE422 — AI, BRAC University.)",
     "techTags": [
       "Machine Learning",
       "Classification",
       "Data Analysis"
     ],
     "features": [
-      "Predictive Analytics",
-      "Student Outcomes",
-      "Classification Models"
+      "3-class outcome prediction",
+      "6 models compared",
+      "At-risk early warning"
     ],
     "media": {
       "type": "icon",
       "icon": "fas fa-graduation-cap",
       "label": "Academic Success Prediction"
     },
-    "metrics": [],
+    "metrics": [
+      {
+        "value": "63",
+        "suffix": "%",
+        "label": "Best accuracy (RF / XGBoost)"
+      },
+      {
+        "value": "6",
+        "suffix": "",
+        "label": "Models compared"
+      },
+      {
+        "value": "24",
+        "suffix": "",
+        "label": "Features · 4,424 students"
+      }
+    ],
     "links": {
       "github": null,
       "youtube": null,
@@ -579,11 +718,35 @@
       "live": null
     },
     "relatedPublications": [],
-    "detailStatus": "coming-soon",
+    "detailStatus": "ready",
     "seo": {
-      "description": "Academic Success Prediction: classification models over socio-economic, demographic, and academic features predicting Graduate/Dropout/Enrolled outcomes.",
+      "description": "Academic-success prediction (Graduate/Dropout/Enrolled) from 24 student features, comparing 6 ML models (RF/XGBoost best, ~63%) — CSE422 AI project.",
       "ogImage": null
-    }
+    },
+    "sections": [
+      {
+        "title": "Overview",
+        "body": "A machine-learning study that predicts student academic outcomes — Graduate, Dropout, or Enrolled — from 24 socio-economic, demographic and academic features, so institutions can spot at-risk students early and target support. Built for CSE422 (Artificial Intelligence) on a 4,424-student dataset."
+      },
+      {
+        "title": "Approach",
+        "body": "After cleaning, encoding and scaling the features (with EDA on correlations, outliers and class balance), six classifiers are trained and compared head-to-head — a Keras neural network, Random Forest, XGBoost, K-Nearest Neighbours, Decision Tree and Logistic Regression — each evaluated with accuracy, precision/recall/F1, confusion matrices and ROC/AUC."
+      },
+      {
+        "title": "Results",
+        "body": "The ensemble methods came out on top — Random Forest and XGBoost at ~63% accuracy, with the neural network close behind (~62%) — on a genuinely hard three-class problem with class imbalance. The head-to-head comparison highlights where feature engineering and ensembling help most, and where minority-class prediction still struggles."
+      }
+    ],
+    "skills": [
+      "Python",
+      "scikit-learn",
+      "XGBoost",
+      "TensorFlow / Keras",
+      "Random Forest",
+      "Feature engineering",
+      "ROC / AUC evaluation",
+      "pandas · seaborn"
+    ]
   },
   {
     "slug": "gesture-keyboard-mouse",
@@ -629,7 +792,15 @@
     "seo": {
       "description": "A real-time touchless keyboard-mouse pairing MediaPipe hand-gesture recognition with bilingual (English/Bangla) LSTM next-word prediction. To appear at JCSSE 2026.",
       "ogImage": null
-    }
+    },
+    "skills": [
+      "Python",
+      "MediaPipe (hand landmarks)",
+      "LSTM",
+      "Bilingual next-word prediction",
+      "Real-time gesture recognition",
+      "Human-computer interaction"
+    ]
   },
   {
     "slug": "dristee-navigation",
@@ -768,7 +939,15 @@
     "seo": {
       "description": "A wearable that fuses vital-sign monitoring (temp, HR, SpO2, stress) with MPU6050 fall detection, GPS, and SMS/Wi-Fi alerts — 90% fall-detection accuracy.",
       "ogImage": null
-    }
+    },
+    "skills": [
+      "Arduino / Embedded C",
+      "IoT sensors (MPU6050)",
+      "GPS / GSM",
+      "Sensor fusion",
+      "Fall detection",
+      "Real-time SMS/Wi-Fi alerts"
+    ]
   },
   {
     "slug": "service-robot",
@@ -846,6 +1025,16 @@
         "title": "Built for the real world",
         "body": "The two-microcontroller design isolates faults so a problem in one subsystem doesn't take down the other, WiFi links reconnect automatically, and the robot stops safely if it loses sight of its markers. Combined with the rugged steel build, balanced weight and low centre of gravity, it targets practical settings like warehouse item-handling, material transport and inspection."
       }
+    ],
+    "skills": [
+      "Python",
+      "OpenCV",
+      "ArUco + PnP pose",
+      "PID control",
+      "Position-Based Visual Servoing",
+      "RBF interpolation",
+      "ESP32 (embedded)",
+      "TCP/IP over Wi-Fi"
     ]
   },
   {
@@ -923,6 +1112,15 @@
         "title": "Scope",
         "body": "Seven waves, four enemy types plus a boss, three weapons, three power-ups, and full trap/turret/HUD systems — a complete game loop with proper win and lose conditions."
       }
+    ],
+    "skills": [
+      "Python",
+      "PyOpenGL / GLUT",
+      "3D graphics from scratch",
+      "Game physics",
+      "Collision detection",
+      "Real-time animation",
+      "State machines"
     ]
   },
   {
@@ -937,16 +1135,16 @@
       "computer-vision",
       "xai"
     ],
-    "description": "Multi-modal fusion framework combining SegFormer road segmentation with YOLO13 detection and MediaPipe pose estimation for predicting pedestrian-vehicle conflicts in Bangladeshi road scenes. Ensemble model achieved 95.48% accuracy with SHAP-based explainability.",
+    "description": "A multimodal framework that predicts pedestrian–vehicle conflict risk from a single street image — fusing SegFormer road segmentation, pose dynamics and scene context, with explainable, low-latency predictions on Bangladeshi road scenes.",
     "techTags": [
-      "SegFormer",
-      "YOLOv13",
-      "SHAP"
+      "SegFormer · YOLO · MediaPipe",
+      "XGBoost · CatBoost · FT-Transformer",
+      "SHAP · Ensemble"
     ],
     "features": [
-      "Traffic Safety",
-      "Ensemble Learning",
-      "Explainable AI"
+      "Multimodal fusion",
+      "Explainable (SHAP)",
+      "95%+ accuracy"
     ],
     "media": {
       "type": "image",
@@ -955,9 +1153,14 @@
     },
     "metrics": [
       {
-        "value": 95.48,
+        "value": "95.48",
         "suffix": "%",
-        "label": "Ensemble Accuracy"
+        "label": "XGBoost accuracy (RSUD20K)"
+      },
+      {
+        "value": "4",
+        "suffix": "",
+        "label": "Models + stacked ensemble"
       }
     ],
     "links": {
@@ -969,10 +1172,35 @@
       "live": null
     },
     "relatedPublications": [],
-    "detailStatus": "coming-soon",
+    "detailStatus": "ready",
     "seo": {
-      "description": "A multimodal fusion framework (SegFormer + YOLOv13 + MediaPipe) predicting pedestrian-vehicle conflicts in Bangladeshi road scenes — 95.48% accuracy with SHAP explainability.",
+      "description": "Multimodal pedestrian–vehicle conflict-risk prediction from a single image: SegFormer + pose + scene features, SHAP-selected, XGBoost 95.48% on RSUD20K.",
       "ogImage": null
-    }
+    },
+    "badge": "Research",
+    "sections": [
+      {
+        "title": "Overview",
+        "body": "Pedestrian–vehicle conflicts are a major urban-safety problem, and off-the-shelf detectors struggle to judge risk from a static image because they miss scene context. This project predicts conflict risk from a single street photo by fusing several signals — improved SegFormer road segmentation, person detection (YOLO) and MediaPipe pose, plus the spatial relationships between pedestrians and vehicles — for a holistic view rather than a single cue."
+      },
+      {
+        "title": "Approach",
+        "body": "A custom feature-extraction strategy captures multi-scale spatial relationships, pedestrian pose dynamics and road-scene context. The top features — selected by SHAP — feed several models (FT-Transformer, XGBoost, CatBoost) and a stacked-ensemble meta-learner, giving explainable predictions with uncertainty estimates at low latency. It's evaluated on RSUD20K, a Bangladeshi road-scene dataset, so it reflects local traffic and pedestrian behaviour."
+      },
+      {
+        "title": "Results",
+        "body": "XGBoost reached 95.48% accuracy, with the stacked ensemble close behind (95.15%), CatBoost (94.43%) and FT-Transformer (89.67%) — while keeping predictions interpretable via SHAP and fast enough for proactive, real-world pedestrian-safety systems."
+      }
+    ],
+    "skills": [
+      "SegFormer",
+      "YOLO12",
+      "MediaPipe pose",
+      "XGBoost / CatBoost / FT-Transformer",
+      "Stacked ensemble",
+      "SHAP feature selection",
+      "Multimodal fusion",
+      "Python"
+    ]
   }
 ]
