@@ -700,9 +700,11 @@
       "At-risk early warning"
     ],
     "media": {
-      "type": "icon",
+      "type": "image",
       "icon": "fas fa-graduation-cap",
-      "label": "Academic Success Prediction"
+      "label": "Academic Success Prediction",
+      "src": "assets/images/project-cards/academic-success-prediction.jpg",
+      "alt": "Academic success prediction — student outcome dashboard"
     },
     "metrics": [
       {
