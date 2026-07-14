@@ -1,0 +1,550 @@
+/* =========================================================================
+   multipage.css  —  Styles for the NEW multi-page build ONLY.
+   Owner: Foundation/render. Plan refs: MULTIPAGE_PLAN.md §3d, §4c, §6.
+
+   Scope (does NOT restyle anything on index.html):
+     1. Domain-section headers on the projects index          (.mp-domain-*)
+     2. The domain filter chip bar                            (.mp-filters / .mp-chip)
+     3. Grid glue + render.js's own reveal/filter states      (.mp-grid / .mp-reveal / .mp-hidden)
+     4. Per-card CTA + the "Coming soon" badge                (.mp-card-cta / .mp-view-link / .mp-soon-badge)
+     5. Publication group headers on the publications index   (.mp-pub-group-*)
+     6. The detail-page article layout                        (.detail-*)
+
+   Everything keys off the EXISTING custom properties (--primary-color,
+   --secondary-color, --accent-color, --bg-*, --text-*, --border-color,
+   --shadow-*, --border-radius, --transition-*, accent-*-rgb) so it inherits
+   light/dark theming and the live accent system for free. The .project-card /
+   .publication-item cards themselves are styled by the existing CSS — this
+   file only adds the surrounding page chrome.
+   ========================================================================= */
+
+/* =========================================================================
+   1. DOMAIN-SECTION HEADERS  (projects index)
+   Full-width band inside the single .mp-grid: icon + label + blurb.
+   ========================================================================= */
+.mp-domain-header {
+  grid-column: 1 / -1;               /* span the whole grid row */
+  display: flex;
+  align-items: center;
+  gap: clamp(0.85rem, 2vw, 1.15rem);
+  margin: clamp(1.25rem, 3vw, 2.25rem) 0 0.35rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--border-color);
+}
+.mp-grid > .mp-domain-header:first-child { margin-top: 0; }
+
+.mp-domain-icon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: clamp(42px, 6vw, 54px);
+  height: clamp(42px, 6vw, 54px);
+  border-radius: 16px;
+  font-size: clamp(1.1rem, 2.4vw, 1.45rem);
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  box-shadow: 0 10px 24px -12px color-mix(in srgb, var(--primary-color) 75%, transparent);
+}
+
+.mp-domain-heading { min-width: 0; }
+
+.mp-domain-title {
+  margin: 0;
+  font-size: clamp(1.25rem, 3vw, 1.7rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.mp-domain-blurb {
+  margin: 0.3rem 0 0;
+  font-size: clamp(0.85rem, 1.6vw, 0.95rem);
+  line-height: 1.5;
+  color: var(--text-secondary);
+  max-width: 66ch;
+}
+
+/* =========================================================================
+   2. FILTER CHIP BAR  (projects index)
+   Mirrors the single-pager's .project-filter language so it reads identical.
+   ========================================================================= */
+.mp-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+  margin: 0 0 clamp(1.75rem, 4vw, 2.5rem);
+}
+
+.mp-chip {
+  -webkit-appearance: none;
+          appearance: none;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 1.05rem;
+  border-radius: 999px;
+  color: var(--text-secondary);
+  background: color-mix(in srgb, var(--bg-secondary) 60%, transparent);
+  border: 1px solid var(--border-color);
+  transition: transform var(--transition-fast, 0.2s ease),
+              color var(--transition-fast, 0.2s ease),
+              border-color var(--transition-fast, 0.2s ease),
+              background var(--transition-fast, 0.2s ease),
+              box-shadow var(--transition-fast, 0.2s ease);
+}
+.mp-chip i { font-size: 0.82em; opacity: 0.85; }
+.mp-chip:hover { transform: translateY(-2px); color: var(--text-primary); }
+.mp-chip:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+.mp-chip.is-active {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  box-shadow: 0 10px 22px -10px color-mix(in srgb, var(--primary-color) 70%, transparent);
+}
+.mp-chip.is-active i { opacity: 1; }
+
+.mp-chip-count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  opacity: 0.7;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+}
+.mp-chip.is-active .mp-chip-count {
+  opacity: 0.95;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* =========================================================================
+   3. GRID GLUE + render.js's OWN reveal / filter states
+   ========================================================================= */
+/* The injected grid is the existing .projects-grid; nothing to restyle there.
+   Hidden state used by the filter (plain fallback + Flip enter/leave). */
+.mp-hidden { display: none !important; }
+
+/* render.js reveal — independent of reveal-motion.js (which scans at boot,
+   before these cards exist). Reduced-motion collapses to an instant show. */
+.mp-reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.mp-reveal.mp-in {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mp-reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* =========================================================================
+   4. PER-CARD CTA + "COMING SOON" BADGE
+   Sits at the bottom of .project-content on index cards.
+   ========================================================================= */
+.mp-card-cta {
+  margin-top: 1.1rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+}
+
+.mp-view-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  color: var(--primary-color);
+  transition: gap var(--transition-fast, 0.2s ease), color var(--transition-fast, 0.2s ease);
+}
+.mp-view-link i { transition: transform var(--transition-fast, 0.2s ease); }
+.mp-view-link:hover { gap: 0.75rem; color: var(--secondary-color); }
+.mp-view-link:hover i { transform: translateX(3px); }
+.mp-view-link:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Non-interactive "coming soon" affordance (never a dead link). */
+.mp-soon-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.32rem 0.75rem;
+  border-radius: 999px;
+  color: var(--text-secondary);
+  background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--primary-color) 35%, var(--border-color));
+}
+.mp-soon-badge i { font-size: 0.9em; opacity: 0.8; }
+
+/* =========================================================================
+   5. PUBLICATION GROUP HEADERS  (publications index)
+   ========================================================================= */
+.mp-pub-group { margin-bottom: clamp(1.5rem, 4vw, 2.5rem); }
+
+.mp-pub-group-head {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin: clamp(1rem, 3vw, 2rem) 0 1.4rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--border-color);
+}
+.mp-pub-group:first-child .mp-pub-group-head { margin-top: 0; }
+
+.mp-pub-group-title {
+  margin: 0;
+  font-size: clamp(1.2rem, 2.8vw, 1.55rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+.mp-pub-group-count {
+  margin-left: auto;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg-secondary) 65%, transparent);
+  border: 1px solid var(--border-color);
+}
+
+/* =========================================================================
+   6. DETAIL-PAGE ARTICLE LAYOUT  (hand-authored .html detail pages)
+   A readable single column: hero (title / domain / status / links) ->
+   metric row -> prose sections -> related items -> back-link.
+   ========================================================================= */
+
+/* The page has no hero to absorb the position:fixed navbar, so reserve room
+   for it at the top (plan §4c). */
+.detail-page {
+  padding-top: calc(4rem + var(--safe-area-inset-top, 0px));
+  padding-bottom: clamp(3rem, 8vw, 6rem);
+  min-height: 100vh;
+  background:
+    linear-gradient(135deg, var(--bg-secondary) 0%, rgba(var(--accent-primary-rgb), 0.02) 100%),
+    radial-gradient(circle at 78% 8%, rgba(var(--accent-tertiary-rgb), 0.05) 0%, transparent 45%);
+}
+
+/* Readable column. Reuse .container for the outer gutter, then narrow. */
+.detail-article {
+  width: 100%;
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+/* ---- Back-link ---- */
+.detail-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: clamp(1rem, 3vw, 2rem) 0 1.5rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--text-secondary);
+  transition: gap var(--transition-fast, 0.2s ease), color var(--transition-fast, 0.2s ease);
+}
+.detail-back i { transition: transform var(--transition-fast, 0.2s ease); }
+.detail-back:hover { color: var(--primary-color); gap: 0.7rem; }
+.detail-back:hover i { transform: translateX(-3px); }
+
+/* ---- Hero ---- */
+.detail-hero {
+  margin-bottom: clamp(1.75rem, 4vw, 2.75rem);
+}
+
+.detail-domain-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.detail-domain-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.32rem 0.8rem;
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--primary-color);
+  background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary-color) 26%, transparent);
+  transition: transform var(--transition-fast, 0.2s ease), background var(--transition-fast, 0.2s ease);
+}
+a.detail-domain-tag:hover {
+  transform: translateY(-2px);
+  background: color-mix(in srgb, var(--primary-color) 18%, transparent);
+}
+
+.detail-title {
+  margin: 0 0 0.9rem;
+  font-size: clamp(1.9rem, 5vw, 3rem);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+}
+
+/* Status pill echoes the hero status dot from modern-ui.css. */
+.detail-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.2rem;
+  padding: 0.38rem 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 999px;
+  color: var(--text-secondary);
+  background: color-mix(in srgb, var(--accent-color) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-color) 35%, transparent);
+}
+.detail-status.is-ongoing {
+  color: #b45309;
+  background: color-mix(in srgb, #f59e0b 14%, transparent);
+  border-color: color-mix(in srgb, #f59e0b 40%, transparent);
+}
+[data-theme="dark"] .detail-status.is-ongoing { color: #fbbf24; }
+.detail-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+}
+.detail-status.is-ongoing .detail-status-dot { background: #f59e0b; }
+
+.detail-lead {
+  margin: 0 0 1.6rem;
+  font-size: clamp(1.05rem, 2.2vw, 1.2rem);
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+/* ---- Hero action links ---- */
+.detail-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+.detail-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.15rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: inherit;
+  border-radius: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--bg-primary) 80%, transparent);
+  border: 1px solid var(--border-color);
+  transition: transform 0.25s ease, box-shadow 0.25s ease,
+              color 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+}
+.detail-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px -14px color-mix(in srgb, var(--primary-color) 70%, transparent);
+  border-color: color-mix(in srgb, var(--primary-color) 45%, transparent);
+}
+.detail-link.is-primary {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  box-shadow: 0 10px 24px -12px color-mix(in srgb, var(--primary-color) 70%, transparent);
+}
+.detail-link.is-primary:hover { filter: brightness(1.05); }
+
+/* ---- Metric row ---- */
+.detail-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(1rem, 3vw, 2rem);
+  margin: clamp(1.75rem, 4vw, 2.5rem) 0;
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--bg-primary) 78%, transparent);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-light);
+}
+.detail-metric {
+  flex: 1 1 120px;
+  min-width: 110px;
+}
+.detail-metric-num {
+  font-size: clamp(1.7rem, 4vw, 2.4rem);
+  font-weight: 800;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.detail-metric-label {
+  margin-top: 0.4rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+/* ---- Prose sections ---- */
+.detail-body { margin-top: clamp(1.5rem, 4vw, 2.5rem); }
+
+.detail-section { margin-bottom: clamp(1.75rem, 4vw, 2.75rem); }
+
+.detail-section-title {
+  margin: 0 0 0.9rem;
+  font-size: clamp(1.25rem, 3vw, 1.6rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+.detail-section-title::before {
+  content: "";
+  display: inline-block;
+  width: 22px;
+  height: 3px;
+  margin-right: 0.6rem;
+  vertical-align: middle;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+
+.detail-prose { color: var(--text-secondary); }
+.detail-prose p {
+  margin: 0 0 1.1rem;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+.detail-prose strong { color: var(--text-primary); font-weight: 700; }
+.detail-prose a {
+  color: var(--primary-color);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--primary-color) 40%, transparent);
+  text-underline-offset: 2px;
+}
+.detail-prose a:hover { text-decoration-color: var(--primary-color); }
+.detail-prose ul,
+.detail-prose ol {
+  margin: 0 0 1.2rem;
+  padding-left: 1.35rem;
+  line-height: 1.7;
+}
+.detail-prose li { margin-bottom: 0.5rem; }
+.detail-prose ul li::marker { color: var(--primary-color); }
+.detail-prose code {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.88em;
+  padding: 0.12em 0.4em;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);
+  border: 1px solid var(--border-color);
+}
+.detail-prose blockquote {
+  margin: 0 0 1.2rem;
+  padding: 0.6rem 0 0.6rem 1.1rem;
+  border-left: 3px solid var(--primary-color);
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* Tech-tag / chip row reused inside prose (same look as card chips). */
+.detail-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.5rem 0 1.5rem;
+}
+
+/* ---- Related items ---- */
+.detail-related {
+  margin-top: clamp(2rem, 5vw, 3rem);
+  padding-top: clamp(1.5rem, 4vw, 2.25rem);
+  border-top: 1px solid var(--border-color);
+}
+.detail-related-title {
+  margin: 0 0 1.2rem;
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.mp-related-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 1rem;
+}
+.mp-related-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1.1rem 1.2rem;
+  border-radius: 16px;
+  text-decoration: none;
+  color: inherit;
+  background: color-mix(in srgb, var(--bg-primary) 80%, transparent);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-light);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.mp-related-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 40px -20px color-mix(in srgb, var(--primary-color) 55%, transparent);
+  border-color: color-mix(in srgb, var(--primary-color) 45%, transparent);
+}
+.mp-related-kicker {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--primary-color);
+}
+.mp-related-name {
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+.mp-related-meta {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+/* =========================================================================
+   7. RESPONSIVE
+   ========================================================================= */
+@media (max-width: 640px) {
+  .mp-domain-header { gap: 0.75rem; }
+  .mp-filters { justify-content: flex-start; }
+  .detail-links { gap: 0.55rem; }
+  .detail-link { flex: 1 1 auto; justify-content: center; }
+}

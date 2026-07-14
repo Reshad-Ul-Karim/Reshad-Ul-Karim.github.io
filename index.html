@@ -1,6 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- PRE-PAINT theme + accent bootstrap — MUST stay the FIRST element in <head>, before any CSS.
+         Applies the stored theme/accent to <html> before first paint so there is no dark/accent flash.
+         Mirrors the localStorage keys owned by script.js (initThemeToggle, 'theme' -> data-theme) and
+         accent-theme.js ('accent' -> data-accent). Keep in sync if those keys ever change. -->
+    <script>
+    (function(){try{
+      var t=localStorage.getItem('theme'), a=localStorage.getItem('accent');
+      if(t)document.documentElement.setAttribute('data-theme',t);
+      if(a)document.documentElement.setAttribute('data-accent',a);
+    }catch(e){}})();
+    </script>
+
+    <!-- Cross-page #anchor arrivals (e.g. from projects/ or publications/ back to index.html#projects)
+         land below the fixed navbar instead of being hidden under it. -->
+    <style>
+      section[id] { scroll-margin-top: 5rem; }
+    </style>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="description" content="Reshad Ul Karim - AI/ML engineer and published IEEE researcher building Generative AI and agentic LLM systems, computer vision, autonomous systems and MLOps. 4 peer-reviewed publications (three IEEE, incl. first-author IEEE Access). Open to AI/ML engineering roles and strong PhD/research opportunities.">
@@ -950,6 +968,10 @@
             <div class="section-header" data-aos="fade-up">
                 <h2 class="section-title">Research & Publications</h2>
                 <p class="section-subtitle">4 publications across Explainable AI, multimodal learning, gesture HCI &amp; medical imaging</p>
+                <a class="btn btn-secondary" href="publications/">
+                    <i class="fas fa-file-alt"></i>
+                    <span>All publications &rarr;</span>
+                </a>
             </div>
 
             <!-- Research Interests -->
@@ -1364,6 +1386,10 @@
             <div class="section-header" data-aos="fade-up">
                 <h2 class="section-title">Featured Projects</h2>
                 <p class="section-subtitle">Research-grade systems: ViT, SegFormer, YOLO, SHAP, multimodal fusion &amp; edge inference</p>
+                <a class="btn btn-secondary" href="projects/">
+                    <i class="fas fa-layer-group"></i>
+                    <span>Browse all projects by research domain &rarr;</span>
+                </a>
             </div>
             
             <!-- ===================================================================
