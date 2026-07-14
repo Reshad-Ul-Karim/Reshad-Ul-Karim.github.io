@@ -104,7 +104,7 @@
           var a = document.createElement('a');
           a.className = 'project-detail-link';
           a.href = 'projects/' + p.slug + '.html';
-          a.innerHTML = 'View case study <i class="fas fa-arrow-right" aria-hidden="true"></i>';
+          a.innerHTML = 'Read more <i class="fas fa-arrow-right" aria-hidden="true"></i>';
           content.appendChild(a);
           card.classList.add('has-detail');
         });

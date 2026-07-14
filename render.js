@@ -262,7 +262,7 @@
   function projectCtaHTML(p) {
     if (isReady(p)) {
       return '<a class="mp-view-link" href="' + detailHref(p.slug) + '">' +
-        'View case study <i class="fas fa-arrow-right-long" aria-hidden="true"></i></a>';
+        'Read more <i class="fas fa-arrow-right-long" aria-hidden="true"></i></a>';
     }
     return '<span class="mp-soon-badge" aria-label="Detail page coming soon">' +
       '<i class="fas fa-clock" aria-hidden="true"></i> Coming soon</span>';

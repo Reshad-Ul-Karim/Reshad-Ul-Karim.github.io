@@ -529,12 +529,21 @@ a.flagship-media, button.flagship-media { cursor: pointer; }
   align-items: center;
   gap: 0.45rem;
   margin-top: 1rem;
-  font-size: 0.86rem;
+  padding: 0.5rem 1.05rem;
+  border: 1.5px solid color-mix(in srgb, var(--primary-color) 42%, var(--border-color));
+  border-radius: 10px;
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--primary-color);
+  background: transparent;
   text-decoration: none;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 .project-detail-link i { transition: transform 0.2s ease; }
-.project-detail-link:hover { color: var(--secondary-color); }
+.project-detail-link:hover {
+  background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
+}
 .project-detail-link:hover i { transform: translateX(3px); }
 .project-card.has-detail { cursor: default; }
