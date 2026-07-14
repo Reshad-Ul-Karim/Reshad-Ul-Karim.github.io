@@ -290,23 +290,39 @@
     "domains": [
       "computer-vision"
     ],
-    "description": "A multi-task CNN on the Oxford-IIIT Pet dataset (7,349 images, 37 breeds): a shared encoder jointly performs binary foreground/background segmentation (from trimap masks) and 37-class breed classification. Base U-Net and Attention U-Net (soft attention gates on skip connections) are implemented and compared. <em>CSE428 — Computer Vision Laboratory, Spring 2026.</em>",
+    "description": "A dual-task deep-learning system that segments the pet from the background and classifies its breed (37 classes) from one shared encoder — implemented across several encoder-decoder architectures (U-Net, Attention U-Net, an EfficientDet-style BiFPN, and pretrained-backbone hybrids) and compared head-to-head on the Oxford-IIIT Pet dataset.",
     "techTags": [
-      "Attention U-Net",
-      "Segmentation",
-      "Multi-Task"
+      "U-Net · Attention U-Net",
+      "BiFPN · Transfer Learning",
+      "PyTorch · Optuna · AMP"
     ],
     "features": [
-      "Multi-Task Learning",
-      "37-Breed Classification",
-      "Attention U-Net"
+      "Shared-encoder multi-task",
+      "37-breed classification",
+      "4 architectures compared"
     ],
     "media": {
       "type": "icon",
       "icon": "fas fa-paw",
       "label": "Pet Seg + Classify"
     },
-    "metrics": [],
+    "metrics": [
+      {
+        "value": "37",
+        "suffix": "",
+        "label": "Breeds (25 dog + 12 cat)"
+      },
+      {
+        "value": "2",
+        "suffix": " tasks",
+        "label": "Segment + classify, one encoder"
+      },
+      {
+        "value": "4",
+        "suffix": "",
+        "label": "Architectures compared"
+      }
+    ],
     "links": {
       "github": null,
       "youtube": null,
@@ -318,9 +334,27 @@
     "relatedPublications": [],
     "detailStatus": "ready",
     "seo": {
-      "description": "A multi-task CNN on Oxford-IIIT Pet (37 breeds): shared-encoder foreground/background segmentation plus breed classification, comparing base and Attention U-Net.",
+      "description": "Dual-task pet segmentation + 37-breed classification from a shared encoder, comparing U-Net, Attention U-Net, an EfficientDet-style BiFPN and pretrained-backbone hybrids on Oxford-IIIT Pet.",
       "ogImage": null
-    }
+    },
+    "sections": [
+      {
+        "title": "Overview",
+        "body": "A dual-task computer-vision system that does two things at once from a single shared encoder: it segments the pet from the background, and it classifies the animal's breed across 37 classes. Both heads train together on one backbone, so the features learned for “where is the pet” also help answer “what breed is it.” The project's real question is architectural — how much does adding attention, or a smarter feature-fusion neck, actually help on this joint task? — so several encoder-decoder designs are built and compared head-to-head. (CSE428 — Computer Vision Laboratory, on the Oxford-IIIT Pet dataset: 7,349 images across 37 breeds.)"
+      },
+      {
+        "title": "The two tasks, one encoder",
+        "body": "Segmentation is framed as pixel-wise foreground vs background (the dataset's trimap boundary pixels are folded into the foreground), while breed classification is a 37-way head that branches off the encoder's bottleneck. A single combined loss balances the two — a class-weighted pixel loss for the mask plus a weighted cross-entropy for the breed — so the shared encoder has to serve both objectives at the same time rather than specialising for one."
+      },
+      {
+        "title": "Architectures compared",
+        "body": "Four encoder-decoder designs run through the same evaluation harness so differences are attributable to the architecture alone: a baseline U-Net; an Attention U-Net that adds soft attention gates on each skip connection so the decoder learns to ignore irrelevant background; a BiFPN variant (adapted from EfficientDet) that swaps plain skip connections for a bidirectional, weighted feature-pyramid neck for richer multi-scale fusion; and a transfer-learning hybrid that pairs a pretrained backbone classifier with the segmentation path. A 3-class variant that keeps the trimap boundary as its own class is also supported."
+      },
+      {
+        "title": "Training & engineering",
+        "body": "Beyond the models, this is a full, reproducible training toolkit. An Optuna hyperparameter search (with a learning-rate finder) tunes each model before its final run; offline augmentation, label smoothing and mixup regularise training; and mixed-precision (AMP), gradient clipping, plateau-based LR scheduling and early stopping keep runs fast and stable. Every run writes a timestamped folder with its exact config, checkpoints, per-epoch metrics and publication-style plots, and the code auto-selects device-specific settings so the same codebase runs on CUDA GPUs and Apple-Silicon (MPS) laptops."
+      }
+    ]
   },
   {
     "slug": "mars-rover-keyboard-typing",
