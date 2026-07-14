@@ -748,23 +748,39 @@
       "robotics-edge",
       "computer-vision"
     ],
-    "description": "Low-cost autonomous service robot for indoor equipment handling using vision-based localization with ArUco markers. Features ESP32 microcontroller, robotic arm with pick-and-place capabilities, and multi-terrain navigation across laboratories and workshops.",
+    "description": "A modular, vision-guided autonomous robot that both navigates and manipulates: a differential-drive base and a 2-DOF arm+gripper, each on its own ESP32, coordinated over WiFi by a central computer doing all the vision and control.",
     "techTags": [
-      "ESP32",
-      "ArUco Markers",
-      "Computer Vision"
+      "ArUco + PnP",
+      "Visual Servoing (PBVS)",
+      "ESP32 · OpenCV · PID"
     ],
     "features": [
-      "ArUco Navigation",
-      "Robotic Manipulation",
-      "Multi-Terrain"
+      "±5 cm marker navigation",
+      "Vision-guided pick & place",
+      "Fault-isolated dual-ESP32"
     ],
     "media": {
       "type": "youtube",
       "videoId": "WJUcASlT_to",
       "alt": "Autonomous Service Robot demo"
     },
-    "metrics": [],
+    "metrics": [
+      {
+        "value": "±5",
+        "suffix": " cm",
+        "label": "Navigation accuracy"
+      },
+      {
+        "value": "2",
+        "suffix": "-DOF",
+        "label": "Arm + gripper"
+      },
+      {
+        "value": "2",
+        "suffix": " ESP32s",
+        "label": "Independent subsystems"
+      }
+    ],
     "links": {
       "github": "https://github.com/Reshad-Ul-Karim/Autonomous-ArUco-Marker-Based-Multi-Terrain-Equipment-Service-Bot",
       "youtube": "WJUcASlT_to",
@@ -776,9 +792,27 @@
     "relatedPublications": [],
     "detailStatus": "ready",
     "seo": {
-      "description": "A low-cost autonomous service robot for indoor equipment handling: ArUco-marker vision localization, ESP32, a pick-and-place robotic arm, and multi-terrain navigation.",
+      "description": "A modular vision-guided autonomous robot: ArUco-marker navigation (±5 cm) plus a 2-DOF arm doing calibration-based visual-servoing pick-and-place, on a rugged dual-ESP32 platform.",
       "ogImage": null
-    }
+    },
+    "sections": [
+      {
+        "title": "Overview",
+        "body": "An autonomous mobile robot that can both find its way to a target and pick things up — built as two independent modules: a differential-drive base for movement and a 2-DOF arm with a gripper for manipulation. Each module runs on its own ESP32 microcontroller and talks over WiFi to a central computer that handles all the vision and decision-making. The chassis is a rugged ~5 kg stainless-steel frame with deliberately mismatched wheel sizes (smaller front, larger rear) so it can cross gaps and uneven ground without getting stuck."
+      },
+      {
+        "title": "Autonomous navigation",
+        "body": "For navigation the robot reads ArUco markers with its camera, works out each marker's 3D position and orientation, and converts everything into its own body frame so it knows exactly how far left/right and forward/back the target is. A layered controller then decides whether to rotate, drive forward, or do both — smoothed with PID control and rate-limiting so the motion stays steady instead of jittery. It reaches targets within about ±5 cm, with keyboard teleoperation and an instant emergency override always available."
+      },
+      {
+        "title": "Vision-guided manipulation",
+        "body": "The arm uses position-based visual servoing, but instead of hand-deriving the arm's kinematics it learns a direct mapping from camera pixels to joint angles from a handful of manually-taught calibration points (radial-basis-function interpolation). Objects are located by colour in HSV space, and a small state machine runs Search → Approach → Grab → Lift, using proportional control with capped step sizes and a gentle, progressive grip so it grasps reliably."
+      },
+      {
+        "title": "Built for the real world",
+        "body": "The two-microcontroller design isolates faults so a problem in one subsystem doesn't take down the other, WiFi links reconnect automatically, and the robot stops safely if it loses sight of its markers. Combined with the rugged steel build, balanced weight and low centre of gravity, it targets practical settings like warehouse item-handling, material transport and inspection."
+      }
+    ]
   },
   {
     "slug": "tower-defense-game",
@@ -791,23 +825,39 @@
     "domains": [
       "software-systems"
     ],
-    "description": "3D tower defense game built with OpenGL/GLUT featuring strategic defense mechanics. Defend the central rift against waves of attacking orcs using weapons, traps, turrets, and collectible powerups with increasing difficulty levels.",
+    "description": "A 3D tower-defense game built from scratch in OpenGL/GLUT — defend the core across seven escalating waves with weapons, traps, turrets and timed power-ups, up to a final boss.",
     "techTags": [
-      "OpenGL",
-      "GLUT",
-      "C++"
+      "OpenGL / GLUT",
+      "3D Graphics",
+      "Game Physics"
     ],
     "features": [
-      "3D Graphics",
-      "Wave System",
-      "Strategic Defense"
+      "7 escalating waves",
+      "Traps · turrets · power-ups",
+      "Boss fight"
     ],
     "media": {
       "type": "image",
       "src": "assets/images/project-cards/rakkhosh-must-die.png",
       "alt": "Rakkhosh Must Die 3D OpenGL tower defense game scene"
     },
-    "metrics": [],
+    "metrics": [
+      {
+        "value": "7",
+        "suffix": " waves",
+        "label": "Escalating difficulty"
+      },
+      {
+        "value": "4+1",
+        "suffix": "",
+        "label": "Enemy types + boss"
+      },
+      {
+        "value": "0",
+        "suffix": "",
+        "label": "Game engines — built from scratch"
+      }
+    ],
     "links": {
       "github": null,
       "youtube": null,
@@ -817,11 +867,29 @@
       "live": null
     },
     "relatedPublications": [],
-    "detailStatus": "coming-soon",
+    "detailStatus": "ready",
     "seo": {
-      "description": "Rakkhosh Must Die: a 3D OpenGL/GLUT tower-defense game — defend the central rift against waves of orcs with weapons, traps, turrets, and powerups.",
+      "description": "A from-scratch 3D tower-defense game in OpenGL/GLUT: seven escalating waves, weapons, traps, auto-turrets, timed power-ups and a boss fight, with hand-built physics, animation and HUD.",
       "ogImage": null
-    }
+    },
+    "sections": [
+      {
+        "title": "Overview",
+        "body": "A complete 3D tower-defense game written from scratch in OpenGL/GLUT — no game engine. You defend a central core from seven escalating waves of enemies using a mix of weapons, placeable traps, auto-targeting turrets and collectible power-ups, building up to a final boss fight."
+      },
+      {
+        "title": "Gameplay",
+        "body": "Three weapons (a fast pistol, a piercing crossbow and a spread-fire shotgun) pair with slow/damage traps and turrets that upgrade as the waves progress. Three timed power-ups — a speed boost, a super-jump and a 'roundhouse' auto-fire spin — spawn on the map to collect and trigger. Four enemy types, from fast fodder to a 20-HP boss, each pathfind toward the core but switch to attacking the player when you get close, and speed up wave by wave."
+      },
+      {
+        "title": "How it's built",
+        "body": "Every object — player, enemies, turrets, arena and HUD — is assembled from raw OpenGL primitives (spheres, cylinders, cubes, quads). Under the hood are custom systems for bullet physics and collision, sine-driven walk/idle/float animations, a timer-based wave spawner with difficulty scaling, switchable first-/third-/global-person cameras, and a 2D orthographic HUD drawn over the 3D scene — all driven by hand-written trigonometry and vector maths for movement, aiming and hit detection."
+      },
+      {
+        "title": "Scope",
+        "body": "Seven waves, four enemy types plus a boss, three weapons, three power-ups, and full trap/turret/HUD systems — a complete game loop with proper win and lose conditions."
+      }
+    ]
   },
   {
     "slug": "pedestrian-vehicle-conflict-risk",

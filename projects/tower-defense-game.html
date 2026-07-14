@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>(function(){try{var t=localStorage.getItem('theme'),a=localStorage.getItem('accent');if(t)document.documentElement.setAttribute('data-theme',t);if(a)document.documentElement.setAttribute('data-accent',a);}catch(e){}})();</script>
+    <style>section[id]{scroll-margin-top:5rem}</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="A from-scratch 3D tower-defense game in OpenGL/GLUT: seven escalating waves, weapons, traps, auto-turrets, timed power-ups and a boss fight, with hand-built physics, animation and HUD.">
+    <meta name="author" content="Reshad Ul Karim">
+    <title>Rakkhosh Must Die — Tower Defense Game — Reshad Ul Karim</title>
+    <link rel="canonical" href="https://reshad-ul-karim.github.io/MyWebsite/projects/tower-defense-game.html">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://reshad-ul-karim.github.io/MyWebsite/projects/tower-defense-game.html">
+    <meta property="og:title" content="Rakkhosh Must Die — Tower Defense Game — Reshad Ul Karim">
+    <meta property="og:description" content="A from-scratch 3D tower-defense game in OpenGL/GLUT: seven escalating waves, weapons, traps, auto-turrets, timed power-ups and a boss fight, with hand-built physics, animation and HUD.">
+    <meta property="og:image" content="https://reshad-ul-karim.github.io/MyWebsite/profile%20picture.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Rakkhosh Must Die — Tower Defense Game — Reshad Ul Karim">
+    <meta name="twitter:description" content="A from-scratch 3D tower-defense game in OpenGL/GLUT: seven escalating waves, weapons, traps, auto-turrets, timed power-ups and a boss fight, with hand-built physics, animation and HUD.">
+    <meta name="twitter:image" content="https://reshad-ul-karim.github.io/MyWebsite/profile%20picture.jpg">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
+    <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Flip.min.js"></script>
+    <link rel="stylesheet" href="../styles.css?v=1.3.0">
+    <link rel="stylesheet" href="../reveal-motion.css?v=1.0.0">
+    <link rel="stylesheet" href="../morph-motion.css?v=1.0.0">
+    <link rel="stylesheet" href="../positioning.css?v=1.1.0">
+    <link rel="stylesheet" href="../accent-theme.css?v=1.0.0">
+    <link rel="stylesheet" href="../projects-motion.css?v=1.0.0">
+    <link rel="stylesheet" href="../fixes.css?v=1.0.0">
+    <link rel="stylesheet" href="../modern-ui.css?v=1.0.0">
+    <link rel="stylesheet" href="../multipage.css?v=1.0.0">
+    <script src="../reveal-motion.js?v=1.1.0" defer></script>
+    <script src="../morph-motion.js?v=1.0.0" defer></script>
+    <script src="../accent-theme.js?v=1.0.0" defer></script>
+</head><body>
+    <div id="shell-chrome"></div>
+    <script src="../site-shell.js"></script>
+    <main class="detail-page">
+      <article class="detail-article">
+        <a class="detail-back" href="index.html"><i class="fas fa-arrow-left"></i> All projects</a>
+        <header class="detail-hero">
+          <div class="detail-domain-tags"><span class="detail-domain-tag is-primary">Software Systems &amp; Full-Stack</span></div>
+          <h1 class="detail-title">Rakkhosh Must Die — Tower Defense Game</h1>
+          <div class="detail-status"><span class="detail-status-dot"></span> Completed</div>
+          <p class="detail-lead">A from-scratch 3D tower-defense game in OpenGL/GLUT: seven escalating waves, weapons, traps, auto-turrets, timed power-ups and a boss fight, with hand-built physics, animation and HUD.</p>
+          
+        </header>
+        <div class="detail-body">
+          <section class="detail-section"><h2 class="detail-section-title">Overview</h2><div class="detail-prose"><p>A complete 3D tower-defense game written from scratch in OpenGL/GLUT — no game engine. You defend a central core from seven escalating waves of enemies using a mix of weapons, placeable traps, auto-targeting turrets and collectible power-ups, building up to a final boss fight.</p></div></section><section class="detail-section"><h2 class="detail-section-title">Gameplay</h2><div class="detail-prose"><p>Three weapons (a fast pistol, a piercing crossbow and a spread-fire shotgun) pair with slow/damage traps and turrets that upgrade as the waves progress. Three timed power-ups — a speed boost, a super-jump and a 'roundhouse' auto-fire spin — spawn on the map to collect and trigger. Four enemy types, from fast fodder to a 20-HP boss, each pathfind toward the core but switch to attacking the player when you get close, and speed up wave by wave.</p></div></section><section class="detail-section"><h2 class="detail-section-title">How it&#x27;s built</h2><div class="detail-prose"><p>Every object — player, enemies, turrets, arena and HUD — is assembled from raw OpenGL primitives (spheres, cylinders, cubes, quads). Under the hood are custom systems for bullet physics and collision, sine-driven walk/idle/float animations, a timer-based wave spawner with difficulty scaling, switchable first-/third-/global-person cameras, and a 2D orthographic HUD drawn over the 3D scene — all driven by hand-written trigonometry and vector maths for movement, aiming and hit detection.</p></div></section><section class="detail-section"><h2 class="detail-section-title">Scope</h2><div class="detail-prose"><p>Seven waves, four enemy types plus a boss, three weapons, three power-ups, and full trap/turret/HUD systems — a complete game loop with proper win and lose conditions.</p></div></section><section class="detail-section"><h2 class="detail-section-title">By the numbers</h2><div class="detail-metrics"><div class="detail-metric"><span class="detail-metric-num">7 waves</span><span class="detail-metric-label">Escalating difficulty</span></div><div class="detail-metric"><span class="detail-metric-num">4+1</span><span class="detail-metric-label">Enemy types + boss</span></div><div class="detail-metric"><span class="detail-metric-num">0</span><span class="detail-metric-label">Game engines — built from scratch</span></div></div></section><section class="detail-section"><h2 class="detail-section-title">Tech stack</h2><div class="detail-tags"><span class="tech-tag">OpenGL / GLUT</span><span class="tech-tag">3D Graphics</span><span class="tech-tag">Game Physics</span></div></section><div class="detail-related"><a class="detail-back" href="index.html"><i class="fas fa-arrow-left"></i> Back to all projects</a></div>
+        </div>
+      </article>
+    </main>
+    <div id="shell-footer"></div>
+    <script src="../script.js?v=2.2.0"></script>
+</body>
+</html>
