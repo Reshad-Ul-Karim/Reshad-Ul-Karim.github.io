@@ -33,6 +33,7 @@
 
   ready(function () {
     buildReel();
+    buildProjectCardLinks();
     buildFilter();
     buildVideoHover();
     buildCountUp();
@@ -41,82 +42,88 @@
   });
 
   /* ======================================================================
-     1. FLAGSHIP REEL — horizontal pinned scrub (desktop, motion-ok).
+     1b. HOME PROJECT CARDS -> detail pages. The single-pager cards are hand-
+     authored (no slug); match each to data/projects.json by title and inject a
+     "View case study" link + make the card clickable for the 'ready' ones.
+     ====================================================================== */
+  function buildProjectCardLinks() {
+    var grid = document.querySelector('.projects-grid');
+    if (!grid) return;
+    var cards = Array.prototype.slice.call(grid.querySelectorAll('.project-card'));
+    if (!cards.length) return;
+
+    function norm(s) {
+      return String(s || '').toLowerCase().replace(/&[a-z]+;/g, ' ')
+        .replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+    function match(map, key) {
+      if (map[key]) return map[key];
+      var keys = Object.keys(map), i;
+      for (i = 0; i < keys.length; i++) if (keys[i].indexOf(key) === 0 || key.indexOf(keys[i]) === 0) return map[keys[i]];
+      var kt = key.split(' ');
+      for (i = 0; i < keys.length; i++) {
+        var okt = keys[i].split(' ');
+        var common = kt.filter(function (t) { return t.length > 2 && okt.indexOf(t) >= 0; }).length;
+        if (common >= Math.min(3, kt.filter(function (t) { return t.length > 2; }).length)) return map[keys[i]];
+      }
+      return null;
+    }
+
+    fetch('data/projects.json', { credentials: 'same-origin' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (!data) return;
+        var list = Array.isArray(data) ? data : (data.projects || []);
+        var map = {};
+        list.forEach(function (p) { if (p && p.title) map[norm(p.title)] = p; });
+
+        cards.forEach(function (card) {
+          var content = card.querySelector('.project-content');
+          var h3 = content && content.querySelector('h3');
+          if (!h3 || content.querySelector('.project-detail-link')) return;
+          var clone = h3.cloneNode(true);
+          Array.prototype.slice.call(clone.querySelectorAll('span')).forEach(function (s) { s.remove(); });
+          var p = match(map, norm(clone.textContent));
+          if (!p || p.detailStatus !== 'ready') return;
+
+          var href = 'projects/' + p.slug + '.html';
+          var a = document.createElement('a');
+          a.className = 'project-detail-link';
+          a.href = href;
+          a.innerHTML = 'View case study <i class="fas fa-arrow-right" aria-hidden="true"></i>';
+          content.appendChild(a);
+          card.classList.add('has-detail');
+        });
+      })
+      .catch(function () {});
+  }
+
+  /* ======================================================================
+     1. FLAGSHIP REEL — a naturally-scrollable grid of flagship cards.
+     No scroll-pinning / no horizontal hijack (that "bottled" the read): the
+     reader just scrolls the page and the cards rise into view as they enter.
+     Layout is pure CSS grid; this only handles the reveal.
      ====================================================================== */
   function buildReel() {
     var reel = document.querySelector('.flagship-reel');
     if (!reel) return;
-    if (!window.gsap || !window.ScrollTrigger || REDUCED) return; // CSS keeps it stacked
+    reel.classList.remove('is-horizontal'); // ensure the old pinned mode is off
 
-    var gsap = window.gsap, ScrollTrigger = window.ScrollTrigger;
-    try { gsap.registerPlugin(ScrollTrigger); } catch (e) {}
+    var panels = Array.prototype.slice.call(reel.querySelectorAll('.flagship-panel'));
+    if (!panels.length) return;
 
-    var mm = gsap.matchMedia();
-    mm.add('(min-width: 992px) and (prefers-reduced-motion: no-preference)', function () {
-      var track = reel.querySelector('.flagship-track');
-      var panels = gsap.utils.toArray('.flagship-panel', track);
-      if (!track || panels.length < 2) return;
-
-      reel.classList.add('is-horizontal');
-
-      // Build progress dots once.
-      var prog = reel.querySelector('.flagship-progress');
-      var dots = [];
-      if (prog && !prog.children.length) {
-        panels.forEach(function () {
-          var d = document.createElement('span');
-          prog.appendChild(d); dots.push(d);
-        });
-      } else if (prog) {
-        dots = gsap.utils.toArray('span', prog);
-      }
-      if (dots[0]) dots[0].classList.add('is-active');
-
-      var distance = function () { return Math.max(0, track.scrollWidth - window.innerWidth); };
-
-      var tl = gsap.timeline({
-        defaults: { ease: 'none' },
-        scrollTrigger: {
-          trigger: reel,
-          start: 'top top',
-          end: function () { return '+=' + distance(); },
-          pin: true,
-          pinSpacing: true,
-          scrub: 1,            // higher scrub = smoother catch-up to the scroll
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-          onUpdate: function (self) {
-            if (!dots.length) return;
-            var idx = Math.round(self.progress * (panels.length - 1));
-            for (var i = 0; i < dots.length; i++) dots[i].classList.toggle('is-active', i === idx);
-          }
-        }
+    if (REDUCED || !('IntersectionObserver' in window)) {
+      panels.forEach(function (p) { p.classList.add('fp-in'); });
+      return;
+    }
+    var io = new IntersectionObserver(function (entries, obs) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('fp-in'); obs.unobserve(e.target); }
       });
-
-      // Main horizontal travel.
-      tl.to(track, { x: function () { return -distance(); } }, 0);
-
-      // Subtle per-panel media parallax across the whole scrub.
-      panels.forEach(function (p) {
-        var img = p.querySelector('.flagship-media img');
-        if (img) tl.fromTo(img, { x: -28 }, { x: 28 }, 0);
-      });
-
-      // Recalc once thumbnails finish loading (their height affects layout).
-      var imgs = reel.querySelectorAll('img');
-      imgs.forEach(function (im) {
-        if (!im.complete) im.addEventListener('load', function () { ScrollTrigger.refresh(); }, { once: true });
-      });
-
-      return function () {
-        // Cleanup when leaving the desktop breakpoint.
-        reel.classList.remove('is-horizontal');
-        gsap.set(track, { clearProps: 'transform' });
-        gsap.utils.toArray('.flagship-media img', reel).forEach(function (im) {
-          gsap.set(im, { clearProps: 'transform' });
-        });
-      };
-    });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
+    panels.forEach(function (p) { io.observe(p); });
+    // Backstop: never leave a card hidden.
+    setTimeout(function () { panels.forEach(function (p) { p.classList.add('fp-in'); }); }, 2500);
   }
 
   /* ======================================================================

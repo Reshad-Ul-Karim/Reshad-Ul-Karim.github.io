@@ -53,24 +53,40 @@
 
 .flagship-viewport { position: relative; }
 
-/* Default = vertical stack (the safe baseline). */
+/* Naturally-scrollable 2-up grid (no scroll-pinning / hijacking). Collapses to
+   a single column on narrow screens. */
 .flagship-track {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(1.25rem, 3vw, 2rem);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1.1rem, 2.4vw, 1.75rem);
+}
+@media (max-width: 760px) {
+  .flagship-track { grid-template-columns: 1fr; }
 }
 
 /* Panel */
 .flagship-panel {
   position: relative;
-  flex: 0 0 auto;
   border-radius: 22px;
   overflow: hidden;
-  min-height: 320px;
+  min-height: clamp(340px, 30vw, 420px);
   border: 1px solid var(--border-color);
   background: var(--bg-secondary);
   box-shadow: var(--shadow-medium);
   isolation: isolate;
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.4s ease, border-color 0.4s ease;
+}
+.flagship-panel.fp-in { opacity: 1; transform: none; }
+.flagship-panel:hover {
+  box-shadow: 0 26px 60px -24px color-mix(in srgb, var(--primary-color) 45%, transparent),
+              var(--shadow-large);
+  border-color: color-mix(in srgb, var(--primary-color) 45%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .flagship-panel { opacity: 1; transform: none; transition: none; }
 }
 
 /* Panel media (image / video poster / gradient placeholder).
@@ -504,3 +520,21 @@ a.flagship-media, button.flagship-media { cursor: pointer; }
 .project-card:hover .project-thumb {
   transform: scale(1.05);
 }
+
+/* ----------------------------------------------------------------------
+   7. HOME PROJECT-CARD -> detail-page CTA (injected by projects-motion.js)
+   --------------------------------------------------------------------- */
+.project-detail-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 1rem;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  text-decoration: none;
+}
+.project-detail-link i { transition: transform 0.2s ease; }
+.project-detail-link:hover { color: var(--secondary-color); }
+.project-detail-link:hover i { transform: translateX(3px); }
+.project-card.has-detail { cursor: default; }
