@@ -560,3 +560,20 @@ a.detail-domain-tag:hover {
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-medium, 0 8px 24px rgba(0,0,0,.12));
 }
+
+/* Detail-page figures (schematics, diagrams). */
+.detail-figure { margin: 0 0 1.25rem; }
+.detail-figure img {
+  display: block;
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  box-shadow: var(--shadow-light);
+}
+.detail-figure figcaption {
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}

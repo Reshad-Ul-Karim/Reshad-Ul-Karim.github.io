@@ -1096,17 +1096,14 @@
             <div class="publications-timeline" data-aos="fade-up" data-aos-delay="300">
                 <h3 class="timeline-title">Publication Timeline</h3>
 
-                <!-- Upcoming Conference Paper — JCSSE 2026 -->
-                <div class="publication-item upcoming" data-aos="fade-up" data-aos-delay="350">
+                <!-- Conference Paper — JCSSE 2026 (published on IEEE Xplore) -->
+                <div class="publication-item" data-aos="fade-up" data-aos-delay="350">
                     <div class="publication-header">
                         <div class="publication-type-badge conference">
                             <i class="fas fa-users"></i>
                             <span>Conference Paper</span>
                         </div>
-                        <div class="publication-date">
-                            <span class="pub-status-pill"><i class="fas fa-clock"></i> To be presented</span>
-                            June 24&ndash;27, 2026
-                        </div>
+                        <div class="publication-date">June 24&ndash;27, 2026</div>
                     </div>
 
                     <div class="publication-content">
@@ -1118,11 +1115,11 @@
                             <div class="venue-info">
                                 <i class="fas fa-building"></i>
                                 <span class="venue-name">JCSSE 2026 &mdash; 23rd Int'l Joint Conf. on Computer Science &amp; Software Engineering</span>
-                                <span class="impact-factor">To be presented</span>
+                                <span class="impact-factor">IEEE Xplore</span>
                             </div>
                             <div class="doi-info">
-                                <i class="fas fa-calendar-check"></i>
-                                <span>To be presented at JCSSE 2026 &middot; 24&ndash;27 June 2026</span>
+                                <i class="fas fa-link"></i>
+                                <a href="https://ieeexplore.ieee.org/document/11596610/" target="_blank" rel="noopener noreferrer">ieeexplore.ieee.org/document/11596610</a>
                             </div>
                         </div>
 
@@ -1138,10 +1135,10 @@
                         </div>
 
                         <div class="publication-actions">
-                            <span class="action-btn primary upcoming-btn" aria-disabled="true" title="Paper will be available after the conference">
-                                <i class="fas fa-clock"></i>
-                                <span>Paper &middot; JCSSE 2026</span>
-                            </span>
+                            <a href="https://ieeexplore.ieee.org/document/11596610/" class="action-btn primary" target="_blank" rel="noopener noreferrer">
+                                <i class="fas fa-external-link-alt"></i>
+                                <span>Read Paper</span>
+                            </a>
                             <a href="https://github.com/Reshad-Ul-Karim/Autonomous-Keyboard-typing-test" class="action-btn secondary" target="_blank" rel="noopener noreferrer">
                                 <i class="fab fa-github"></i>
                                 <span>View Code</span>
@@ -1871,6 +1868,9 @@
                         </div>
                         <div class="project-overlay">
                             <div class="project-links">
+                                <a href="https://ieeexplore.ieee.org/document/11596610/" class="project-link" target="_blank" rel="noopener noreferrer" title="IEEE paper" aria-label="IEEE paper">
+                                    <i class="fas fa-file-alt"></i>
+                                </a>
                                 <a href="https://github.com/Reshad-Ul-Karim/Autonomous-Keyboard-typing-test" class="project-link" target="_blank" rel="noopener noreferrer">
                                     <i class="fab fa-github"></i>
                                 </a>
@@ -1886,7 +1886,7 @@
                         </div>
                     </div>
                     <div class="project-content">
-                        <h3>Vision-based Hand Gesture Virtual Keyboard-Mouse <span class="project-badge ongoing">Ongoing</span></h3>
+                        <h3>Vision-based Hand Gesture Virtual Keyboard-Mouse</h3>
                         <p>Developed a modular real-time pipeline integrating MediaPipe hand-landmark gesture recognition with bilingual LSTM next-word prediction in English and Bangla within a unified keyboard-mouse interface featuring performance monitoring, delivering a low-latency, resource-efficient touchless text entry solution for desktop and wearable devices.</p>
                         <div class="project-features">
                             <span class="feature">Hand Gesture Recognition</span>
@@ -1993,7 +1993,38 @@
                         </div>
                     </div>
                 </div>
-                
+
+                <div class="project-card" data-aos="fade-up" data-aos-delay="650" data-tilt data-tilt-max="8" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.15" data-tilt-scale="1.02">
+                    <div class="project-image">
+                        <img class="project-thumb" src="assets/images/project-cards/cse350-robot.jpg" alt="Microcontroller-free obstacle-avoiding robot" loading="lazy" decoding="async">
+                        <div class="project-placeholder">
+                            <i class="fas fa-robot"></i>
+                            <span>RTL Robot</span>
+                        </div>
+                        <div class="project-overlay">
+                            <div class="project-links">
+                                <button class="project-link pdf-viewer-btn" data-pdf="assets/papers/cse350-obstacle-robot-report.pdf" data-title="Microcontroller-Free Obstacle-Avoiding Robot — Report">
+                                    <i class="fas fa-file-pdf"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="project-tech-stack">
+                            <span class="tech-tag">RTL Logic</span>
+                            <span class="tech-tag">IR Sensors</span>
+                            <span class="tech-tag">L298N</span>
+                        </div>
+                    </div>
+                    <div class="project-content">
+                        <h3>Microcontroller-Free Obstacle-Avoiding Robot</h3>
+                        <p>An obstacle-avoiding robot with no microcontroller and no code &mdash; obstacle detection and motor control are built entirely from IR sensors, op-amp comparators and discrete transistor (RTL) logic gates driving an L298N H-bridge. A hands-on proof that autonomous behaviour doesn't always need a programmable brain. (CSE350.)</p>
+                        <div class="project-features">
+                            <span class="feature">No Microcontroller</span>
+                            <span class="feature">Logic-Gate Control</span>
+                            <span class="feature">Real-time Avoidance</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="project-card" data-aos="fade-up" data-aos-delay="1000" data-tilt data-tilt-max="8" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.15" data-tilt-scale="1.02">
                     <div class="project-image">
                         <!-- YouTube Video Preview -->

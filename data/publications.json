@@ -2,7 +2,7 @@
   {
     "slug": "gesture-keyboard-jcsse-2026",
     "type": "conference",
-    "status": "upcoming",
+    "status": "published",
     "title": "Vision-based Hand Gesture Virtual Keyboard-Mouse Framework with Bilingual Next-word Prediction",
     "authorsShort": "Mahdi, S., <strong>Karim, R. U.</strong>, Sujat, T., Tabassum, S. M., Samin, A., Zereen, A. N.",
     "authors": [
@@ -22,7 +22,7 @@
     "date": "2026-06-24",
     "dateDisplay": "June 24–27, 2026",
     "doi": null,
-    "url": null,
+    "url": "https://ieeexplore.ieee.org/document/11596610/",
     "code": "https://github.com/Reshad-Ul-Karim/Autonomous-Keyboard-typing-test",
     "media": {
       "type": "none"
@@ -45,7 +45,8 @@
     "seo": {
       "description": "JCSSE 2026 conference paper: a real-time touchless keyboard-mouse pairing MediaPipe hand-landmark gestures with bilingual (English/Bangla) LSTM next-word prediction.",
       "ogImage": null
-    }
+    },
+    "note": null
   },
   {
     "slug": "stroke-xai-ieee-access",

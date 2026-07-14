@@ -726,10 +726,11 @@
     "links": {
       "github": null,
       "youtube": null,
-      "pdf": null,
+      "pdf": "assets/papers/Group19-CSE422.pdf",
       "paper": null,
       "poster": null,
-      "live": null
+      "live": null,
+      "pdfTitle": "Academic Success Prediction — CSE422 Report"
     },
     "relatedPublications": [],
     "detailStatus": "ready",
@@ -766,7 +767,7 @@
     "slug": "gesture-keyboard-mouse",
     "title": "Vision-based Hand Gesture Virtual Keyboard-Mouse",
     "shortTitle": "Gesture Keyboard-Mouse",
-    "status": "ongoing",
+    "status": "completed",
     "flagship": false,
     "weight": 85,
     "date": "2026-06",
@@ -795,7 +796,7 @@
       "github": "https://github.com/Reshad-Ul-Karim/Autonomous-Keyboard-typing-test",
       "youtube": null,
       "pdf": "assets/papers/hand-gesture-keyboard-mouse-slides.pdf",
-      "paper": null,
+      "paper": "https://ieeexplore.ieee.org/document/11596610/",
       "poster": null,
       "live": null
     },
@@ -804,7 +805,7 @@
     ],
     "detailStatus": "ready",
     "seo": {
-      "description": "A real-time touchless keyboard-mouse pairing MediaPipe hand-gesture recognition with bilingual (English/Bangla) LSTM next-word prediction. To appear at JCSSE 2026.",
+      "description": "Vision-based hand-gesture virtual keyboard-mouse with bilingual (English/Bangla) LSTM next-word prediction — a low-latency touchless text-entry system (IEEE, JCSSE 2026).",
       "ogImage": null
     },
     "skills": [
@@ -964,6 +965,91 @@
       "Fall detection",
       "Real-time SMS/Wi-Fi alerts"
     ]
+  },
+  {
+    "slug": "obstacle-avoiding-rtl-robot",
+    "title": "Microcontroller-Free Obstacle-Avoiding Robot",
+    "shortTitle": "RTL Obstacle Robot",
+    "status": "completed",
+    "flagship": false,
+    "weight": 55,
+    "date": "2025-05",
+    "domains": [
+      "robotics-edge"
+    ],
+    "description": "An obstacle-avoiding robot with <strong>no microcontroller and no code</strong> — obstacle detection and motor control are built entirely from IR sensors, op-amp comparators and discrete transistor (RTL) logic gates. A hands-on proof that autonomous behaviour doesn't always need a programmable brain. (CSE350.)",
+    "techTags": [
+      "Transistor (RTL) logic",
+      "IR + op-amp comparators",
+      "L298N H-bridge"
+    ],
+    "features": [
+      "No microcontroller",
+      "Logic-gate control",
+      "Real-time avoidance"
+    ],
+    "skills": [
+      "Digital electronics",
+      "Resistor-Transistor Logic (RTL)",
+      "BJT / NPN transistors",
+      "Op-amp comparators",
+      "IR sensing",
+      "L298N motor driver",
+      "Circuit design",
+      "Breadboarding"
+    ],
+    "metrics": [
+      {
+        "value": "0",
+        "suffix": "",
+        "label": "Microcontrollers / lines of code"
+      },
+      {
+        "value": "2",
+        "suffix": " IR",
+        "label": "Sensors → transistor logic → motors"
+      }
+    ],
+    "media": {
+      "type": "image",
+      "src": "assets/images/project-cards/cse350-robot.jpg",
+      "alt": "Microcontroller-free obstacle-avoiding robot",
+      "label": "RTL Robot",
+      "icon": "fas fa-robot"
+    },
+    "figures": [
+      {
+        "src": "assets/images/project-cards/cse350-schematic.jpg",
+        "caption": "Full circuit: IR sensors → op-amp comparators → RTL NOT gates (NPN BJTs) → L298N H-bridge → DC motors — no programmable parts."
+      }
+    ],
+    "links": {
+      "github": null,
+      "youtube": null,
+      "pdf": "assets/papers/cse350-obstacle-robot-report.pdf",
+      "pdfTitle": "Microcontroller-Free Obstacle-Avoiding Robot — Report",
+      "paper": null,
+      "poster": null,
+      "live": null
+    },
+    "detailStatus": "ready",
+    "sections": [
+      {
+        "title": "Overview",
+        "body": "An obstacle-avoiding robot that navigates with no microcontroller and no code at all — every decision is made by discrete electronics. It's a hands-on demonstration that autonomous behaviour doesn't always need a programmable brain, built for CSE350 (digital logic / electronics)."
+      },
+      {
+        "title": "How it works",
+        "body": "Infrared sensors paired with op-amp comparators turn how much light bounces back off an obstacle into clean binary (on/off) signals. Those pass through Resistor-Transistor Logic (RTL) NOT gates built from NPN transistors, which generate the motor-control logic, and an L298N H-bridge then drives the two DC motors. The result: the robot steers away from obstacles purely through analog sensing and transistor logic."
+      },
+      {
+        "title": "Why it's interesting",
+        "body": "By removing every programmable component, it becomes a clear teaching model for beginners in robotics and digital electronics — and a reminder of how much you can do with comparators and a handful of logic gates. Bench testing showed reliable detection and dynamic response across a range of obstacle scenarios."
+      }
+    ],
+    "seo": {
+      "description": "A microcontroller-free obstacle-avoiding robot built from IR sensors, op-amp comparators and discrete transistor (RTL) logic gates driving an L298N H-bridge — CSE350."
+    }
   },
   {
     "slug": "service-robot",
