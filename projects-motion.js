@@ -84,12 +84,26 @@
           var clone = h3.cloneNode(true);
           Array.prototype.slice.call(clone.querySelectorAll('span')).forEach(function (s) { s.remove(); });
           var p = match(map, norm(clone.textContent));
-          if (!p || p.detailStatus !== 'ready') return;
+          if (!p) return;
 
-          var href = 'projects/' + p.slug + '.html';
+          // Decorate the card with its thumbnail from the data (if it has an
+          // image and doesn't already carry a hard-coded one).
+          var m = p.media || {};
+          var imgBox = card.querySelector('.project-image');
+          if (m.type === 'image' && m.src && imgBox && !imgBox.querySelector('.project-thumb')) {
+            var thumb = document.createElement('img');
+            thumb.className = 'project-thumb';
+            thumb.src = m.src;
+            thumb.alt = m.alt || p.title || '';
+            thumb.loading = 'lazy'; thumb.decoding = 'async';
+            imgBox.insertBefore(thumb, imgBox.firstChild);
+          }
+
+          // Detail-page CTA — only for 'ready' projects.
+          if (p.detailStatus !== 'ready') return;
           var a = document.createElement('a');
           a.className = 'project-detail-link';
-          a.href = href;
+          a.href = 'projects/' + p.slug + '.html';
           a.innerHTML = 'View case study <i class="fas fa-arrow-right" aria-hidden="true"></i>';
           content.appendChild(a);
           card.classList.add('has-detail');

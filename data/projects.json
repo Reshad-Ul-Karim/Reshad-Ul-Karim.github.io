@@ -24,9 +24,11 @@
       "Agentic Planner + Vector Memory"
     ],
     "media": {
-      "type": "icon",
+      "type": "image",
       "icon": "fas fa-lightbulb",
-      "label": "LUMENAA"
+      "label": "LUMENAA",
+      "src": "assets/images/project-cards/lumenaa.jpg",
+      "alt": "LUMENAA — edge-native assistive vision agent"
     },
     "metrics": [
       {
@@ -112,9 +114,11 @@
       "Ongoing · for publication"
     ],
     "media": {
-      "type": "icon",
+      "type": "image",
       "icon": "fas fa-arrows-spin",
-      "label": "HARP-RoPE"
+      "label": "HARP-RoPE",
+      "src": "assets/images/project-cards/harp-rope.jpg",
+      "alt": "HARP-RoPE — hierarchical rotary positional encoding"
     },
     "metrics": [],
     "links": {
@@ -239,9 +243,11 @@
       "Ongoing · for publication"
     ],
     "media": {
-      "type": "icon",
+      "type": "image",
       "icon": "fas fa-vector-square",
-      "label": "Paraphrase Geometry"
+      "label": "Paraphrase Geometry",
+      "src": "assets/images/project-cards/paraphrase-geometry.jpg",
+      "alt": "Paraphrase-geometry embedding refinement (CSP)"
     },
     "metrics": [],
     "links": {
@@ -303,9 +309,11 @@
       "Single RGB image"
     ],
     "media": {
-      "type": "icon",
+      "type": "image",
       "icon": "fas fa-cube",
-      "label": "CAMDet"
+      "label": "CAMDet",
+      "src": "assets/images/project-cards/camdet.jpg",
+      "alt": "CAMDet — camera-agnostic 3D object detection"
     },
     "metrics": [
       {
@@ -831,9 +839,11 @@
       "Voice Commands"
     ],
     "media": {
-      "type": "icon",
+      "type": "image",
       "icon": "fas fa-eye",
-      "label": "DRISTEE Navigation"
+      "label": "DRISTEE Navigation",
+      "src": "assets/images/project-cards/dristee-navigation.jpg",
+      "alt": "DRISTEE — navigation assistant for the visually impaired"
     },
     "metrics": [],
     "links": {
