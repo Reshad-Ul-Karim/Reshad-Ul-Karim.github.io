@@ -933,8 +933,8 @@
     ],
     "media": {
       "type": "image",
-      "src": "assets/images/project-cards/wearable-fall-detection.png",
-      "alt": "Wearable health monitoring and fall detection device with IoT sensors"
+      "src": "assets/images/project-cards/wearable-fall-detect-elderly.jpg",
+      "alt": "Arduino-based circuit schematic of the wearable health-monitoring and fall-detection device (sensors, GSM, GPS, power)"
     },
     "metrics": [
       {

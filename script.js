@@ -683,16 +683,25 @@ function initLoadingScreen() {
     `;
     
     document.body.appendChild(loadingScreen);
-    
-    // Hide loading screen when page is fully loaded
-    window.addEventListener('load', () => {
-        setTimeout(() => {
-            loadingScreen.classList.add('hidden');
-            setTimeout(() => {
-                loadingScreen.remove();
-            }, 500);
-        }, 1000);
-    });
+
+    let hidden = false;
+    const hide = () => {
+        if (hidden) return;
+        hidden = true;
+        loadingScreen.classList.add('hidden');
+        setTimeout(() => loadingScreen.remove(), 500);
+    };
+
+    // Hide when the page has loaded — or immediately if it already has
+    // (subpage navigations can run this after 'load' has fired).
+    if (document.readyState === 'complete') {
+        hide();
+    } else {
+        window.addEventListener('load', hide);
+    }
+    // Safety net: a slow/hung CDN or image must never keep the full-screen
+    // overlay up and block the whole view.
+    setTimeout(hide, 2500);
 }
 
 // ===== ACTIVE NAV LINK =====
