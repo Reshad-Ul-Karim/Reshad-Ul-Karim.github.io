@@ -164,6 +164,9 @@
   // Own tilt: mirror the single-pager's project-card tilt options.
   function initTilt(cards) {
     if (typeof window.VanillaTilt === 'undefined' || !cards.length) return;
+    // Skip 3D tilt on touch / coarse pointers: the emulated mouse-move it
+    // reacts to shifts the card mid-tap, which was swallowing "Read more" taps.
+    if (!window.matchMedia || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
     try {
       window.VanillaTilt.init(cards, {
         max: 8, speed: 400, glare: true, 'max-glare': 0.15, scale: 1.02

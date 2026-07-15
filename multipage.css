@@ -249,16 +249,18 @@
   padding-top: calc(4rem + var(--safe-area-inset-top, 0px));
   padding-bottom: clamp(3rem, 8vw, 6rem);
   min-height: 100vh;
+  overflow-x: hidden;            /* safety: nothing can cause a sideways scroll */
   background:
     linear-gradient(135deg, var(--bg-secondary) 0%, rgba(var(--accent-primary-rgb), 0.02) 100%),
     radial-gradient(circle at 78% 8%, rgba(var(--accent-tertiary-rgb), 0.05) 0%, transparent 45%);
 }
 
-/* Readable column. Reuse .container for the outer gutter, then narrow. */
+/* Readable column with its own side gutters (detail pages don't use .container). */
 .detail-article {
   width: 100%;
   max-width: 780px;
   margin: 0 auto;
+  padding-inline: clamp(1.15rem, 5vw, 1.75rem);
 }
 
 /* ---- Back-link ---- */
@@ -324,11 +326,14 @@ a.detail-domain-tag:hover {
 
 .detail-title {
   margin: 0 0 0.9rem;
-  font-size: clamp(1.9rem, 5vw, 3rem);
+  font-size: clamp(1.7rem, 5vw, 3rem);
   font-weight: 800;
-  line-height: 1.08;
+  line-height: 1.1;
   letter-spacing: -0.025em;
   color: var(--text-primary);
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 /* Status pill echoes the hero status dot from modern-ui.css. */
@@ -568,6 +573,20 @@ a.detail-domain-tag:hover {
   .mp-filters { justify-content: flex-start; }
   .detail-links { gap: 0.55rem; }
   .detail-link { flex: 1 1 auto; justify-content: center; }
+  /* Metrics: two-up, don't blow out the row */
+  .detail-metrics { padding: 1.1rem; gap: 0.9rem 1.1rem; }
+  .detail-metric { flex: 1 1 42%; min-width: 0; }
+  .detail-metric-num { font-size: clamp(1.5rem, 8vw, 2rem); }
+  .detail-metric-label { overflow-wrap: break-word; }
+  /* Media: shorter, tighter corners on small screens */
+  .detail-cover { max-height: 300px; border-radius: 14px; }
+  .detail-figure img { border-radius: 10px; }
+  .detail-domain-tag { font-size: 0.7rem; padding: 0.28rem 0.65rem; }
+  .detail-prose p, .detail-prose li { font-size: 0.96rem; line-height: 1.7; }
+  .detail-section-title { font-size: clamp(1.2rem, 5.5vw, 1.5rem); }
+}
+@media (max-width: 380px) {
+  .detail-title { font-size: 1.55rem; }
 }
 
 /* Detail-page cover image (shown when a project has an image; below the hero). */
