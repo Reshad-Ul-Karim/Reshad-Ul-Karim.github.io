@@ -1314,5 +1314,137 @@
       "Multimodal fusion",
       "Python"
     ]
+  },
+  {
+    "slug": "enterprise-ai-document-assistant",
+    "title": "Enterprise AI Document Assistant",
+    "shortTitle": "Document Assistant",
+    "status": "completed",
+    "flagship": false,
+    "weight": 92,
+    "date": "2026-07",
+    "domains": [
+      "genai-llm",
+      "software-systems"
+    ],
+    "description": "A retrieval-augmented HR compliance assistant over an Employee Handbook and the Bangladesh Labour Act 2006 — every answer carries its source page and a verbatim quote, or an honest \"not found.\"",
+    "techTags": [
+      "RAG · Hybrid Retrieval",
+      "FastAPI · Mistral",
+      "Grounded Citations"
+    ],
+    "features": [
+      "Verbatim-quote citations",
+      "Structural \"I don't know\"",
+      "Live on a free 512 MB box"
+    ],
+    "media": {
+      "type": "image",
+      "src": "assets/images/project-cards/document-assistant.png",
+      "alt": "Enterprise AI Document Assistant interface — notebooks, PDF upload and a cited answer",
+      "label": "Document Assistant",
+      "icon": "fas fa-file-shield"
+    },
+    "metrics": [
+      {
+        "value": "0.00",
+        "suffix": "",
+        "label": "False-answer rate — it has never answered what it should have refused"
+      },
+      {
+        "value": "0.875",
+        "suffix": "",
+        "label": "recall@5 (n=16 questions with a gold section)"
+      },
+      {
+        "value": "6/6",
+        "suffix": "",
+        "label": "Unanswerable questions correctly refused (Tier D)"
+      },
+      {
+        "value": "498,240",
+        "suffix": "",
+        "label": "Characters OCR'd from 181 scanned pages in ~98 s"
+      },
+      {
+        "value": "0.008",
+        "suffix": " ms",
+        "label": "Exact-cosine search over 482 chunks · 342 sections"
+      }
+    ],
+    "links": {
+      "github": "https://github.com/Reshad-Ul-Karim/enterprise-AI-document-assistant",
+      "youtube": null,
+      "pdf": null,
+      "paper": null,
+      "poster": null,
+      "live": "https://enterprise-ai-document-assistant-8baj.onrender.com"
+    },
+    "relatedPublications": [],
+    "detailStatus": "ready",
+    "seo": {
+      "description": "Enterprise AI Document Assistant: a RAG-based HR policy compliance assistant over an Employee Handbook and the Bangladesh Labour Act 2006, with verbatim-quote citations, a structural abstention gate and a measured 0.00 false-answer rate.",
+      "ogImage": null
+    },
+    "badge": "Live demo",
+    "sections": [
+      {
+        "title": "What it does",
+        "body": "An HR policy <strong>compliance assistant</strong> over the Partex Star Group Employee Handbook and the Bangladesh Labour Act 2006. You ask a question in natural language and get a concise answer carrying the source document, the printed page number and a verbatim quote — or an explicit <em>\"not found in the provided documents.\"</em> The whole thing serves from a free 512 MB, 0.1-CPU box with no GPU, and the design decisions below mostly follow from taking that constraint seriously rather than wishing it away."
+      },
+      {
+        "title": "Two modes",
+        "body": "The live URL opens on a <strong>public demo corpus with no sign-in</strong> — the handbook plus statute compliance assistant — on the reasoning that a demo behind a login is a demo nobody sees. A second <strong>\"My documents\"</strong> mode is sign-in gated: upload any PDF and chat with it, with scanned PDFs OCR'd through a Mistral HTTP call, which is the only reason runtime OCR is possible on a 0.1-CPU box at all. Auth gates <em>only</em> the upload surface, because uploading is what consumes quota and writes to a store."
+      },
+      {
+        "title": "The corpus turned out to be a falsifiable claim plus its evidence base",
+        "body": "The brief described six documents totalling 20–30 pages. The assets were <strong>two documents totalling 187 pages</strong>, and five of the six named documents did not exist. The one called a company profile is really the Employee Handbook — its PDF metadata title says so — laid out as a landscape two-up spread; the other is 181 pages of pure scanned image with zero extractable text. And then the useful part: the handbook states on its first printed folio that its policies are <em>\"in compliance with the applicable labor laws of Bangladesh\"</em> — and the other 181 pages are the exact statute that claim refers to. So this is not a document search box, and it finds real gaps. Casual and sick leave sit exactly at the statutory floor, and annual leave exceeds it — but <strong>maternity leave (16 weeks under ss.45/46), festival holidays (11 paid days under s.118) and overtime pay (2× under s.108) are absent from the handbook entirely</strong>, and its \"leave after completion of probation\" carve-out conflicts with the Act's \"<em>every</em> worker.\""
+      },
+      {
+        "title": "Build time vs runtime — the line that makes free hosting survivable",
+        "body": "Ingestion is an offline batch pipeline; serving is a stateless online service, and the boundary between them is the whole architecture. The 181-page scanned statute is OCR'd <strong>once</strong> on a developer machine (498,240 characters in ~98 seconds across 8 workers), de-interleaved, split into 342 sections behind a build gate, chunked section-aware into 482 chunks and embedded into a ~2 MB index artifact committed to plain git — no LFS. The runtime image therefore contains <strong>no tesseract, no PDFs and no torch</strong>. OCR-ing 181 pages on a 0.1-CPU box during a cold start, while a reviewer waits, would blow the timeout, the memory limit and their patience at once. Measured peak RSS is ~435 MB against a 512 MB ceiling — it fits, with about 15% headroom."
+      },
+      {
+        "title": "How the \"I don't know\" actually works",
+        "body": "The obvious implementation is measurably wrong here: <strong>similarity thresholding is an anti-signal on this corpus.</strong> The unanswerable question <em>\"how many days of paternity leave?\"</em> scores 0.413 because it collides with the casual-leave chunk, while two genuinely answerable questions score 0.179 and 0.224 — the distributions <em>invert</em>, so any threshold that refuses paternity also refuses the Chairperson. That isn't bad luck: a good adversarial question is plausible, and plausible means semantically adjacent. So refusal is structural, in code, with zero extra model calls. The handbook is pinned in context in full (3,081 tokens), which makes its silence a provable fact rather than a failed top-k; every claim must cite a retrieved chunk; the quoted span is sliced by code and verified against that chunk, and claims that fail verification are stripped; if all claims are stripped, <code>insufficient_information</code> is set <strong>by code, not chosen by the model</strong>. A refusal returns <code>200 OK</code>, never a 422 — it is a designed product state, not a transport failure."
+      },
+      {
+        "title": "Measured, not asserted",
+        "body": "A 30-question harness across four tiers runs against the live pipeline, and the numbers include the ones that don't flatter it. <strong>recall@5 is 0.875</strong>, the <strong>false-answer rate is 0.00</strong> — it has never once answered something it should have refused — and all six unanswerable questions are refused correctly. But it <strong>false-refuses answerable questions about a third of the time</strong>, and that is a deliberate trade: every claim must quote its source and the quote is checked against the raw text, so you never see a confident fabrication, at the cost of sometimes seeing \"not found\" for something the corpus does contain. On a compliance assistant, under-answering beats mis-answering. The false refusals even have a traceable cause: the corpus is 97% OCR'd, so the source contains real errors (<em>\"in a calender year\"</em>, <em>\"Extra-ailowance\"</em>), and the model, being a careful writer, silently corrects them when quoting — and a corrected quote does not exist in the source. Tolerating one character of drift per long word while requiring numbers and short tokens to match exactly took the false-refusal rate from 0.57 to 0.36. The judge is <strong>Gemini rather than Mistral</strong> — cross-family, not cross-tier, because models score their own family's output higher."
+      },
+      {
+        "title": "Design decisions, each kept or killed by a measurement",
+        "body": "<strong>Why RAG when the corpus fits in one window?</strong> It does fit — 46.6% of it, measured with Mistral's own tokenizer rather than chars/4 — so RAG is a defended choice, not a necessity: citation provenance is true by construction when a chunk carries its own page number, whereas context-stuffing invents them. <strong>No ANN index</strong>: at 482 vectors, exact cosine costs 0.008 ms against a ~2-second model call, and reaching for a distributed vector DB to serve 0.74 MB is infrastructure cosplay. <strong>No agent</strong>: I went hunting for a query single-shot actually gets wrong, found that section-aware chunking already handled the one everybody reaches for, and so wrote no loop. <strong>No router</strong>: it's a cost optimisation, and on a free tier requests are scarce rather than dollars — the optimisation inverted, so it was deleted. <strong>No reranker</strong>: recall@5 is already 1.00 and you can't rerank above it, and worse, the handbook's leave clause is statutory boilerplate lifted from the Act, so a similarity-maximising reranker would promote both near-duplicates in exactly the case where policy most needs distinguishing from statute. <strong>No fine-tuning</strong>: I can train it, but a live URL is mandatory and free hosting has no GPU."
+      },
+      {
+        "title": "Boundaries the build enforces",
+        "body": "A fifteen-line <code>.importlinter</code> contract says <code>src.core</code> may not import <code>fastapi</code>, <code>starlette</code>, <code>uvicorn</code>, <code>mcp</code>, <code>pinecone</code>, <code>mistralai</code> or a text splitter — and it runs in CI <em>and</em> in pytest. That isn't a style preference: it's what lets the whole suite run offline against an injected fake generator with no API key and no network, it's why swapping the hosted API for self-hosted Apache-2.0 weights is a one-file change, and it's why exposing this over MCP would be a small adapter rather than a refactor. The same discipline shows up in the API surface: citations are typed objects the whole way out rather than markdown strings, so the model structurally cannot fabricate a citation; uploads return <code>202</code> and a job to poll rather than blocking past a proxy timeout; and errors are a typed envelope with real codes, never a 200 with a stack trace."
+      }
+    ],
+    "figures": [
+      {
+        "src": "assets/images/project-cards/docai-architecture.png",
+        "caption": "Architecture. The line across the middle is the point: ingestion (OCR, sectioning, chunking, embedding) runs once on a developer machine and commits a ~2 MB index artifact; the runtime is a stateless FastAPI service with no tesseract, no PDFs and no torch, so it survives a 512 MB / 0.1-CPU free tier."
+      },
+      {
+        "src": "assets/images/project-cards/docai-logo.jpg",
+        "caption": "Enterprise AI Document Assistant — project logo."
+      }
+    ],
+    "skills": [
+      "Retrieval-Augmented Generation (RAG)",
+      "Hybrid retrieval (BM25 + dense, RRF)",
+      "Abstention / grounding design",
+      "Span verification",
+      "LLM evaluation (LLM-as-judge)",
+      "FastAPI",
+      "Mistral (mistral-large-2512)",
+      "OCR pipelines (tesseract)",
+      "fastembed · ONNX int8 embeddings",
+      "Pinecone (namespace-per-KB)",
+      "Python",
+      "pytest · import-linter · CI",
+      "Render deployment"
+    ]
   }
 ]
