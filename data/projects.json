@@ -1390,35 +1390,125 @@
     "sections": [
       {
         "title": "What it does",
-        "body": "An HR policy <strong>compliance assistant</strong> over the Partex Star Group Employee Handbook and the Bangladesh Labour Act 2006. You ask a question in natural language and get a concise answer carrying the source document, the printed page number and a verbatim quote — or an explicit <em>\"not found in the provided documents.\"</em> The whole thing serves from a free 512 MB, 0.1-CPU box with no GPU, and the design decisions below mostly follow from taking that constraint seriously rather than wishing it away."
+        "body": "An HR policy <strong>compliance assistant</strong> over the Partex Star Group Employee Handbook and the Bangladesh Labour Act 2006. You ask a question in plain English and get a concise answer carrying the source document, the printed page number and a verbatim quote — or an explicit <em>\"not found in the provided documents.\"</em> It is not a document search box: because the corpus pairs a company handbook with the statute that handbook claims to comply with, it can compare policy against the legal floor and say where the two disagree.",
+        "bullets": [
+          "Natural-language Q&amp;A over an employee handbook and a 181-page labour statute",
+          "Every claim names its source document and printed page, and quotes the text <strong>verbatim</strong>",
+          "A designed, explicit <strong>\"not found\"</strong> instead of a confident guess",
+          "Cross-document compliance reasoning — company policy measured against the statutory floor",
+          "A public demo that needs no sign-in, plus a private upload-and-chat mode for your own PDFs",
+          "Serves from a free 512 MB · 0.1-CPU box with no GPU"
+        ]
       },
       {
         "title": "Two modes",
-        "body": "The live URL opens on a <strong>public demo corpus with no sign-in</strong> — the handbook plus statute compliance assistant — on the reasoning that a demo behind a login is a demo nobody sees. A second <strong>\"My documents\"</strong> mode is sign-in gated: upload any PDF and chat with it, with scanned PDFs OCR'd through a Mistral HTTP call, which is the only reason runtime OCR is possible on a 0.1-CPU box at all. Auth gates <em>only</em> the upload surface, because uploading is what consumes quota and writes to a store."
+        "body": "The live URL opens on the <strong>public demo corpus</strong> with no sign-in — on the reasoning that a demo behind a login is a demo nobody sees. A second <strong>\"My documents\"</strong> mode is sign-in gated: create a notebook, upload any PDF and chat with it, with scanned files OCR'd through a Mistral HTTP call (the only reason runtime OCR is possible on a 0.1-CPU box at all). Auth gates <em>only</em> the upload surface, because uploading is what consumes quota and writes to a store.",
+        "bullets": [
+          "<strong>Demo corpus</strong> — public, no sign-in: the handbook + Labour Act compliance assistant",
+          "<strong>My documents</strong> — sign-in required: notebooks, PDF upload, OCR, chat",
+          "Session auth via an HttpOnly, Secure, SameSite cookie; the server stores only a <strong>bcrypt hash</strong>, in an environment variable — no plaintext, no user table for a single account",
+          "Uploads persist in Pinecone when configured (one namespace per notebook, chunk text riding in the metadata); otherwise they live in memory and <strong>the UI says so at upload time</strong>, before you spend the effort",
+          "Ingestion is idempotent on <code>sha256</code> of the bytes — recovery is a re-upload, never a duplicate"
+        ]
       },
       {
-        "title": "The corpus turned out to be a falsifiable claim plus its evidence base",
-        "body": "The brief described six documents totalling 20–30 pages. The assets were <strong>two documents totalling 187 pages</strong>, and five of the six named documents did not exist. The one called a company profile is really the Employee Handbook — its PDF metadata title says so — laid out as a landscape two-up spread; the other is 181 pages of pure scanned image with zero extractable text. And then the useful part: the handbook states on its first printed folio that its policies are <em>\"in compliance with the applicable labor laws of Bangladesh\"</em> — and the other 181 pages are the exact statute that claim refers to. So this is not a document search box, and it finds real gaps. Casual and sick leave sit exactly at the statutory floor, and annual leave exceeds it — but <strong>maternity leave (16 weeks under ss.45/46), festival holidays (11 paid days under s.118) and overtime pay (2× under s.108) are absent from the handbook entirely</strong>, and its \"leave after completion of probation\" carve-out conflicts with the Act's \"<em>every</em> worker.\""
+        "title": "Answers that carry their own evidence",
+        "body": "The citation path is built so that a fabricated source is <em>structurally</em> impossible rather than merely discouraged. The model never writes a citation string at all: it points at a retrieved chunk, and the quote, the document title and the page number are assembled from that chunk by code.",
+        "bullets": [
+          "Source document + <strong>printed page number</strong> on every claim",
+          "The quoted snippet is <strong>sliced from the retrieved chunk by code, never generated</strong>",
+          "Citations are typed objects the whole way out, never markdown strings — so the UI renders from a typed object and the model <strong>cannot fabricate a citation</strong>",
+          "Printed folio ≠ PDF page: the offset is derived, validated against OCR'd footers and asserted in tests",
+          "Titles come from a curated manifest, never from filenames"
+        ]
+      },
+      {
+        "title": "It refuses when it should — and that is the hard part",
+        "body": "Knowing when to say \"I don't know\" is the highest-signal requirement here, and the obvious implementation is <strong>measurably wrong on this corpus</strong>. Similarity thresholding is an anti-signal: the unanswerable question <em>\"how many days of paternity leave?\"</em> scores <strong>0.413</strong> because it collides with the casual-leave chunk, while two genuinely answerable questions score <strong>0.179</strong> and <strong>0.224</strong>. The distributions invert, so any threshold that refuses paternity also refuses \"who is the Chairperson?\" — which is not bad luck, because a good adversarial question is plausible, and plausible means semantically adjacent. Refusal is therefore structural, in code, with zero extra model calls.",
+        "bullets": [
+          "The handbook is <strong>pinned in context in full</strong> (3,081 tokens), so its silence is a provable fact rather than a failed top-k",
+          "Every claim must cite a retrieved chunk",
+          "<strong>Span verification</strong> — the quoted span must actually appear in the cited chunk; claims that fail are stripped",
+          "If every claim is stripped, <code>insufficient_information</code> is set <strong>by code, not chosen by the model</strong>",
+          "A refusal returns <code>200 OK</code>, never a 422 — it is a designed product state, not a transport failure",
+          "Statute-side absence is reported as <em>bounded</em> (\"I didn't find it in what I retrieved\"), never overclaimed as proof"
+        ]
+      },
+      {
+        "title": "What it actually found",
+        "body": "The brief described six documents totalling 20–30 pages. The assets were <strong>two documents totalling 187 pages</strong>, and five of the six named documents did not exist. The file labelled a company profile is really the Employee Handbook — its PDF metadata title says so — laid out as a landscape two-up spread; the other is 181 pages of pure scanned image with zero extractable text. Then the useful part: the handbook states on its first printed folio that its policies are <em>\"in compliance with the applicable labor laws of Bangladesh\"</em> — and the other 181 pages are the exact statute that claim refers to. The corpus is a falsifiable claim plus its evidence base, so the assistant can check it:",
+        "bullets": [
+          "<strong>Casual leave</strong> — handbook 10 days vs s.115 \"ten days\": at the floor",
+          "<strong>Sick leave</strong> — 14 days vs s.116(1) \"fourteen days\": at the floor",
+          "<strong>Annual leave</strong> — 30 days vs s.117 (≈1 per 18 days worked): exceeds the floor, compliant",
+          "<strong>Working hours</strong> — 44.5 h/week vs s.100 and s.102: compliant",
+          "<strong>Maternity — GAP.</strong> Zero mentions in the handbook; ss.45/46 require 16 weeks",
+          "<strong>Festival holidays — GAP.</strong> The handbook offers only a \"Festival Bonus\" (a payment); s.118(1) requires 11 paid days",
+          "<strong>Overtime — GAP.</strong> Zero mentions; s.108 requires 2× the ordinary rate",
+          "<strong>Probation carve-out — CONFLICT.</strong> \"Leave after completion of probation\" against the Act's \"<em>every</em> worker\""
+        ]
+      },
+      {
+        "title": "Retrieval",
+        "body": "Retrieval is hybrid and deliberately small. The statute is chunked along its own section grammar so that every chunk arrives knowing which section and printed page it came from — which is what makes citation provenance true by construction rather than a formatting convention.",
+        "bullets": [
+          "<strong>Hybrid BM25 + dense</strong> fused with Reciprocal Rank Fusion (k=60), top-8 over the statute",
+          "<strong>Section-aware chunking</strong> — 482 chunks across 342 sections, each carrying its own section and page",
+          "The handbook is pinned in full rather than retrieved, because its absence has to be provable",
+          "<strong>Exact cosine, no ANN index</strong> — 0.008 ms over 482 vectors",
+          "fastembed <code>bge-small</code>, 384-d int8 ONNX, loaded from a committed file with zero network at boot"
+        ]
+      },
+      {
+        "title": "Ingestion and OCR — all of it at build time",
+        "body": "Every expensive thing happens once, on a developer machine, and ships as a committed artifact. The statute arrived as 181 pages of scanned image with no extractable text whatsoever, so the text had to be manufactured before anything else could work.",
+        "bullets": [
+          "<strong>498,240 characters OCR'd from 181 scanned pages in ~98 seconds</strong> (tesseract 5.5.2, 8 workers)",
+          "An x-midline clip de-interleaves the handbook's landscape two-up spread back into printed folios",
+          "Dual-grammar regex + longest-increasing-subsequence recovers <strong>342 sections</strong>, behind a <strong>build gate that fails the build</strong> if a known section goes missing",
+          "Output is a ~2 MB artifact (<code>index.npz</code>, <code>chunks.jsonl</code>) committed to plain git — no LFS",
+          "Measured exclusions, not oversights: the ILO ratification annex OCRs to word salad, and the dot-leader table of contents is lexically near-identical to every real heading with zero answer content — maximally adversarial to BM25"
+        ]
+      },
+      {
+        "title": "Uploads, and the API surface",
+        "body": "Uploading is the one genuinely slow path, so it is modelled as a job rather than a request. A 60-page scanned PDF is an OCR round-trip plus embedding — minutes, not seconds — and a synchronous upload would hit the proxy timeout and show a 502 while the work was still quietly succeeding.",
+        "bullets": [
+          "<code>POST /api/kb/{id}/documents</code> returns <strong>202 + a job_id</strong>; the client polls <code>/api/jobs/{id}</code> for state, progress, pages, chunks and modality",
+          "<code>POST /api/ask</code> → answer, typed citations, <code>insufficient_information</code>, route, latency and a request id",
+          "<code>/health</code> answers <strong>HEAD as well as GET</strong> — FastAPI doesn't auto-add HEAD, so <code>@app.get</code> alone returns 405 to every uptime monitor on earth, which is how this was found in production within minutes",
+          "<code>GET /api/documents</code> → a curated manifest with real page counts and modality, never the filename",
+          "Typed error envelope with real codes: <strong>400</strong> malformed · <strong>413</strong> over 32 MB · <strong>422</strong> semantic · <strong>429</strong> upstream rate limit (echoing <code>Retry-After</code>) · <strong>503</strong> index not loaded. Never a 200 with a stack trace",
+          "Caps of 3 notebooks / 20 MB / 60 pages per upload — the box has 512 MB and the baseline uses ~435 MB, so an unbounded upload is an OOM, and an OOM is a dead URL for whoever is clicking the public demo. The caps protect the demo from the feature",
+          "Interactive docs at <code>/docs</code>"
+        ]
       },
       {
         "title": "Build time vs runtime — the line that makes free hosting survivable",
-        "body": "Ingestion is an offline batch pipeline; serving is a stateless online service, and the boundary between them is the whole architecture. The 181-page scanned statute is OCR'd <strong>once</strong> on a developer machine (498,240 characters in ~98 seconds across 8 workers), de-interleaved, split into 342 sections behind a build gate, chunked section-aware into 482 chunks and embedded into a ~2 MB index artifact committed to plain git — no LFS. The runtime image therefore contains <strong>no tesseract, no PDFs and no torch</strong>. OCR-ing 181 pages on a 0.1-CPU box during a cold start, while a reviewer waits, would blow the timeout, the memory limit and their patience at once. Measured peak RSS is ~435 MB against a 512 MB ceiling — it fits, with about 15% headroom."
-      },
-      {
-        "title": "How the \"I don't know\" actually works",
-        "body": "The obvious implementation is measurably wrong here: <strong>similarity thresholding is an anti-signal on this corpus.</strong> The unanswerable question <em>\"how many days of paternity leave?\"</em> scores 0.413 because it collides with the casual-leave chunk, while two genuinely answerable questions score 0.179 and 0.224 — the distributions <em>invert</em>, so any threshold that refuses paternity also refuses the Chairperson. That isn't bad luck: a good adversarial question is plausible, and plausible means semantically adjacent. So refusal is structural, in code, with zero extra model calls. The handbook is pinned in context in full (3,081 tokens), which makes its silence a provable fact rather than a failed top-k; every claim must cite a retrieved chunk; the quoted span is sliced by code and verified against that chunk, and claims that fail verification are stripped; if all claims are stripped, <code>insufficient_information</code> is set <strong>by code, not chosen by the model</strong>. A refusal returns <code>200 OK</code>, never a 422 — it is a designed product state, not a transport failure."
+        "body": "Ingestion is an offline batch pipeline; serving is a stateless online service; the boundary between them is the whole architecture. OCR-ing 181 pages on a 0.1-CPU box during a cold start, while a reviewer waits, would blow the timeout, the memory limit and their patience at once — so the runtime image contains <strong>no tesseract, no PDFs and no torch</strong>. Measured peak RSS is ~435 MB against a 512 MB ceiling, roughly 15% headroom, of which onnxruntime alone is ~280 MB; the tested fallback is to move query embedding to an API call, dropping the image to ~150 MB at the cost of one more request per query. The deployment target changed mid-project too: Hugging Face now requires a PRO subscription for Docker, Gradio and Streamlit Spaces — verified against their API rather than their docs, where creating a Docker Space returns <code>402 Payment Required</code> — which turned 16 GB into 512 MB and made local embeddings a real constraint rather than a free lunch."
       },
       {
         "title": "Measured, not asserted",
-        "body": "A 30-question harness across four tiers runs against the live pipeline, and the numbers include the ones that don't flatter it. <strong>recall@5 is 0.875</strong>, the <strong>false-answer rate is 0.00</strong> — it has never once answered something it should have refused — and all six unanswerable questions are refused correctly. But it <strong>false-refuses answerable questions about a third of the time</strong>, and that is a deliberate trade: every claim must quote its source and the quote is checked against the raw text, so you never see a confident fabrication, at the cost of sometimes seeing \"not found\" for something the corpus does contain. On a compliance assistant, under-answering beats mis-answering. The false refusals even have a traceable cause: the corpus is 97% OCR'd, so the source contains real errors (<em>\"in a calender year\"</em>, <em>\"Extra-ailowance\"</em>), and the model, being a careful writer, silently corrects them when quoting — and a corrected quote does not exist in the source. Tolerating one character of drift per long word while requiring numbers and short tokens to match exactly took the false-refusal rate from 0.57 to 0.36. The judge is <strong>Gemini rather than Mistral</strong> — cross-family, not cross-tier, because models score their own family's output higher."
+        "body": "A 30-question harness across four tiers runs against the live pipeline, and the numbers include the ones that don't flatter it. <strong>recall@5 is 0.875</strong>, the <strong>false-answer rate is 0.00</strong> — it has never once answered something it should have refused — and all six unanswerable questions are refused correctly. But it <strong>false-refuses answerable questions about a third of the time</strong>. That is a deliberate trade: every claim must quote its source and the quote is checked against the raw text, so you never see a confident fabrication, at the cost of sometimes seeing \"not found\" for something the corpus does contain. On a compliance assistant, under-answering beats mis-answering. The false refusals even have a traceable cause — the corpus is 97% OCR'd, so the source contains real errors (<em>\"in a calender year\"</em>, <em>\"Extra-ailowance\"</em>) and the model, being a careful writer, silently corrects them when quoting, which makes the quote unverifiable. Tolerating one character of drift per long word while requiring numbers and short tokens to match exactly took the false-refusal rate from 0.57 to 0.36. The judge is <strong>Gemini rather than Mistral</strong> — cross-family, not cross-tier, because models score their own family's output higher; and a committed grep audit proves every \"unanswerable\" claim against our own OCR before any metric runs. It immediately caught a question I had got wrong: I claimed the corpus was silent on pensions, and <em>pension</em> appears 19 times. The question was removed rather than the audit weakened."
       },
       {
         "title": "Design decisions, each kept or killed by a measurement",
-        "body": "<strong>Why RAG when the corpus fits in one window?</strong> It does fit — 46.6% of it, measured with Mistral's own tokenizer rather than chars/4 — so RAG is a defended choice, not a necessity: citation provenance is true by construction when a chunk carries its own page number, whereas context-stuffing invents them. <strong>No ANN index</strong>: at 482 vectors, exact cosine costs 0.008 ms against a ~2-second model call, and reaching for a distributed vector DB to serve 0.74 MB is infrastructure cosplay. <strong>No agent</strong>: I went hunting for a query single-shot actually gets wrong, found that section-aware chunking already handled the one everybody reaches for, and so wrote no loop. <strong>No router</strong>: it's a cost optimisation, and on a free tier requests are scarce rather than dollars — the optimisation inverted, so it was deleted. <strong>No reranker</strong>: recall@5 is already 1.00 and you can't rerank above it, and worse, the handbook's leave clause is statutory boilerplate lifted from the Act, so a similarity-maximising reranker would promote both near-duplicates in exactly the case where policy most needs distinguishing from statute. <strong>No fine-tuning</strong>: I can train it, but a live URL is mandatory and free hosting has no GPU."
+        "body": "<strong>Why RAG when the corpus fits in one window?</strong> It does fit — 46.6% of a 262k window, measured with Mistral's own tokenizer rather than chars/4 — so RAG is a defended choice, not a necessity: citation provenance is true by construction when a chunk carries its own page number, whereas context-stuffing invents them. <strong>No ANN index</strong>: at 482 vectors exact cosine costs 0.008 ms against a ~2-second model call, and reaching for a distributed vector DB to serve 0.74 MB is infrastructure cosplay. <strong>No agent</strong>: 121 cross-references looked like multi-hop retrieval until I went hunting for a query single-shot actually gets wrong — the example everyone reaches for turns out to be answered inside one section's own sentence — so I wrote no loop. <strong>No router</strong>: it is a <em>cost</em> optimisation, and on a free tier requests are the scarce resource rather than dollars, so it inverted and was deleted. <strong>No reranker</strong>: recall@5 is already 1.00 and you cannot rerank above it — worse, the handbook's leave clause is statutory boilerplate lifted from the Act, so a similarity-maximising reranker promotes both near-duplicates in exactly the case where policy most needs distinguishing from statute. <strong>No fine-tuning</strong>: I can train it, but a live URL is mandatory and free hosting has no GPU; the one fine-tune that survived every constraint — the embedder — died on a measurement, because BM25 already ranks the sick-leave section first. <strong>LangChain only for uploads</strong>: use the framework where the complexity is foreign, and write it yourself where it <em>is</em> the thing being graded — a generic recursive split measurably merges three distinct leave entitlements into one chunk with one page number, but for a document uploaded thirty seconds from now it is the honest default."
       },
       {
         "title": "Boundaries the build enforces",
-        "body": "A fifteen-line <code>.importlinter</code> contract says <code>src.core</code> may not import <code>fastapi</code>, <code>starlette</code>, <code>uvicorn</code>, <code>mcp</code>, <code>pinecone</code>, <code>mistralai</code> or a text splitter — and it runs in CI <em>and</em> in pytest. That isn't a style preference: it's what lets the whole suite run offline against an injected fake generator with no API key and no network, it's why swapping the hosted API for self-hosted Apache-2.0 weights is a one-file change, and it's why exposing this over MCP would be a small adapter rather than a refactor. The same discipline shows up in the API surface: citations are typed objects the whole way out rather than markdown strings, so the model structurally cannot fabricate a citation; uploads return <code>202</code> and a job to poll rather than blocking past a proxy timeout; and errors are a typed envelope with real codes, never a 200 with a stack trace."
+        "body": "A fifteen-line <code>.importlinter</code> contract says <code>src.core</code> may not import <code>fastapi</code>, <code>starlette</code>, <code>uvicorn</code>, <code>mcp</code>, <code>pinecone</code>, <code>mistralai</code> or a text splitter — and it runs in CI <em>and</em> in pytest. That is not a style preference. It is what lets the whole suite run offline against an injected fake generator with no API key and no network, it is why swapping the hosted API for self-hosted Apache-2.0 weights is a one-file change, and it is why exposing this over MCP would be a small adapter rather than a refactor. The claim isn't in the README asking to be believed — <strong>the build fails if it stops being true.</strong>"
+      },
+      {
+        "title": "Limits, stated up front",
+        "body": "Most of these are disclosed rather than discovered, which is the point.",
+        "bullets": [
+          "<strong>The Act is legally stale.</strong> It is the 2006 Act as published in 2009, materially amended in 2013 and 2018 — including in areas this app reasons about. Every compliance answer opens by naming that scope. This is documented gap analysis to support human HR review; <strong>it is not legal advice</strong>",
+          "<strong>Statute-side absence is bounded, not proved</strong> — only top-8 of 482 chunks are in context, so \"the Act doesn't address X\" means \"I didn't find it in what I retrieved.\" The full-context oracle quantifies that; it does not eliminate it",
+          "<strong>Uploaded documents get a weaker pipeline than the demo corpus, and that is honest rather than an oversight</strong> — the statute gets a chunker built on its own section grammar because I know that grammar; an arbitrary PDF gets a generic recursive split because I don't. So uploaded citations carry a page number but no section anchor",
+          "<strong>The free tier sleeps after 15 minutes idle</strong> and takes ~1 minute to wake; an uptime monitor pings <code>/health</code> every 5 minutes to keep it warm. The cold start belongs to the hosting plan, not the app — the container boots in ~2s and <code>/health</code> answers in ~160 ms once warm",
+          "<strong>n=30 → 95% CI ≈ ±10.7pp.</strong> An honest wide interval beats a fake tight one"
+        ]
       }
     ],
     "figures": [
