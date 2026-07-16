@@ -17,7 +17,7 @@
 **Convention:** new pages live **exactly one level deep** so every shared-asset reference is a uniform `../` (never `../../`). Lowercase-kebab slugs everywhere (`slug` == filename == URL segment == JSON key). No underscore-prefixed folders. `.nojekyll` removes Jekyll from the equation entirely.
 
 ```
-MyWebsite/                                   https://reshad-ul-karim.github.io/MyWebsite/
+MyWebsite/                                   https://reshadulkarim.me/
 ├── index.html                               .../               (single-pager — behavior UNCHANGED)
 ├── game.html                                .../game.html      (existing precedent)
 ├── .nojekyll                          NEW   (empty; pure static passthrough)
@@ -291,14 +291,14 @@ The dark/light toggle button and accent-swatch tray are **built by JS** (`script
 ```html
 <title>{{title}} — Reshad Ul Karim</title>
 <meta name="description" content="{{seo.description}}">
-<link rel="canonical" href="https://reshad-ul-karim.github.io/MyWebsite/projects/{{slug}}.html">
+<link rel="canonical" href="https://reshadulkarim.me/projects/{{slug}}.html">
 <meta property="og:type" content="article">
-<meta property="og:url" content="https://reshad-ul-karim.github.io/MyWebsite/publications/{{slug}}.html">
+<meta property="og:url" content="https://reshadulkarim.me/publications/{{slug}}.html">
 <meta property="og:title" content="{{title}} — Reshad Ul Karim">
 <meta property="og:description" content="{{seo.description}}">
-<meta property="og:image" content="https://reshad-ul-karim.github.io/MyWebsite/{{seo.ogImage or 'profile%20picture.jpg'}}">
+<meta property="og:image" content="https://reshadulkarim.me/{{seo.ogImage or 'profile%20picture.jpg'}}">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://reshad-ul-karim.github.io/MyWebsite/{{seo.ogImage or 'profile%20picture.jpg'}}">
+<meta name="twitter:image" content="https://reshadulkarim.me/{{seo.ogImage or 'profile%20picture.jpg'}}">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"ScholarlyArticle",
  "headline":"{{title}}","author":{"@type":"Person","name":"Reshad Ul Karim"},
@@ -310,10 +310,10 @@ The dark/light toggle button and accent-swatch tray are **built by JS** (`script
 Until per-item share images exist, `seo.ogImage` falls back to the existing root `profile picture.jpg` (a safe, on-brand card); the owner can later drop `assets/images/project-cards/<slug>-og.jpg` and set `seo.ogImage`.
 
 **`sitemap.xml`** (root): `index.html` + `/projects/` + `/publications/` + one `<url>` per **`detailStatus:"ready"`** detail page (never a stub).
-**`robots.txt`** (root): `User-agent: *` / `Allow: /` / `Sitemap: https://reshad-ul-karim.github.io/MyWebsite/sitemap.xml`. (Today the single-pager exposes only `#anchors` — effectively zero crawlable outbound links.)
+**`robots.txt`** (root): `User-agent: *` / `Allow: /` / `Sitemap: https://reshadulkarim.me/sitemap.xml`. (Today the single-pager exposes only `#anchors` — effectively zero crawlable outbound links.)
 **`404.html`** (root, so its shell refs are **root-relative** bare, not `../`): shared chrome + "page not found — home / browse projects / browse publications". Served for any unmatched `/MyWebsite/*` (typo'd or removed slugs; extensionless URLs 404 rather than auto-appending `.html`).
 **`.nojekyll`** (empty, root): pure static passthrough — removes any `_`-folder / Liquid `{{ }}` risk. Do it now.
-**Fix in the same pass:** `index.html:14` `og:url` → `https://reshad-ul-karim.github.io/MyWebsite/`, and add `<link rel="canonical" href="https://reshad-ul-karim.github.io/MyWebsite/">`.
+**Fix in the same pass:** `index.html:14` `og:url` → `https://reshadulkarim.me/`, and add `<link rel="canonical" href="https://reshadulkarim.me/">`.
 **Index-page crawlability hedge:** each JSON-rendered index also emits a `<noscript>` block of static `<a href>` links to every ready detail page, so link discovery survives even if JS is blocked.
 
 *(Optional, deferred:)* pretty extensionless URLs via a `404.html` SPA-redirect are possible but **not recommended** — they add fragility and still can't fix JS-blind previews, which is precisely why detail pages are real static files.
