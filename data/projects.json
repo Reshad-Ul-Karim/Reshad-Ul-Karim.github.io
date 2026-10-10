@@ -12,16 +12,16 @@
       "healthcare-ai",
       "robotics-edge"
     ],
-    "description": "An edge-native, agentic multimodal assistive vision agent for visually impaired users. A <strong>planner/router</strong> with tool use and <strong>vector memory</strong> orchestrates multi-LLM/VLM reasoning (Mistral, OpenRouter) with <strong>RAG-style retrieval</strong>, a structured evaluation harness, and anti-fabrication guardrails — running perception on-device and escalating to the cloud only when needed to achieve a <strong>95%+ reduction in cloud vision API calls</strong>.",
+    "description": "An edge-native, agentic multimodal assistive vision agent for blind and low-vision users. On-device tools do most of the work, and a cloud vision-language model is used only when they cannot settle a question. A <strong>calibrated-competence policy</strong> estimates how likely each tool is to be right on the current photo, applies fixed safety rules first, then answers, hedges, asks for a better view, or declines — evaluated on a <strong>3,000-question benchmark of blind users' photos</strong> and covered by <strong>1,358 automated tests</strong>.",
     "techTags": [
       "Agentic AI",
       "Multimodal",
-      "RAG"
+      "Calibration"
     ],
     "features": [
-      "95%+ Cloud-Call Reduction",
+      "Calibrated Competence Policy",
       "On-Device Perception",
-      "Agentic Planner + Vector Memory"
+      "Reproducible Benchmark"
     ],
     "media": {
       "type": "image",
@@ -32,19 +32,19 @@
     },
     "metrics": [
       {
-        "value": "0",
+        "value": "3000",
         "suffix": "",
-        "label": "Invented distances (audited)"
+        "label": "Blind-user questions in the benchmark"
       },
       {
-        "value": "~90",
-        "suffix": "%",
-        "label": "Fewer repeat cloud calls"
+        "value": "1358",
+        "suffix": "",
+        "label": "Automated tests passing"
       },
       {
         "value": "5",
-        "suffix": " tiers",
-        "label": "Desktop → 4W iPhone"
+        "suffix": " tools",
+        "label": "Tools compared on every question"
       }
     ],
     "links": {
@@ -58,14 +58,14 @@
     "relatedPublications": [],
     "detailStatus": "ready",
     "seo": {
-      "description": "An assistive vision-language agent for blind and low-vision users that runs on-device first, escalates to the cloud only when needed, and never fabricates a distance.",
+      "description": "An assistive vision-language agent for blind and low-vision users that runs on-device first, uses the cloud only when needed, and says so when it cannot tell.",
       "ogImage": null
     },
     "badge": "Research",
     "sections": [
       {
         "title": "Overview",
-        "body": "This is an assistive AI agent for blind and low-vision users. It describes what's ahead, reads labels and text, flags hazards, and remembers where objects were last seen — the kind of help that bears on independence and safety, not just convenience."
+        "body": "This is an assistive AI agent for blind and low-vision users. It describes what is in view, reads labels and text, and answers where things were last seen, and it says so plainly when it cannot tell — the kind of help that bears on independence and safety, not just convenience."
       },
       {
         "title": "The challenge",
@@ -73,20 +73,20 @@
       },
       {
         "title": "Approach",
-        "body": "The system is built around one idea: do the least the situation actually needs, and only claim what it can back up. It answers each request at the cheapest capable level on the device, and only reaches out to the cloud when the on-device answer genuinely isn't enough. On the trust side it never invents a distance — it states only what it can verify, hedges when it's unsure who or what it's looking at, and always voices hazards first."
+        "body": "The system is built around one idea: only say what the evidence supports. Before an answer is spoken, it estimates how likely each tool is to be right on this particular photo. Fixed safety rules run first and cannot be traded for cost, and the cheapest capable tool is tried first. An answer is released only when that estimate clears a threshold for the question's risk level; otherwise the assistant hedges, asks for a better view, or declines. Images are cropped and masked on the device before any cloud call, and people's names are replaced by aliases."
       },
       {
         "title": "Results",
-        "body": "On 150 real questions written by blind users, it handled about half of them fully on-device with no meaningful loss in accuracy. A lightweight visual memory means it rarely re-describes the same object, cutting repeat cloud calls by roughly 90%. An audit of every answer found zero invented distances — and these cost and safety guarantees held across five hardware tiers, from a desktop down to a 4-watt iPhone."
+        "body": "On a benchmark of 3,000 questions from blind users' photos (with a sealed test split held back for the final analysis), reading what earlier tools said raised the cloud model's reliability estimate by 10.1 AUROC points, and the system predicts which questions cannot be answered at 0.80 AUROC. The honest finding is that on blind users' photos none of the tools is accurate enough for a formal error guarantee, so the assistant hedges or declines there; on street frames it certifies at a 10% error limit on 95 of 100 splits. It is a research prototype and has not yet been tested with blind users."
       }
     ],
     "skills": [
       "Agentic AI",
       "Vision-Language Models",
       "On-device / edge inference",
-      "RAG + vector memory",
-      "Multi-LLM orchestration (Mistral, OpenRouter)",
-      "Evaluation harness",
+      "Calibrated risk control (Learn-then-Test)",
+      "Cloud VLM / OCR integration (Mistral)",
+      "Reproducible benchmark",
       "Anti-fabrication guardrails",
       "Python"
     ]
@@ -670,7 +670,7 @@
       "software-systems",
       "healthcare-ai"
     ],
-    "description": "Engineered an end-to-end telemedicine platform featuring OTP-secured authentication, role-based dashboards, appointment scheduling with video consultations, EMR and e-prescription management, emergency services, payment and insurance integration, online medicine and lab ordering, and feedback.",
+    "description": "Engineered an end-to-end telemedicine platform featuring email-verified sign-up, role-based dashboards, appointment scheduling with video consultations, EMR and e-prescription management, emergency services, payment and insurance workflows, online medicine and lab ordering, a Mistral-powered patient health assistant, scheduled automations (subscription orders, flash sales), and feedback.",
     "techTags": [
       "MERN Stack",
       "Telemedicine",
@@ -707,7 +707,9 @@
       "Telemedicine",
       "Video consultation",
       "Full-stack architecture",
-      "Auth / state management"
+      "Auth / state management",
+      "AI health assistant (Mistral API)",
+      "Scheduled automation (node-cron)"
     ],
     "sections": [
       {
@@ -1463,9 +1465,9 @@
         "label": "Made-up answers across 30 test questions"
       },
       {
-        "value": "88",
+        "value": "81",
         "suffix": "%",
-        "label": "Of the time it retrieved the correct source passage"
+        "label": "Recall@5 on the 16 questions with a known source"
       },
       {
         "value": "6/6",
@@ -1600,7 +1602,7 @@
       "Span verification",
       "LLM evaluation (LLM-as-judge)",
       "FastAPI",
-      "Mistral (mistral-large-2512)",
+      "Mistral models (swappable provider)",
       "OCR pipelines (tesseract)",
       "fastembed · ONNX int8 embeddings",
       "Pinecone (namespace-per-KB)",
