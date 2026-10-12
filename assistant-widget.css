@@ -573,6 +573,13 @@ a.ask-citation-chip:hover {
   margin: 0 0 0.2rem;
 }
 
+.ask-booking-hint {
+  font-family: var(--font-secondary);
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+  margin: 0 0 0.1rem;
+}
+
 .ask-booking-card label {
   display: flex;
   flex-direction: column;

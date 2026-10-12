@@ -514,9 +514,244 @@
     });
   }
 
-  // <<BOOK>> is stripped from the displayed text and rendered as a card,
-  // never left as literal text a visitor would see (see persona.md).
-  var BOOK_MARKER_RE = /<<BOOK>>\s*$/;
+  // ---- 5b. Booking intent (deterministic -- runs BEFORE any /api/ask call) --------------
+  // Why this exists: the booking card used to appear only if the MODEL chose to end its answer
+  // with <<BOOK>> in exactly the right form. It sometimes wrapped the marker in backticks (no
+  // card, and a literal "<<BOOK>>" on screen), sometimes just said "I can arrange a
+  // conversation" with no card, and once claimed Reshad was "currently available". A request
+  // to meet him is not a question about his documents, so it never needs the model.
+  //
+  // Precision rules -- a false positive pops a form for an ordinary question, so every rule
+  // needs a scheduling verb AND a person or a time:
+  //   1. set up / arrange / schedule / book ... meeting, call, chat, appointment, interview
+  //   2. can/could/may/would/will ... meet | talk / speak / chat / call / connect
+  //      ('meet' alone is enough; the others also need him/Reshad or a time expression)
+  //   3. I/we want / would like / need to ... the same verbs, same object rule
+  //   4. availability: "is he free/available", "his availability/calendar", "free on monday"
+  //   5. contact / reach / hire / interview him, "get in touch", "call me"
+  //   6. meeting / call / appointment / interview with him/Reshad/you
+  // Not a booking: meet the requirements/deadline/..., call stack/back, function call, etc.
+  // BEGIN booking-intent (pure functions; no DOM -- exercised by an offline test harness)
+  var BK_FULL_DAYS = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };
+  var BK_ABBR_DAYS = { sun: 0, mon: 1, tue: 2, tues: 2, wed: 3, thu: 4, thur: 4, thurs: 4, fri: 5, sat: 6 };
+  var BK_MONTHS3 = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
+  var BK_DAY_LABELS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  var BK_MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  var BK_OWNER_TZ = 'Asia/Dhaka';
+  var BK_MON_PAT = '(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)';
+  var BK_DM_RE = new RegExp('\\b(\\d{1,2})(?:st|nd|rd|th)?\\s+(?:of\\s+)?' + BK_MON_PAT + '\\b(?:,?\\s*(20\\d{2}))?');
+  var BK_MD_RE = new RegExp('\\b' + BK_MON_PAT + '\\.?\\s+(\\d{1,2})(?:st|nd|rd|th)?\\b(?:,?\\s*(20\\d{2}))?');
+  var BK_DAY_RE = /\b(?:(next|this|coming|upcoming|on)\s+)?(sunday|monday|tuesday|wednesday|thursday|friday|saturday|sun|mon|tues|tue|wed|thurs|thur|thu|fri|sat)\b/;
+  var BK_TIME_RE = /\b(?:today|tonight|tomorrow|this\s+(?:morning|afternoon|evening|week|weekend)|next\s+week|weekend|monday|tuesday|wednesday|thursday|friday|saturday|sunday|\d{1,2}\s*(?:a\.?m\.?|p\.?m\.?)|\d{1,2}:\d{2}|noon|midnight)(?![a-z])/;
+  var BK_EXCLUDE_RE = /\bmeet(?:s|ing)?\s+(?:(?:all|the|these|those|his|our|their|any|your|client|clients|customer|customers|user|users|project|business|stakeholder|stakeholders)\s+){0,3}(?:requirements?|expectations?|criteria|standards?|deadlines?|needs|demands?|goals?|targets?|conditions)\b|\bcall\s*(?:stack|back|graph|site|center|centre)\b|\bcallbacks?\b|\b(?:function|api|system)\s+calls?\b/;
+  var BK_MONTH_WORD_RE = /^(?:jan|january|feb|february|mar|march|apr|april|may|jun|june|jul|july|aug|august|sep|sept|september|oct|october|nov|november|dec|december)$/;
+  var BK_NAME_STOP_RE = /^(?:a|an|the|interested|looking|hoping|wondering|here|trying|not|just|very|so|from|working|writing|reaching|contacting|currently|also|available|free|sorry|happy|keen|excited|curious|calling|asking|new|your|his|my|at|with|in|on|for|to|and|or|but|that|this)$/i;
+
+  function bkNorm(s) {
+    return String(s || '').toLowerCase().replace(/[‘’]/g, "'").replace(/\s+/g, ' ').trim();
+  }
+
+  // Strong verbs mean "meeting" by themselves; talk/speak/chat/call/connect are too common
+  // in ordinary questions ("can we talk about his projects?") unless tied to him or a time.
+  function bkVerbOk(verb, t) {
+    if (/^(?:meet|schedule|book|set\s*up|setup|arrange|interview|hire|contact|reach|catch\s*up)$/.test(verb)) return true;
+    return /\b(?:him|reshad)\b/.test(t) || BK_TIME_RE.test(t) ||
+      /\b(?:in person|face to face|on a call|video call|zoom|google meet|teams call|over coffee)\b/.test(t);
+  }
+
+  function detectBookingIntent(text) {
+    var t = bkNorm(text), m;
+    if (!t || t.length > 600) return false; // a pasted essay is not a scheduling request
+    if (BK_EXCLUDE_RE.test(t)) return false;
+    if (/\b(?:set\s*up|setup|arrange|schedule|book|organi[sz]e|fix|plan)\b[^.?!]{0,40}\b(?:meeting|meet|call|chat|appointment|interview|conversation|catch\s*up|session|talk)\b/.test(t)) return true;
+    m = t.match(/\b(?:can|could|may|might|would|will|shall)\b[^.?!]{0,30}\b(meet|talk|speak|chat|call|connect|catch\s*up|sync)\b/);
+    if (m && bkVerbOk(m[1], t)) return true;
+    m = t.match(/\b(?:i|we)\b[^.?!]{0,25}\b(?:want|wanted|would like|wanna|need|hope|wish|love|plan)\b[^.?!]{0,12}\bto\b[^.?!]{0,10}\b(meet|talk|speak|chat|call|connect|schedule|book|set\s*up|arrange|interview|hire|contact|reach)\b/);
+    if (m && bkVerbOk(m[1], t)) return true;
+    m = t.match(/\bwanna\b[^.?!]{0,10}\b(meet|talk|speak|chat|call|connect|schedule|book|set\s*up|arrange|interview|hire|contact|reach)\b/);
+    if (m && bkVerbOk(m[1], t)) return true;
+    if (/\b(?:is|are|will|would|could|can)\b[^.?!]{0,12}\b(?:he|reshad|you)\b[^.?!]{0,20}\b(?:free|available|around|in town|reachable)\b/.test(t)) return true;
+    if (/\b(?:his|your)\s+(?:availability|calendar|free time)\b/.test(t)) return true;
+    if (/\b(?:free|available)\s+(?:on|at|this|next|tomorrow|today|tonight)\b/.test(t)) return true;
+    if (/\b(?:contact|reach|reach out to|get in touch with|hire|interview|message|email)\s+(?:him|reshad)\b/.test(t)) return true;
+    if (/\bget in touch\b|\b(?:call|ring|phone)\s+me\b|\bappointment\b/.test(t)) return true;
+    if (/\b(?:meeting|call|appointment|interview|chat|conversation|catch\s*up|session)\b[^.?!]{0,12}\bwith\s+(?:him|reshad|you)\b/.test(t)) return true;
+    return false;
+  }
+
+  function bkAddDays(now, n) {
+    var d = new Date(Date.UTC(now.y, now.m, now.d + n));
+    return { y: d.getUTCFullYear(), m: d.getUTCMonth(), d: d.getUTCDate(), rel: '' };
+  }
+  function bkValidDate(y, m, d) {
+    var x = new Date(Date.UTC(y, m, d));
+    return x.getUTCFullYear() === y && x.getUTCMonth() === m && x.getUTCDate() === d;
+  }
+
+  // Clock times. Explicit am/pm or 24h are exact. A bare "at 8" is exact only when the
+  // message names a part of the day ("tomorrow evening at 8"); otherwise it is kept as typed
+  // and flagged, never guessed -- the visitor sees the field and can correct it.
+  function bkParseTime(t) {
+    var m = t.match(/\b(\d{1,2})(?:[:.](\d{2}))?\s*(a\.?m\.?|p\.?m\.?)(?![a-z])/);
+    if (m) {
+      var h = parseInt(m[1], 10), mi = m[2] ? parseInt(m[2], 10) : 0, pm = m[3].charAt(0) === 'p';
+      if (h >= 1 && h <= 12 && mi <= 59) return { h: (h % 12) + (pm ? 12 : 0), mi: mi, exact: true };
+    }
+    m = t.match(/\b([01]?\d|2[0-3]):([0-5]\d)\b/);
+    if (m) return { h: parseInt(m[1], 10), mi: parseInt(m[2], 10), exact: true };
+    if (/\bnoon\b/.test(t)) return { h: 12, mi: 0, exact: true };
+    if (/\bmidnight\b/.test(t)) return { h: 0, mi: 0, exact: true };
+    m = t.match(/\bat\s+(\d{1,2})(?::(\d{2}))?(?![\d:])(?!\s*(?:a|p)\.?m)/);
+    if (m) {
+      var hh = parseInt(m[1], 10), mm = m[2] ? parseInt(m[2], 10) : 0;
+      if (hh >= 1 && hh <= 12 && mm <= 59) {
+        var q = t.match(/\b(morning|afternoon|evening|tonight|night)\b/);
+        if (q) return { h: (hh % 12) + (q[1] === 'morning' ? 0 : 12), mi: mm, exact: true };
+        return { h: hh, mi: mm, exact: false };
+      }
+    }
+    return null;
+  }
+
+  // Dates, resolved against the VISITOR's current date. A weekday name means the nearest
+  // upcoming one; if it is that weekday today it means next week, unless the message gives a
+  // time that is still ahead today. "next monday" and "monday" resolve the same way.
+  function bkParseDate(t, now, time) {
+    var m = t.match(/\b(20\d{2})-(\d{2})-(\d{2})\b/), i;
+    if (m && bkValidDate(+m[1], +m[2] - 1, +m[3])) return { y: +m[1], m: +m[2] - 1, d: +m[3], rel: '' };
+    var dayNum, monName, yearNum;
+    m = t.match(BK_DM_RE);
+    if (m) { dayNum = +m[1]; monName = m[2]; yearNum = m[3]; }
+    else {
+      m = t.match(BK_MD_RE);
+      if (m) { monName = m[1]; dayNum = +m[2]; yearNum = m[3]; }
+    }
+    if (m && monName) {
+      var mo = BK_MONTHS3[monName.slice(0, 3)], y = yearNum ? +yearNum : now.y;
+      if (!yearNum && (mo < now.m || (mo === now.m && dayNum < now.d))) y += 1;
+      if (bkValidDate(y, mo, dayNum)) return { y: y, m: mo, d: dayNum, rel: '' };
+    }
+    if (/\bday after tomorrow\b/.test(t)) { i = bkAddDays(now, 2); i.rel = 'Day after tomorrow'; return i; }
+    if (/\btomorrow\b/.test(t)) { i = bkAddDays(now, 1); i.rel = 'Tomorrow'; return i; }
+    if (/\b(?:today|tonight)\b/.test(t)) { i = bkAddDays(now, 0); i.rel = /\btonight\b/.test(t) ? 'Tonight' : 'Today'; return i; }
+    m = t.match(BK_DAY_RE);
+    if (m) {
+      var word = m[2], prefix = m[1], dow = BK_FULL_DAYS[word];
+      if (dow === undefined && (prefix || !/^(?:sun|mon|wed|sat)$/.test(word))) dow = BK_ABBR_DAYS[word];
+      if (dow !== undefined) {
+        var delta = (dow - now.dow + 7) % 7;
+        if (delta === 0 && !(time && time.exact && time.h * 60 + time.mi > now.h * 60 + now.mi)) delta = 7;
+        return bkAddDays(now, delta);
+      }
+    }
+    return null;
+  }
+
+  // Offset of `tz` at a UTC instant, in minutes (Intl only; no library, no network).
+  function bkTzOffsetMinutes(utcMs, tz) {
+    var f = new Intl.DateTimeFormat('en-US', { timeZone: tz, hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    var p = {};
+    f.formatToParts(new Date(utcMs)).forEach(function (x) { p[x.type] = x.value; });
+    return Math.round((Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour % 24, +p.minute, +p.second) - utcMs) / 60000);
+  }
+  // Wall-clock time in `tz` -> UTC ms. Two passes so a DST boundary lands correctly.
+  function bkWallToUtc(y, m, d, h, mi, tz) {
+    var guess = Date.UTC(y, m, d, h, mi), off = bkTzOffsetMinutes(guess, tz), utc = guess - off * 60000;
+    var off2 = bkTzOffsetMinutes(utc, tz);
+    return off2 === off ? utc : guess - off2 * 60000;
+  }
+  function bkClock(h, mi) {
+    return (h % 12 === 0 ? 12 : h % 12) + ':' + (mi < 10 ? '0' : '') + mi + ' ' + (h >= 12 ? 'PM' : 'AM');
+  }
+  function bkOwnerTimeNote(date, time, tz) {
+    try {
+      if (!date || !time || !time.exact || !tz || tz === BK_OWNER_TZ || typeof Intl === 'undefined') return '';
+      var utc = bkWallToUtc(date.y, date.m, date.d, time.h, time.mi, tz), p = {};
+      new Intl.DateTimeFormat('en-US', { timeZone: BK_OWNER_TZ, weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })
+        .formatToParts(new Date(utc)).forEach(function (x) { p[x.type] = x.value; });
+      return p.weekday + ' ' + p.day + ' ' + p.month + ', ' + p.hour + ':' + p.minute + ' ' + String(p.dayPeriod || '').toUpperCase();
+    } catch (e) { return ''; }
+  }
+
+  function bkExtractName(text) {
+    var s = String(text || '');
+    var m = s.match(/\bmy name(?: is|'s|’s)\s+([A-Za-z][A-Za-z'’.-]*(?:\s+[A-Za-z][A-Za-z'’.-]*){0,2})/i) ||
+      s.match(/\b(?:I['’]m|I am|this is)\s+([A-Z][A-Za-z'’.-]*(?:\s+[A-Z][A-Za-z'’.-]*){0,2})/);
+    if (!m) return '';
+    var words = m[1].replace(/[.,;:!?]+$/, '').split(/\s+/), out = [];
+    for (var i = 0; i < words.length; i++) {
+      var w = words[i].toLowerCase().replace(/[^a-z]/g, '');
+      // stop at filler ("my name is Sara and I...") and never treat a weekday/month as a name
+      if (BK_NAME_STOP_RE.test(words[i]) || BK_FULL_DAYS[w] !== undefined || BK_MONTH_WORD_RE.test(w)) break;
+      out.push(words[i]);
+    }
+    return out.join(' ').replace(/[.,;:!?]+$/, '').slice(0, 120);
+  }
+
+  // `now` is the visitor's current wall-clock { y, m (0-11), d, dow, h, mi }; `tz` their IANA zone.
+  function extractBooking(text, now, tz) {
+    var raw = String(text || ''), t = bkNorm(raw);
+    var em = raw.match(/[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}/);
+    var time = bkParseTime(t), date = bkParseDate(t, now, time);
+    var dayText = '', timeText = '', qual = t.match(/\b(morning|afternoon|evening)\b/);
+    if (date) {
+      var dow = new Date(Date.UTC(date.y, date.m, date.d)).getUTCDay();
+      var dl = BK_DAY_LABELS[dow] + ' ' + date.d + ' ' + BK_MONTH_LABELS[date.m] + ' ' + date.y;
+      dayText = date.rel ? date.rel + ' (' + dl + ')' : dl;
+    } else if (/\bweekend\b/.test(t)) {
+      dayText = /\bnext\b/.test(t) ? 'Next weekend' : 'This weekend';
+    }
+    if (time) {
+      timeText = time.exact ? bkClock(time.h, time.mi)
+        : time.h + (time.mi ? ':' + (time.mi < 10 ? '0' : '') + time.mi : '') + ' (AM/PM not specified)';
+    } else if (qual) {
+      timeText = qual[1];
+    }
+    var when = [dayText, timeText].filter(Boolean).join(', ');
+    if (when && tz) {
+      var note = bkOwnerTimeNote(date, time, tz);
+      when += tz === BK_OWNER_TZ ? ' (Dhaka time)'
+        : ' (visitor time zone: ' + tz + (note ? '; = ' + note + ' Dhaka' : '') + ')';
+    }
+    return {
+      name: bkExtractName(raw),
+      email: em ? em[0] : '',
+      purpose: raw.trim().slice(0, 2000),
+      preferredTimes: when.slice(0, 300)
+    };
+  }
+
+  // While a request form is open, a short message that only adds a day/time, an email or a
+  // name is an update to that form, not a question for the model ("thursday 6pm works", "I'm
+  // Sara, sara@x.com"). Questions ("what did he do on monday?") still go to the model.
+  function bkIsFormUpdate(text, now) {
+    var raw = String(text || '');
+    if (raw.length > 300) return false;
+    var t = bkNorm(raw);
+    if (/^(?:what|how(?!\s+about)|why|which|who|whom|whose|where|tell me|explain|describe|show)\b/.test(t)) return false;
+    var time = bkParseTime(t);
+    return !!(time || bkParseDate(t, now, time) ||
+      /[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}/.test(raw) || bkExtractName(raw));
+  }
+  // END booking-intent
+
+  function bkNowParts() {
+    var d = new Date();
+    return { y: d.getFullYear(), m: d.getMonth(), d: d.getDate(), dow: d.getDay(), h: d.getHours(), mi: d.getMinutes() };
+  }
+  function bkVisitorTz() {
+    try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) { return ''; }
+  }
+
+  // <<BOOK>> from the model is stripped from the displayed text and rendered as a card,
+  // never left as literal text a visitor would see (see persona.md). The model does not
+  // always write it bare at the very end -- it has wrapped it in backticks or quotes, which
+  // used to defeat an end-anchored match -- so find it anywhere and swallow stray quote marks.
+  var BOOK_MARKER_TEST_RE = /<<\s*BOOK\s*>>/i;
+  var BOOK_MARKER_ANY_RE = /[`'"‘’“”]*<<\s*BOOK\s*>>[`'"‘’“”]*/gi;
+  function stripBookMarker(text) {
+    return String(text).replace(BOOK_MARKER_ANY_RE, '').replace(/[ \t]+\n/g, '\n').trim();
+  }
 
   function escapeHtml(s) {
     return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -539,14 +774,17 @@
       .join('');
   }
 
-  function renderMessage(role, text, citations) {
+  // opts (live messages only, never a transcript restore): { booking: details } shows the
+  // booking card pre-filled from the visitor's own request; { question } lets a card the MODEL
+  // asked for be pre-filled from the question that triggered it.
+  function renderMessage(role, text, citations, opts) {
     var row = document.createElement('div');
     row.className = 'ask-message ask-message--' + role;
     var bubble = document.createElement('div');
     bubble.className = 'ask-bubble';
 
-    var wantsBooking = role === 'assistant' && BOOK_MARKER_RE.test(text);
-    var clean = wantsBooking ? text.replace(BOOK_MARKER_RE, '').trim() : text;
+    var wantsBooking = role === 'assistant' && (BOOK_MARKER_TEST_RE.test(text) || !!(opts && opts.booking));
+    var clean = role === 'assistant' ? stripBookMarker(text) : text;
     if (role === 'assistant') {
       bubble.innerHTML = renderMarkdown(clean);
     } else {
@@ -555,10 +793,27 @@
     row.appendChild(bubble);
 
     if (role === 'assistant') renderCitations(row, citations);
-    if (wantsBooking) row.appendChild(buildBookingCard());
+    var card = null;
+    if (wantsBooking) {
+      var initial = (opts && opts.booking) ||
+        (opts && opts.question ? extractBooking(opts.question, bkNowParts(), bkVisitorTz()) : null);
+      // One open form at a time: refill it and move it under the newest message (appendChild
+      // moves an existing node), so it is never left scrolled out of sight above.
+      var open = messagesEl.querySelectorAll('.ask-booking-card[data-open="1"]');
+      card = open.length ? open[open.length - 1] : null;
+      if (card) fillBookingCard(card, initial); else card = buildBookingCard(initial);
+      row.appendChild(card);
+    }
 
     messagesEl.appendChild(row);
     scrollToBottom();
+    if (card && opts) {
+      // A card taller than the panel would otherwise open scrolled to its bottom, with the
+      // fields the visitor must fill (and the focused Name box) out of sight above.
+      var rr = row.getBoundingClientRect(), mr = messagesEl.getBoundingClientRect();
+      if (rr.height > mr.height) messagesEl.scrollTop += rr.top - mr.top - 8;
+      focusBookingCard(card);
+    }
     return row;
   }
 
@@ -575,11 +830,38 @@
   }
 
   // ---- 6. Booking card (see docs/AI_ASSISTANT_PLAN.md sec.6) ---------------
-  function buildBookingCard() {
+  function bookingField(card, name) { return card.querySelector('[name="' + name + '"]'); }
+
+  // Fill from extracted details. A new time always replaces the old one; name, email and
+  // purpose only fill an empty field, so nothing the visitor typed is overwritten.
+  function fillBookingCard(card, v) {
+    if (!v) return;
+    var map = { name: v.name, email: v.email, purpose: v.purpose };
+    Object.keys(map).forEach(function (k) {
+      var el = bookingField(card, k);
+      if (el && map[k] && !el.value.trim()) el.value = map[k];
+    });
+    if (v.preferredTimes) bookingField(card, 'preferred_times').value = v.preferredTimes;
+  }
+
+  function focusBookingCard(card) {
+    var order = ['name', 'email', 'purpose'];
+    for (var i = 0; i < order.length; i++) {
+      var el = bookingField(card, order[i]);
+      if (el && !el.value.trim()) {
+        try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); }
+        return;
+      }
+    }
+  }
+
+  function buildBookingCard(initial) {
     var card = document.createElement('form');
     card.className = 'ask-booking-card';
+    card.setAttribute('data-open', '1'); // still unsent: a later request refills it, not a second card
     card.innerHTML =
       '<p class="ask-booking-title">Set up a conversation with Reshad</p>' +
+      '<p class="ask-booking-hint">Check the details, then send. Reshad will reply by email.</p>' +
       '<label>Name<input type="text" name="name" required></label>' +
       '<label>Email<input type="email" name="email" required></label>' +
       '<label>What would you like to talk about?<textarea name="purpose" rows="2" required></textarea></label>' +
@@ -589,6 +871,7 @@
       '<label class="ask-booking-honeypot" aria-hidden="true">Leave blank<input type="text" name="website" tabindex="-1" autocomplete="off"></label>' +
       '<button type="submit" class="ask-booking-submit">Send</button>' +
       '<p class="ask-booking-status" aria-live="polite"></p>';
+    fillBookingCard(card, initial);
 
     card.addEventListener('submit', function (ev) {
       ev.preventDefault();
@@ -605,15 +888,22 @@
       };
       submitBtn.disabled = true;
       status.textContent = 'Sending…';
+      // The API sleeps when idle (free tier); say so instead of looking frozen.
+      var wakeTimer = window.setTimeout(function () {
+        status.textContent = 'Waking up the assistant — this can take a bit…';
+      }, COLD_START_HINT_MS);
       fetch(API_BASE + '/api/book', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       }).then(function (res) {
+        window.clearTimeout(wakeTimer);
         if (!res.ok) throw new Error('bad status');
         status.textContent = "Sent — Reshad will follow up by email.";
+        card.removeAttribute('data-open');
         card.querySelectorAll('input, textarea, button').forEach(function (el) { el.disabled = true; });
       }).catch(function () {
+        window.clearTimeout(wakeTimer);
         submitBtn.disabled = false;
         status.textContent = 'Something went wrong — try again, or email him directly.';
       });
@@ -621,10 +911,33 @@
     return card;
   }
 
+  // A request to meet Reshad, recognised in the browser (section 5b). Honest by design: the
+  // assistant cannot see his calendar or confirm anything, it only passes the request on, and
+  // nothing is sent until the visitor presses Send.
+  function handleBookingIntent(question) {
+    var details = extractBooking(question, bkNowParts(), bkVisitorTz());
+    var hasOpenCard = !!messagesEl.querySelector('.ask-booking-card[data-open="1"]');
+    // Stored with the transcript, so both wordings must stay true after a reload, when the
+    // card is gone.
+    var text = hasOpenCard
+      ? "I've updated your request to Reshad with those details."
+      : "I can't see Reshad's calendar or confirm a time, but I can send him your request.";
+    renderMessage('assistant', text, null, { booking: details });
+    var transcript = loadTranscript();
+    transcript.push({ question: question, answer: text });
+    saveTranscript(transcript);
+  }
+
   // ---- 7. Ask -> POST /api/ask ---------------------------------------------
   function handleAsk(question) {
     chipsEl.hidden = true;
     renderMessage('user', question, null);
+    // A request to meet him goes straight to the booking form -- no model call (section 5b).
+    var hasOpenCard = !!messagesEl.querySelector('.ask-booking-card[data-open="1"]');
+    if (detectBookingIntent(question) || (hasOpenCard && bkIsFormUpdate(question, bkNowParts()))) {
+      handleBookingIntent(question);
+      return;
+    }
     var transcript = loadTranscript();
 
     var typingRow = renderTyping();
@@ -657,12 +970,12 @@
       .then(function (data) {
         window.clearTimeout(coldStartTimer);
         typingRow.parentNode.removeChild(typingRow);
-        renderMessage('assistant', data.answer, data.citations);
+        renderMessage('assistant', data.answer, data.citations, { question: question });
         // Stored (and later emailed via /api/book's recent_history, and sent back as history
         // on the NEXT ask) with the <<BOOK>> marker stripped -- it's UI instruction syntax,
         // not part of the answer, and leaking it into a booking email read by an actual
         // human is a real, visible bug, not a cosmetic one. Same regex the display path uses.
-        transcript.push({ question: question, answer: data.answer.replace(BOOK_MARKER_RE, '').trim() });
+        transcript.push({ question: question, answer: stripBookMarker(data.answer) });
         saveTranscript(transcript);
       })
       .catch(function () {
