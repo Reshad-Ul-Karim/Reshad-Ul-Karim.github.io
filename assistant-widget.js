@@ -50,17 +50,8 @@
     return { kind: 'home', title: document.title };
   }
 
+  // Questions about the page being read, offered on project and publication pages.
   var CHIPS = {
-    home: [
-      "What's his strongest research work?",
-      'Does he have production LLM experience?',
-      'Show me a computer-vision project',
-      'How can I reach him?'
-    ],
-    index: [
-      "What's his strongest research?",
-      'Does he have production LLM experience?'
-    ],
     project: [
       'What was hardest about this?',
       'What tech does it use?',
@@ -71,6 +62,30 @@
       'What was his contribution?'
     ]
   };
+
+  // Who is visiting, picked once at the start (or inferred from what they ask). It tailors the
+  // first reply, the suggested questions and the links offered. Keys match BK_OFFERS.
+  var ROLE_PICKS = [
+    { role: 'hire', label: "I'm hiring" },
+    { role: 'academic', label: "I'm a researcher or professor" },
+    { role: 'project', label: 'I have a project in mind' },
+    { role: 'general', label: 'Just looking around' }
+  ];
+  // Only claims the site itself makes. The pick is stored as a turn, so the model also sees it.
+  var ROLE_REPLIES = {
+    hire: "Thanks. Reshad is an AI/ML engineer and researcher, and his site says he's open to AI/ML roles. His CV and projects are a quick way in, or ask me anything.",
+    academic: 'Thanks. Reshad is looking for PhD and research opportunities. I can walk you through his publications and research projects.',
+    project: "Thanks. Tell me what you're working on, or start with what he has built and how.",
+    general: 'Welcome. Here are a few good places to start.'
+  };
+  // Suggested next questions, shown above the input after every answer (never one already asked).
+  var FOLLOW_UPS = {
+    hire: ['Does he have production LLM experience?', "What's his tech stack?", 'What kind of roles is he looking for?', "What's the most complex system he has built?", 'How can I reach him?'],
+    academic: ["What's his strongest research work?", 'What are his research interests?', 'What has he published?', 'How can I reach him?'],
+    project: ['What has he built end to end?', 'Does he have production LLM experience?', "What's his tech stack?", 'How can I reach him?'],
+    general: ['Give me a quick intro to Reshad', "What's his strongest research work?", 'Show me a computer-vision project', 'Does he have production LLM experience?']
+  };
+  var AFTER_BOOKING = ['Brief me on Reshad before the call'];
 
   // ---- 2. Slug -> kind lookup, so citations link to the right page --------
   // Fetched once, lazily, so opening the widget never costs a request nobody
@@ -109,6 +124,65 @@
       sessionStorage.setItem(SS_TRANSCRIPT_KEY, JSON.stringify(turns.slice(-MAX_HISTORY_TURNS)));
     } catch (e) { /* storage unavailable or full -- history just resets, not fatal */ }
   }
+
+  // ---- 3b. Who is visiting ----------------------------------------------------------------
+  // Per tab: the role, name and email the visitor has given, so nothing is asked twice. In this
+  // browser only (localStorage, 30 days): role, what to call them (from the form) and when they
+  // last sent a request, for a "welcome back". Never sent anywhere; the clear button forgets it.
+  var SS_VISITOR_KEY = 'askReshad.visitor';
+  var SS_ASKED_KEY = 'askReshad.asked';
+  var SS_PICKED_KEY = 'askReshad.pickedAt';
+  var LS_VISITOR_KEY = 'askReshad.returning';
+  var RETURN_DAYS = 30;
+  var REQUEST_QUIET_DAYS = 14;
+  var isReturn = false; // a visitor this browser remembers, seen again in a new tab
+
+  function readStore(store, key, fallback) {
+    try { var v = JSON.parse(window[store].getItem(key)); return v == null ? fallback : v; } catch (e) { return fallback; }
+  }
+  function writeStore(store, key, value) {
+    try { window[store].setItem(key, JSON.stringify(value)); } catch (e) { /* not fatal */ }
+  }
+
+  function visitor() { return readStore('sessionStorage', SS_VISITOR_KEY, {}); }
+  function returningVisitor() {
+    var r = readStore('localStorage', LS_VISITOR_KEY, {});
+    return r.seenAt && Date.now() - Date.parse(r.seenAt) < RETURN_DAYS * 864e5 ? r : {};
+  }
+  function rememberVisitor(patch) {
+    var v = visitor();
+    Object.keys(patch).forEach(function (k) { if (patch[k]) v[k] = patch[k]; });
+    writeStore('sessionStorage', SS_VISITOR_KEY, v);
+    if (!v.role && !v.formName) return;
+    var r = returningVisitor(); // the long-lived copy stays small: no email, no full name
+    if (v.role) r.role = v.role;
+    if (v.formName) r.name = bkGreetName(v.formName);
+    if (patch.requestedAt) r.requestedAt = patch.requestedAt;
+    r.seenAt = new Date().toISOString();
+    writeStore('localStorage', LS_VISITOR_KEY, r);
+  }
+  function recentRequest() {
+    var r = returningVisitor();
+    return !!r.requestedAt && Date.now() - Date.parse(r.requestedAt) < REQUEST_QUIET_DAYS * 864e5;
+  }
+  function seedReturningVisitor() {
+    var v = visitor(), r = returningVisitor();
+    if (Object.keys(v).length || !(r.role || r.name)) return;
+    isReturn = true;
+    writeStore('sessionStorage', SS_VISITOR_KEY, { role: r.role, formName: r.name });
+    if (recentRequest()) ssSet(SS_OFFERS_KEY, String(MAX_OFFERS)); // already asked to meet: don't offer again
+  }
+  function forgetVisitor() {
+    [SS_VISITOR_KEY, SS_ASKED_KEY, SS_PICKED_KEY, SS_DECLINED_KEY, SS_OFFERS_KEY].forEach(function (k) {
+      try { sessionStorage.removeItem(k); } catch (e) { /* not fatal */ }
+    });
+    try { localStorage.removeItem(LS_VISITOR_KEY); } catch (e) { /* not fatal */ }
+    isReturn = false;
+  }
+
+  function noteAsked(q) { writeStore('sessionStorage', SS_ASKED_KEY, askedList().concat(bkNorm(q)).slice(-40)); }
+  function askedList() { var a = readStore('sessionStorage', SS_ASKED_KEY, []); return Array.isArray(a) ? a : []; }
+  function wasAsked(q) { return askedList().indexOf(bkNorm(q)) > -1; }
 
   // ---- 4. DOM construction -------------------------------------------------
   var fab, panel, messagesEl, formEl, inputEl, chipsEl, sendBtn;
@@ -344,8 +418,9 @@
     clearBtn.setAttribute('title', 'Clear conversation');
     clearBtn.addEventListener('click', function () {
       saveTranscript([]);
+      forgetVisitor();
       messagesEl.innerHTML = '';
-      renderChips();
+      renderWelcome();
     });
     headerActions.appendChild(clearBtn);
 
@@ -367,6 +442,8 @@
 
     chipsEl = document.createElement('div');
     chipsEl.className = 'ask-chips';
+    chipsEl.setAttribute('role', 'group');
+    chipsEl.hidden = true;
 
     formEl = document.createElement('form');
     formEl.className = 'ask-form';
@@ -430,7 +507,7 @@
     if (open) {
       lastFocused = document.activeElement;
       panel.classList.add('ask-panel--open');
-      renderChips();
+      if (!messagesEl.children.length) renderWelcome();
       window.setTimeout(function () { inputEl.focus(); }, prefersReducedMotion() ? 0 : 150);
     } else {
       panel.classList.remove('ask-panel--open');
@@ -443,20 +520,93 @@
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
-  function renderChips() {
+  // The row of buttons above the input: who-are-you picks at the start, suggested questions
+  // after every answer. Hidden while an answer is on its way or a form needs filling in.
+  function renderChipButtons(items, label) {
     chipsEl.innerHTML = '';
-    if (loadTranscript().length) { chipsEl.hidden = true; return; } // only on empty state
-    var ctx = pageContext();
-    var list = CHIPS[ctx.kind] || CHIPS.home;
-    chipsEl.hidden = false;
-    list.forEach(function (label) {
+    chipsEl.setAttribute('aria-label', label);
+    items.forEach(function (it) {
       var chip = document.createElement('button');
       chip.type = 'button';
       chip.className = 'ask-chip';
-      chip.textContent = label;
-      chip.addEventListener('click', function () { handleAsk(label); });
+      chip.textContent = it.label;
+      chip.addEventListener('click', it.run);
       chipsEl.appendChild(chip);
     });
+    chipsEl.hidden = !items.length;
+  }
+
+  function showSuggestions(list) {
+    renderChipButtons((list || []).map(function (q) {
+      return { label: q, run: function () { handleAsk(q); } };
+    }), 'Suggested questions');
+  }
+
+  // Up to three: `first` (if not asked yet), the project or paper the answer cited, then the
+  // questions for this page and for this kind of visitor.
+  function nextSuggestions(citations, first) {
+    var ctx = pageContext();
+    var out = (first || []).filter(function (q) { return !wasAsked(q); });
+    (citations || []).some(function (c) {
+      if (!slugKind || !slugKind[c.doc_id] || c.doc_id === ctx.slug || !c.doc_title) return false;
+      var q = 'Tell me more about ' + bkShortTitle(c.doc_title);
+      if (wasAsked(q)) return false;
+      out.push(q);
+      return true;
+    });
+    var pool = (CHIPS[ctx.kind] || []).concat(FOLLOW_UPS[visitor().role] || FOLLOW_UPS.general);
+    pool.forEach(function (q) {
+      if (out.length < 3 && !wasAsked(q) && out.indexOf(q) < 0) out.push(q);
+    });
+    return out.slice(0, 3);
+  }
+
+  function welcomeText() {
+    var ctx = pageContext(), r = returningVisitor();
+    var hello = isReturn ? 'Welcome back' + (r.name ? ', ' + r.name : '') + '.' : "Hi, I'm Reshad's assistant.";
+    if (ctx.kind === 'project') {
+      return hello + " You're looking at " + bkShortTitle(ctx.title) + '. Ask me how it works, what was hard about it, or what else he has built like it.';
+    }
+    if (ctx.kind === 'publication') {
+      return hello + " You're reading " + bkShortTitle(ctx.title) + '. I can explain it simply or tell you what his part in it was.';
+    }
+    if (isReturn) {
+      return hello + (recentRequest()
+        ? ' Your request from ' + bkDay(r.requestedAt) + ' is with Reshad, and he will follow up by email. What else would you like to know?'
+        : ' What would you like to know today?');
+    }
+    return hello + ' I can answer questions about his research, projects and experience, point you to his CV, or help you set up a call with him.' +
+      (visitor().role ? '' : ' What brings you here?');
+  }
+
+  // Not stored: it is rebuilt whenever the chat is empty, so it always matches the page.
+  function renderWelcome() {
+    renderMessage('assistant', welcomeText(), null);
+    var ctx = pageContext();
+    if (CHIPS[ctx.kind]) showSuggestions(nextSuggestions());
+    else if (!visitor().role) {
+      renderChipButtons(ROLE_PICKS.map(function (p) {
+        return { label: p.label, run: function () { pickRole(p); } };
+      }), 'Tell the assistant who you are');
+    } else showSuggestions(nextSuggestions());
+  }
+
+  function pickRole(p) {
+    chipsEl.hidden = true;
+    renderMessage('user', p.label, null);
+    rememberVisitor({ role: p.role });
+    var text = ROLE_REPLIES[p.role];
+    var row = renderMessage('assistant', text, null);
+    var links = (BK_OFFERS[p.role] || BK_OFFERS.general).links;
+    if (links.length) {
+      var wrap = document.createElement('div');
+      wrap.className = 'ask-offer-actions';
+      appendLinks(wrap, links);
+      row.appendChild(wrap);
+      scrollToBottom();
+    }
+    recordTurn(p.label, text);
+    showSuggestions(nextSuggestions());
   }
 
   function citationHref(citation) {
@@ -800,6 +950,24 @@
     return /:\s*$/.test(t) ||
       /\b(?:links?|buttons?|forms?|cards?|calendar|booking(?:\s+\w+)?)\s+(?:is\s+|are\s+)?(?:right\s+|just\s+)?below\b/i.test(t);
   }
+
+  // "CAMDet — Camera-Agnostic Metric 3D Detection — Reshad Ul Karim" -> "CAMDet": the name a
+  // person would say, for greetings and "Tell me more about ..." suggestions.
+  function bkShortTitle(title) {
+    var s = String(title || '').split(/\s+[—–|]\s+|:\s/)[0].trim();
+    return s.length > 48 ? s.slice(0, 45).replace(/\s+\S*$/, '') + '…' : s;
+  }
+
+  // What to call someone: "Sara Ahmed" -> "Sara", but "Prof. Lena Ortiz" -> "Prof. Ortiz".
+  function bkGreetName(name) {
+    var words = String(name || '').trim().split(/\s+/).filter(Boolean);
+    if (!words.length) return '';
+    var m = words[0].match(/^(dr|prof|professor|mr|mrs|ms|miss|mx|sir|dame)\.?$/i);
+    if (!m) return words[0];
+    if (words.length < 2) return words[0].replace(/\.$/, '');
+    var title = /^professor$/i.test(m[1]) ? 'Professor' : m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase() + (/^(sir|dame|miss)$/i.test(m[1]) ? '' : '.');
+    return title + ' ' + words[words.length - 1];
+  }
   // END booking-intent
 
   function bkNowParts() {
@@ -808,6 +976,18 @@
   }
   function bkVisitorTz() {
     try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) { return ''; }
+  }
+  function bkDay(iso) {
+    try { return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }); } catch (e) { return 'earlier'; }
+  }
+
+  // What the visitor said in this message, topped up with the name and email they gave earlier
+  // in the chat, so the form and the booking page never ask twice.
+  function bookingDetails(question) {
+    var d = extractBooking(question, bkNowParts(), bkVisitorTz()), v = visitor();
+    if (!d.name && v.name) d.name = v.name;
+    if (!d.email && v.email) d.email = v.email;
+    return d;
   }
 
   // <<BOOK>> from the model is stripped from the displayed text and rendered as a card,
@@ -867,7 +1047,7 @@
       card = openOrBuildCard(opts.booking);
     } else if (marker && opts && opts.question) {
       if (classifyBookingIntent(opts.question) === 'request') {
-        card = openOrBuildCard(extractBooking(opts.question, bkNowParts(), bkVisitorTz()));
+        card = openOrBuildCard(bookingDetails(opts.question));
       } else if (canOffer()) {
         offerFor = opts.question;
       }
@@ -956,7 +1136,7 @@
     card.setAttribute('data-open', '1'); // still unsent: a later request refills it, not a second card
     card.innerHTML =
       '<p class="ask-booking-title">Send Reshad a request</p>' +
-      '<p class="ask-booking-hint">Add what you would like to discuss and check the details. Nothing is sent until you press Send, and Reshad will follow up by email.</p>' +
+      '<p class="ask-booking-hint">Add what you would like to discuss and check the details. Nothing is sent until you press Send. Your last few messages here go with it for context, and Reshad will follow up by email.</p>' +
       '<label>Name<input type="text" name="name" required></label>' +
       '<label>Email<input type="email" name="email" required></label>' +
       '<label>What would you like to talk about?<textarea name="purpose" rows="2" required placeholder="For example: a role, a research collaboration, a question about a project"></textarea></label>' +
@@ -974,7 +1154,7 @@
     card.querySelector('.ask-booking-dismiss').addEventListener('click', function () {
       ssSet(SS_DECLINED_KEY, '1'); // they said no: no more soft offers this session
       if (card.parentNode) card.parentNode.removeChild(card);
-      renderMessage('assistant', 'No problem. Ask me anything about his work.', null);
+      sayNoProblem();
     });
 
     card.addEventListener('submit', function (ev) {
@@ -988,7 +1168,7 @@
         preferred_times: card.preferred_times.value.trim(),
         website: card.website.value, // honeypot
         page: pageContext(),
-        recent_history: loadTranscript().slice(-3)
+        recent_history: loadTranscript().slice(-3).map(function (t) { return { question: t.question, answer: t.answer }; })
       };
       submitBtn.disabled = true;
       status.textContent = 'Sending…';
@@ -1007,6 +1187,7 @@
         card.removeAttribute('data-open');
         ssSet(SS_OFFERS_KEY, String(MAX_OFFERS)); // done: no further offers this session
         card.querySelectorAll('input, textarea, button').forEach(function (el) { el.disabled = true; });
+        afterRequestSent(payload);
       }).catch(function () {
         window.clearTimeout(wakeTimer);
         submitBtn.disabled = false;
@@ -1127,7 +1308,7 @@
     wrap.className = 'ask-offer-actions';
     wrap.setAttribute('role', 'group');
     wrap.setAttribute('aria-label', 'Ways to reach Reshad');
-    if (bookingUrl) wrap.appendChild(buildPickLink(extractBooking(question, bkNowParts(), bkVisitorTz())));
+    if (bookingUrl) wrap.appendChild(buildPickLink(bookingDetails(question)));
     var contact = document.createElement('a');
     contact.className = 'ask-offer-btn' + (bookingUrl ? '' : ' ask-offer-btn--primary');
     contact.textContent = 'Open Contact section';
@@ -1142,14 +1323,7 @@
     wrap.setAttribute('role', 'group');
     wrap.setAttribute('aria-label', 'Next steps');
     if (bookingUrl) wrap.appendChild(buildPickLink(details));
-    def.links.forEach(function (l) {
-      var a = document.createElement('a');
-      a.className = 'ask-offer-btn';
-      a.textContent = l.label;
-      a.href = l.path ? BASE + l.path : homeHref(l.hash);
-      if (l.download) a.setAttribute('download', '');
-      wrap.appendChild(a);
-    });
+    appendLinks(wrap, def.links);
     var yes = document.createElement('button');
     yes.type = 'button';
     // With a booking page, picking a time is the main action and the request is the fallback.
@@ -1163,12 +1337,70 @@
     yes.addEventListener('click', function () { acceptOffer(offer); });
     no.addEventListener('click', function () {
       declineOffer(offer);
-      renderMessage('assistant', 'No problem. Ask me anything about his work.', null);
+      sayNoProblem();
     });
     wrap.appendChild(yes);
     wrap.appendChild(no);
     activeOffer = offer;
     return wrap;
+  }
+
+  function appendLinks(wrap, links) {
+    links.forEach(function (l) {
+      var a = document.createElement('a');
+      a.className = 'ask-offer-btn';
+      a.textContent = l.label;
+      a.href = l.path ? BASE + l.path : homeHref(l.hash);
+      if (l.download) a.setAttribute('download', '');
+      wrap.appendChild(a);
+    });
+  }
+
+  function sayNoProblem() {
+    renderMessage('assistant', 'No problem. Ask me anything about his work.', null);
+    showSuggestions(nextSuggestions());
+  }
+
+  // ---- 6d. After a meeting is arranged: say what happens next, then keep helping ------------
+  // A turn the visitor did not type (a sent form, a visit to the booking page). Stored so it
+  // survives a reload and the model knows about it, but shown without a user bubble.
+  function recordNote(question, answer) {
+    var transcript = loadTranscript();
+    transcript.push({ question: question, answer: answer, note: true });
+    saveTranscript(transcript);
+  }
+
+  function afterRequestSent(p) {
+    rememberVisitor({ name: p.name, email: p.email, formName: p.name, requestedAt: new Date().toISOString() });
+    var plain = function (s) { return String(s).replace(/[\[\]*`_]/g, ''); }; // visitor text, not markdown
+    var head = 'All set, ' + plain(bkGreetName(p.name)) + '. Your request is with Reshad.\n\n**Topic:** ' + plain(p.purpose) +
+      (p.preferred_times ? '\n**Preferred time:** ' + plain(p.preferred_times) : '');
+    var tail = 'In the meantime I can brief you on his background or walk you through any of his work.';
+    // The email is shown so a typo can be caught, but kept out of the stored copy (which is sent
+    // back to the model with later questions).
+    renderMessage('assistant', head + '\n\nNothing is booked yet: he will reply to ' + plain(p.email) + ' to agree a time. ' + tail, null);
+    recordNote('I sent Reshad a meeting request.', head + '\n\nNothing is booked yet: he will reply by email to agree a time. ' + tail);
+    showSuggestions(nextSuggestions(null, AFTER_BOOKING));
+  }
+
+  // "Pick a time" opens the booking page in a new tab, so the chat cannot see whether a slot
+  // was booked. When the visitor comes back to this tab, say what to expect either way.
+  function watchBookingPageVisits() {
+    messagesEl.addEventListener('click', function (ev) {
+      var a = ev.target && ev.target.closest ? ev.target.closest('a') : null;
+      if (a && bookingUrl && a.href.indexOf(bookingUrl) === 0) ssSet(SS_PICKED_KEY, String(Date.now()));
+    });
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState !== 'visible') return;
+      var since = Date.now() - (parseInt(ssGet(SS_PICKED_KEY) || '0', 10) || 0);
+      if (since < 15000 || since > 3 * 3600000) return; // too quick to have booked, or long ago
+      ssSet(SS_PICKED_KEY, '');
+      var text = 'If you booked a time, the confirmation email has the date, time and video link, and Reshad gets the same invitation. Anything you would like to know before the call?';
+      renderMessage('assistant', text, null);
+      recordNote('I opened his booking page.', text);
+      ssSet(SS_OFFERS_KEY, String(MAX_OFFERS)); // they have the calendar: no more offers
+      showSuggestions(nextSuggestions(null, AFTER_BOOKING));
+    });
   }
 
   // An offer is "live" while its buttons are still on screen and near the end of the chat,
@@ -1182,7 +1414,7 @@
   // Attach the buttons to an existing assistant message (the model's own reply).
   function attachOffer(row, question) {
     var def = BK_OFFERS[bkVisitorKind(question)] || BK_OFFERS.general;
-    row.appendChild(buildOfferActions(def, extractBooking(question, bkNowParts(), bkVisitorTz()), row));
+    row.appendChild(buildOfferActions(def, bookingDetails(question), row));
     noteOfferShown();
     scrollToBottom();
   }
@@ -1196,7 +1428,7 @@
 
   // The visitor asked to meet: open the form, pre-filled, and say plainly what it does.
   function handleBookingRequest(question) {
-    var details = extractBooking(question, bkNowParts(), bkVisitorTz());
+    var details = bookingDetails(question);
     if (bookingUrl && !openBookingCard()) {
       // The visitor asked to meet and Reshad has a booking page: real open slots beat a form
       // that waits for a reply. The request form stays one tap away as the fallback.
@@ -1222,7 +1454,7 @@
     var def = BK_OFFERS[bkVisitorKind(question)] || BK_OFFERS.general;
     var text = def.text + bookingSentence();
     var row = renderMessage('assistant', text, null);
-    row.appendChild(buildOfferActions(def, extractBooking(question, bkNowParts(), bkVisitorTz()), row));
+    row.appendChild(buildOfferActions(def, bookingDetails(question), row));
     noteOfferShown();
     scrollToBottom();
     recordTurn(question, text);
@@ -1237,12 +1469,26 @@
     row.appendChild(buildPassiveLinks(question));
     scrollToBottom();
     recordTurn(question, text);
+    showSuggestions(nextSuggestions());
+  }
+
+  // Keep what the visitor tells us about themselves (name, email, why they're here), so later
+  // replies, suggestions and the booking form use it instead of asking again.
+  function learnFromMessage(question) {
+    var said = extractBooking(question, bkNowParts(), bkVisitorTz());
+    var patch = { name: said.name, email: said.email };
+    var kind = bkVisitorKind(question);
+    var role = visitor().role; // a stated reason beats "just looking"
+    if ((!role || role === 'general') && (kind === 'hire' || kind === 'academic' || kind === 'project')) patch.role = kind;
+    rememberVisitor(patch);
   }
 
   // ---- 7. Ask -> POST /api/ask ---------------------------------------------
   function handleAsk(question) {
     chipsEl.hidden = true;
     renderMessage('user', question, null);
+    noteAsked(question);
+    learnFromMessage(question);
     // A request to meet him goes straight to the booking form -- no model call (section 5b).
     // Booking (section 5b): act only on what the visitor actually asked for.
     var pending = liveOffer();
@@ -1253,7 +1499,7 @@
     }
     if (pending && bkIsNegative(question)) {
       declineOffer(pending);
-      renderMessage('assistant', 'No problem. Ask me anything about his work.', null);
+      sayNoProblem();
       recordTurn(question, 'No problem. Ask me anything about his work.');
       return;
     }
@@ -1302,7 +1548,9 @@
       .then(function (data) {
         window.clearTimeout(coldStartTimer);
         typingRow.parentNode.removeChild(typingRow);
-        renderMessage('assistant', data.answer, data.citations, { question: question });
+        var row = renderMessage('assistant', data.answer, data.citations, { question: question });
+        // A form or an offer is the next step when one was attached; otherwise suggest questions.
+        if (!row.querySelector('.ask-booking-card, .ask-offer-actions button')) showSuggestions(nextSuggestions(data.citations));
         // Stored (and later emailed via /api/book's recent_history, and sent back as history
         // on the NEXT ask) with the <<BOOK>> marker stripped -- it's UI instruction syntax,
         // not part of the answer, and leaking it into a booking email read by an actual
@@ -1318,17 +1566,19 @@
           "Having trouble reaching the assistant right now. Try again in a moment, or reach Reshad directly.",
           null
         );
+        renderChipButtons([{ label: 'Try again', run: function () { handleAsk(question); } }], 'Suggested questions');
       });
   }
 
   function restoreTranscript() {
     var transcript = loadTranscript();
     transcript.forEach(function (turn) {
-      renderMessage('user', turn.question, null);
+      if (!turn.note) renderMessage('user', turn.question, null);
       // citations aren't persisted; re-shown minus chips. The question is passed so an answer
       // that points at a link "below" gets its links back after a reload.
       renderMessage('assistant', turn.answer, null, { question: turn.question });
     });
+    if (transcript.length) showSuggestions(nextSuggestions());
   }
 
   // ---- 8. Init --------------------------------------------------------------
@@ -1336,6 +1586,8 @@
     if (document.getElementById('ask-reshad-fab')) return;
     buildFab();
     buildPanel();
+    watchBookingPageVisits();
+    seedReturningVisitor();
     restoreTranscript();
     buildTooltip();
     loadSlugKinds();
