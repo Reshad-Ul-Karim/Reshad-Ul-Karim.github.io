@@ -582,6 +582,8 @@
     if (/\b(?:free|available)\s+(?:on|at|this|next|tomorrow|today|tonight)\b/.test(t)) return 'offer';
     if (/\b(?:contact|reach|reach out to|get in touch with|hire|interview|message|email)\s+(?:him|reshad)\b/.test(t)) return 'offer';
     if (/\bget in touch\b/.test(t)) return 'offer';
+    // "what is his email?" -- the model only has the resume, which carries no contact details.
+    if (/\b(?:his|reshad'?s|your)\s+(?:e-?mail(?:\s+address)?|phone(?:\s+number)?|mobile|whatsapp|linkedin|contact\s+(?:info\w*|details?))(?=\s*(?:[?.!,;]|$)|\s+(?:please|pls|for|so|and|or|to|if)\b)/.test(t)) return 'offer';
     if (/\b(?:work(?:ing)?|collaborat\w*|partner\w*)\s+with\s+(?:him|reshad)\b/.test(t)) return 'offer';
     return '';
   }
@@ -789,6 +791,15 @@
     }
     return parts.length ? url + (url.indexOf('?') > -1 ? '&' : '?') + parts.join('&') : url;
   }
+
+  // The model sometimes points at something that is not there ("use the booking link below:")
+  // while the widget, which owns every button and link, attached nothing. True for an answer
+  // that ends on a colon or names a link/button/form "below".
+  function bkDanglingRef(text) {
+    var t = String(text || '').trim();
+    return /:\s*$/.test(t) ||
+      /\b(?:links?|buttons?|forms?|cards?|calendar|booking(?:\s+\w+)?)\s+(?:is\s+|are\s+)?(?:right\s+|just\s+)?below\b/i.test(t);
+  }
   // END booking-intent
 
   function bkNowParts() {
@@ -873,6 +884,12 @@
       focusBookingCard(card);
     }
     if (offerFor) attachOffer(row, offerFor);
+    else if (role === 'assistant' && opts && opts.question && !card && bkDanglingRef(clean)) {
+      // The answer says "see the link below" but no offer was attached (offers capped, or the
+      // visitor said no): give it the real links rather than leave it pointing at nothing.
+      row.appendChild(buildPassiveLinks(opts.question));
+      scrollToBottom();
+    }
     return row;
   }
 
@@ -1093,20 +1110,38 @@
     focusBookingCard(card);
   }
 
+  function buildPickLink(details) {
+    var pick = document.createElement('a');
+    pick.className = 'ask-offer-btn ask-offer-btn--primary';
+    pick.textContent = 'Pick a time';
+    pick.href = bkBookingLink(bookingUrl, details);
+    pick.target = '_blank';
+    pick.rel = 'noopener noreferrer';
+    return pick;
+  }
+
+  // Links only -- no "send a request" / "no thanks" buttons, so it never counts as an offer and
+  // is safe after the visitor declined one.
+  function buildPassiveLinks(question) {
+    var wrap = document.createElement('div');
+    wrap.className = 'ask-offer-actions';
+    wrap.setAttribute('role', 'group');
+    wrap.setAttribute('aria-label', 'Ways to reach Reshad');
+    if (bookingUrl) wrap.appendChild(buildPickLink(extractBooking(question, bkNowParts(), bkVisitorTz())));
+    var contact = document.createElement('a');
+    contact.className = 'ask-offer-btn' + (bookingUrl ? '' : ' ask-offer-btn--primary');
+    contact.textContent = 'Open Contact section';
+    contact.href = homeHref('#contact');
+    wrap.appendChild(contact);
+    return wrap;
+  }
+
   function buildOfferActions(def, details, row) {
     var wrap = document.createElement('div');
     wrap.className = 'ask-offer-actions';
     wrap.setAttribute('role', 'group');
     wrap.setAttribute('aria-label', 'Next steps');
-    if (bookingUrl) {
-      var pick = document.createElement('a');
-      pick.className = 'ask-offer-btn ask-offer-btn--primary';
-      pick.textContent = 'Pick a time';
-      pick.href = bkBookingLink(bookingUrl, details);
-      pick.target = '_blank';
-      pick.rel = 'noopener noreferrer';
-      wrap.appendChild(pick);
-    }
+    if (bookingUrl) wrap.appendChild(buildPickLink(details));
     def.links.forEach(function (l) {
       var a = document.createElement('a');
       a.className = 'ask-offer-btn';
@@ -1193,6 +1228,17 @@
     recordTurn(question, text);
   }
 
+  // "How can I reach him?" has one true answer, so it is answered here and never by the model,
+  // even after offers were declined or capped. The model's wording varied, and once sent a
+  // visitor to a "booking link below" that was never attached. No request/"no thanks" buttons.
+  function handleContactInfo(question) {
+    var text = 'His email and profiles are in the Contact section of this page.' + bookingSentence();
+    var row = renderMessage('assistant', text, null);
+    row.appendChild(buildPassiveLinks(question));
+    scrollToBottom();
+    recordTurn(question, text);
+  }
+
   // ---- 7. Ask -> POST /api/ask ---------------------------------------------
   function handleAsk(question) {
     chipsEl.hidden = true;
@@ -1218,6 +1264,10 @@
     }
     if (level === 'offer' && canOffer()) {
       handleBookingOffer(question);
+      return;
+    }
+    if (level === 'offer' && bkVisitorKind(question) === 'contact') {
+      handleContactInfo(question);
       return;
     }
     var transcript = loadTranscript();
@@ -1275,7 +1325,9 @@
     var transcript = loadTranscript();
     transcript.forEach(function (turn) {
       renderMessage('user', turn.question, null);
-      renderMessage('assistant', turn.answer, null); // citations aren't persisted; re-shown minus chips
+      // citations aren't persisted; re-shown minus chips. The question is passed so an answer
+      // that points at a link "below" gets its links back after a reload.
+      renderMessage('assistant', turn.answer, null, { question: turn.question });
     });
   }
 
