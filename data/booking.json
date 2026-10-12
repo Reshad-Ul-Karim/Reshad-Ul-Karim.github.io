@@ -1,4 +1,4 @@
 {
   "url": "",
-  "note": "Paste your Google Calendar booking page link into \"url\" (it looks like https://calendar.app.google/XXXX). Leave it empty to keep the booking page switched off."
+  "note": "Paste your booking page link into \"url\" (Cal.com, Calendly or a Google Calendar booking page, for example https://cal.com/your-name/intro-call). Leave it empty to keep it switched off."
 }

@@ -768,6 +768,27 @@
     return !!(time || bkParseDate(t, now, time) ||
       /[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}/.test(raw) || bkExtractName(raw));
   }
+
+  // Scheduling services a booking link may point to. The host must be followed by "/", so
+  // look-alikes such as https://cal.com.evil.com/ or https://cal.com@evil.com/ are rejected.
+  var BK_BOOKING_URL_RE = /^https:\/\/(?:calendar\.google\.com|calendar\.app\.google|(?:www\.)?cal\.com|calendly\.com)\//;
+  var BK_PREFILL_URL_RE = /^https:\/\/(?:(?:www\.)?cal\.com|calendly\.com)\//;
+  function bkIsBookingUrl(url) { return typeof url === 'string' && BK_BOOKING_URL_RE.test(url); }
+
+  // Hand the booking page what the visitor already told the assistant, so they only choose a
+  // slot. Cal.com and Calendly take name and email as query parameters (Cal.com also notes); a
+  // Google booking page takes none, so its link is returned untouched.
+  function bkBookingLink(url, details) {
+    if (!bkIsBookingUrl(url) || !BK_PREFILL_URL_RE.test(url) || !details) return url;
+    var parts = [];
+    function add(key, value) { if (value) parts.push(key + '=' + encodeURIComponent(value)); }
+    add('name', details.name);
+    add('email', details.email);
+    if (/^https:\/\/(?:www\.)?cal\.com\//.test(url)) {
+      add('notes', [details.purpose, details.preferredTimes ? 'Preferred time: ' + details.preferredTimes : ''].filter(Boolean).join('\n'));
+    }
+    return parts.length ? url + (url.indexOf('?') > -1 ? '&' : '?') + parts.join('&') : url;
+  }
   // END booking-intent
 
   function bkNowParts() {
@@ -1023,9 +1044,9 @@
   // ---- 6c. Booking page (a Google Calendar appointment schedule) --------------------------
   // data/booking.json holds { "url": "<booking page link>" }. Empty means "not set up yet" and
   // everything behaves as before (the request form only). Once set, visitors can pick an open
-  // slot on Reshad's real calendar, and Google adds the Meet link and sends both invitations.
-  // Only Google Calendar links are accepted, so a bad edit can never point visitors elsewhere.
-  var BOOKING_URL_RE = /^https:\/\/(?:calendar\.google\.com|calendar\.app\.google)\//;
+  // slot on Reshad's real calendar and the scheduling service (Cal.com, Calendly or a Google
+  // booking page) books it and emails both sides. Only those hosts are accepted, so a bad edit
+  // can never point visitors elsewhere.
   var bookingUrl = '';
 
   function revealBookingLinks() {
@@ -1042,7 +1063,7 @@
     return fetch(BASE + 'data/booking.json')
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (cfg) {
-        if (cfg && typeof cfg.url === 'string' && BOOKING_URL_RE.test(cfg.url)) bookingUrl = cfg.url;
+        if (cfg && bkIsBookingUrl(cfg.url)) bookingUrl = cfg.url;
         revealBookingLinks();
       })
       .catch(function () { /* optional file: its absence is the normal "not set up" state */ });
@@ -1052,7 +1073,7 @@
   // the stored text and still works after a reload, when the buttons are gone.
   function bookingSentence() {
     return bookingUrl
-      ? ' You can also [pick an open time on his calendar](' + bookingUrl + '); a Google Meet link is added automatically.'
+      ? ' You can also [pick an open time on his calendar](' + bookingUrl + '); you will both get a calendar invitation.'
       : '';
   }
 
@@ -1081,7 +1102,7 @@
       var pick = document.createElement('a');
       pick.className = 'ask-offer-btn ask-offer-btn--primary';
       pick.textContent = 'Pick a time';
-      pick.href = bookingUrl;
+      pick.href = bkBookingLink(bookingUrl, details);
       pick.target = '_blank';
       pick.rel = 'noopener noreferrer';
       wrap.appendChild(pick);
@@ -1145,7 +1166,7 @@
       // The visitor asked to meet and Reshad has a booking page: real open slots beat a form
       // that waits for a reply. The request form stays one tap away as the fallback.
       var pickText = "I can't confirm a time for Reshad myself, but you can [pick an open slot on his calendar](" +
-        bookingUrl + ') and a Google Meet link is added automatically.';
+        bookingUrl + ') and you will both get a calendar invitation.';
       var pickRow = renderMessage('assistant', pickText, null);
       pickRow.appendChild(buildOfferActions({ links: [], ask: 'Send him a request' }, details, pickRow));
       scrollToBottom();
