@@ -1630,32 +1630,113 @@
   // a passing hiccup never reaches the visitor. Once only: retrying a rate limit in a loop feeds
   // the limit it is waiting out. Waits what the API says (retry_after_s), within 2-12 s.
   var RETRY_STATUSES = { 429: true, 502: true, 503: true, 504: true };
+  function failFrom(res) {
+    return res.json().catch(function () { return {}; }).then(function (b) {
+      var err = new Error('bad status ' + res.status);
+      err.retryable = !!RETRY_STATUSES[res.status];
+      err.waitS = b && b.error && b.error.retry_after_s;
+      throw err;
+    });
+  }
   function postAsk(body) {
     return fetch(API_BASE + '/api/ask', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
-    }).then(function (res) {
-      if (res.ok) return res.json();
-      return res.json().catch(function () { return {}; }).then(function (b) {
-        var err = new Error('bad status ' + res.status);
-        err.retryable = !!RETRY_STATUSES[res.status];
-        err.waitS = b && b.error && b.error.retry_after_s;
-        throw err;
-      });
-    });
+    }).then(function (res) { return res.ok ? res.json() : failFrom(res); });
   }
-  function askWithRetry(body, onRetry) {
-    return postAsk(body).catch(function (err) {
-      if (!err.retryable && !(err instanceof TypeError)) throw err; // TypeError: network failure
-      onRetry();
-      var waitMs = Math.min(Math.max((Number(err.waitS) || 3) * 1000, 2000), 12000);
-      return new Promise(function (resolve) { window.setTimeout(resolve, waitMs); })
-        .then(function () { return postAsk(body); });
+
+  // POST /api/ask/stream: newline-delimited JSON events while the model writes. `on.sources`
+  // gets what it is reading, `on.text` each piece of VERIFIED text (the API releases a line
+  // only once it passes the same check as the final answer), and the promise resolves with
+  // the final answer -- the same object /api/ask returns. An API without the route yet (404)
+  // gets the plain request; a browser that cannot read a body as it arrives gets the events
+  // all at once at the end.
+  function postAskStream(body, on) {
+    return fetch(API_BASE + '/api/ask/stream', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function (res) {
+      if (res.status === 404 || res.status === 405) return postAsk(body);
+      if (!res.ok) return failFrom(res);
+      var final = null;
+      function handle(line) {
+        if (!line.trim()) return;
+        var ev = JSON.parse(line);
+        if (ev.type === 'sources' && on.sources) on.sources(ev.titles || []);
+        else if (ev.type === 'text' && ev.text) on.text(ev.text);
+        else if (ev.type === 'done') final = ev.response;
+        else if (ev.type === 'error') {
+          var err = new Error('stream error ' + ev.code);
+          err.retryable = true;
+          err.waitS = ev.retry_after_s;
+          throw err;
+        }
+      }
+      function result() {
+        if (!final) throw new Error('stream ended without an answer');
+        return final;
+      }
+      if (!res.body || !res.body.getReader || typeof TextDecoder === 'undefined') {
+        return res.text().then(function (all) { all.split('\n').forEach(handle); return result(); });
+      }
+      var reader = res.body.getReader(), decoder = new TextDecoder(), buf = '';
+      function pump() {
+        return reader.read().then(function (chunk) {
+          if (chunk.done) {
+            buf += decoder.decode();
+            handle(buf);
+            return result();
+          }
+          buf += decoder.decode(chunk.value, { stream: true });
+          var lines = buf.split('\n');
+          buf = lines.pop();
+          lines.forEach(handle);
+          return pump();
+        });
+      }
+      return pump();
     });
   }
 
-  // ---- 7. Ask -> POST /api/ask ---------------------------------------------
+  // `send` makes one attempt. A retry is only safe before any of the answer is on screen:
+  // after that, sending again would write a second, different answer under the first.
+  function askWithRetry(send, onRetry, startedShowing) {
+    return send().catch(function (err) {
+      if (startedShowing && startedShowing()) throw err;
+      if (!err.retryable && !(err instanceof TypeError)) throw err; // TypeError: network failure
+      onRetry();
+      var waitMs = Math.min(Math.max((Number(err.waitS) || 3) * 1000, 2000), 12000);
+      return new Promise(function (resolve) { window.setTimeout(resolve, waitMs); }).then(send);
+    });
+  }
+
+  // The answer as it arrives: rendered like a finished one, with new paragraphs fading in and
+  // a caret while it is still being written. Replaced by the final message when it is done.
+  function renderStreamingRow() {
+    var row = document.createElement('div');
+    row.className = 'ask-message ask-message--assistant';
+    var bubble = document.createElement('div');
+    bubble.className = 'ask-bubble ask-bubble--streaming';
+    row.appendChild(bubble);
+    messagesEl.appendChild(row);
+    return row;
+  }
+  function updateStreamingRow(row, text) {
+    var bubble = row.querySelector('.ask-bubble');
+    var before = bubble.querySelectorAll('p').length;
+    bubble.innerHTML = renderMarkdown(stripBookMarker(text));
+    var paras = bubble.querySelectorAll('p');
+    for (var i = before; i < paras.length; i++) paras[i].className = 'ask-fresh';
+    scrollToBottom();
+  }
+  function readingLabel(titles) {
+    var names = titles.slice(0, 3).map(bkShortTitle).filter(Boolean);
+    return names.length ? 'Reading: ' + names.join(', ') + (titles.length > 3 ? '…' : '') : 'Reading his work…';
+  }
+
+  // ---- 7. Ask -> POST /api/ask/stream ---------------------------------------
   function handleAsk(question) {
     chipsEl.hidden = true;
     renderMessage('user', question, null);
@@ -1695,18 +1776,42 @@
       setTypingLabel(typingRow, 'Waking up the assistant — first request can take a bit…');
     }, COLD_START_HINT_MS);
 
-    askWithRetry({
+    var body = {
       question: question,
       corpus: 'persona',
       page: pageContext(),
       history: transcript.map(function (t) { return { question: t.question, answer: t.answer }; })
-    }, function () {
+    };
+    var streamRow = null, shown = '';
+    var on = {
+      sources: function (titles) {
+        window.clearTimeout(coldStartTimer);
+        setTypingLabel(typingRow, readingLabel(titles));
+      },
+      text: function (piece) {
+        if (!streamRow) {
+          window.clearTimeout(coldStartTimer);
+          if (typingRow.parentNode) typingRow.parentNode.removeChild(typingRow);
+          streamRow = renderStreamingRow();
+          messagesEl.setAttribute('aria-busy', 'true'); // announce the answer once, when complete
+        }
+        shown += piece;
+        updateStreamingRow(streamRow, shown);
+      }
+    };
+    function endStreaming() {
+      messagesEl.removeAttribute('aria-busy');
+      if (streamRow && streamRow.parentNode) streamRow.parentNode.removeChild(streamRow);
+      if (typingRow.parentNode) typingRow.parentNode.removeChild(typingRow);
+    }
+
+    askWithRetry(function () { return postAskStream(body, on); }, function () {
       window.clearTimeout(coldStartTimer);
       setTypingLabel(typingRow, 'Busy for a moment — trying again…');
-    })
+    }, function () { return !!streamRow; })
       .then(function (data) {
         window.clearTimeout(coldStartTimer);
-        typingRow.parentNode.removeChild(typingRow);
+        endStreaming();
         var row = renderMessage('assistant', data.answer, data.citations, { question: question });
         // A form or an offer is the next step when one was attached; otherwise suggest questions.
         if (!row.querySelector('.ask-booking-card, .ask-offer-actions button')) showSuggestions(nextSuggestions(data.citations));
@@ -1719,10 +1824,13 @@
       })
       .catch(function () {
         window.clearTimeout(coldStartTimer);
-        typingRow.parentNode.removeChild(typingRow);
+        var partial = !!streamRow;
+        endStreaming();
         renderMessage(
           'assistant',
-          "Having trouble reaching the assistant right now. Try again in a moment, or reach Reshad directly.",
+          partial
+            ? "Sorry, that answer was cut off before it finished. Try again in a moment, or reach Reshad directly."
+            : "Having trouble reaching the assistant right now. Try again in a moment, or reach Reshad directly.",
           null
         );
         renderChipButtons([{ label: 'Try again', run: function () { handleAsk(question); } }], 'Suggested questions');

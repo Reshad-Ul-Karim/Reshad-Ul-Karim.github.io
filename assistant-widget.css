@@ -652,6 +652,40 @@ a.ask-citation-chip:hover {
   color: var(--text-primary);
 }
 
+/* An answer arriving: each verified paragraph fades in, and a caret marks that it is still
+   being written. */
+.ask-bubble .ask-fresh {
+  animation: ask-fresh-in 280ms ease-out both;
+}
+
+@keyframes ask-fresh-in {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: none; }
+}
+
+.ask-bubble--streaming p:last-child::after {
+  content: '';
+  display: inline-block;
+  width: 0.45em;
+  height: 1em;
+  margin-left: 0.15em;
+  vertical-align: -0.12em;
+  border-radius: 1px;
+  background: rgb(var(--ask-glow-1-rgb));
+  animation: ask-caret 1s steps(1) infinite;
+}
+
+@keyframes ask-caret {
+  50% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ask-bubble .ask-fresh,
+  .ask-bubble--streaming p:last-child::after {
+    animation: none;
+  }
+}
+
 /* Soft offers: optional next steps under an answer, never a form that opens by itself. */
 .ask-offer-actions {
   display: flex;
