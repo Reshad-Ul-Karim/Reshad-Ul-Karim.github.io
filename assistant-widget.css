@@ -749,3 +749,9 @@ a.ask-citation-chip:hover {
   color: #0a0a0a;
   text-decoration-color: rgba(10, 10, 10, 0.5);
 }
+
+/* The "Book a Google Meet" item in the Contact section stays hidden until data/booking.json
+   has a booking page link (assistant-widget.js reveals it). */
+[data-booking-item][hidden] {
+  display: none !important;
+}

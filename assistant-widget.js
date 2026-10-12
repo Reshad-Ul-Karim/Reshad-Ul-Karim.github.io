@@ -1020,6 +1020,42 @@
     }
   };
 
+  // ---- 6c. Booking page (a Google Calendar appointment schedule) --------------------------
+  // data/booking.json holds { "url": "<booking page link>" }. Empty means "not set up yet" and
+  // everything behaves as before (the request form only). Once set, visitors can pick an open
+  // slot on Reshad's real calendar, and Google adds the Meet link and sends both invitations.
+  // Only Google Calendar links are accepted, so a bad edit can never point visitors elsewhere.
+  var BOOKING_URL_RE = /^https:\/\/(?:calendar\.google\.com|calendar\.app\.google)\//;
+  var bookingUrl = '';
+
+  function revealBookingLinks() {
+    if (!bookingUrl) return;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-booking-link]'), function (a) {
+      a.href = bookingUrl;
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-booking-item]'), function (el) {
+      el.hidden = false;
+    });
+  }
+
+  function loadBookingConfig() {
+    return fetch(BASE + 'data/booking.json')
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (cfg) {
+        if (cfg && typeof cfg.url === 'string' && BOOKING_URL_RE.test(cfg.url)) bookingUrl = cfg.url;
+        revealBookingLinks();
+      })
+      .catch(function () { /* optional file: its absence is the normal "not set up" state */ });
+  }
+
+  // Appended to an answer when a booking page exists. It is a markdown link, so it is part of
+  // the stored text and still works after a reload, when the buttons are gone.
+  function bookingSentence() {
+    return bookingUrl
+      ? ' You can also [pick an open time on his calendar](' + bookingUrl + '); a Google Meet link is added automatically.'
+      : '';
+  }
+
   function homeHref(hash) { return pageContext().kind === 'home' ? hash : BASE + 'index.html' + hash; }
 
   function declineOffer(offer) {
@@ -1041,6 +1077,15 @@
     wrap.className = 'ask-offer-actions';
     wrap.setAttribute('role', 'group');
     wrap.setAttribute('aria-label', 'Next steps');
+    if (bookingUrl) {
+      var pick = document.createElement('a');
+      pick.className = 'ask-offer-btn ask-offer-btn--primary';
+      pick.textContent = 'Pick a time';
+      pick.href = bookingUrl;
+      pick.target = '_blank';
+      pick.rel = 'noopener noreferrer';
+      wrap.appendChild(pick);
+    }
     def.links.forEach(function (l) {
       var a = document.createElement('a');
       a.className = 'ask-offer-btn';
@@ -1051,8 +1096,9 @@
     });
     var yes = document.createElement('button');
     yes.type = 'button';
-    yes.className = 'ask-offer-btn ask-offer-btn--primary';
-    yes.textContent = def.ask;
+    // With a booking page, picking a time is the main action and the request is the fallback.
+    yes.className = 'ask-offer-btn' + (bookingUrl ? '' : ' ask-offer-btn--primary');
+    yes.textContent = bookingUrl && def.ask === 'Send him a request' ? 'Send a request instead' : def.ask;
     var no = document.createElement('button');
     no.type = 'button';
     no.className = 'ask-offer-btn';
@@ -1095,6 +1141,17 @@
   // The visitor asked to meet: open the form, pre-filled, and say plainly what it does.
   function handleBookingRequest(question) {
     var details = extractBooking(question, bkNowParts(), bkVisitorTz());
+    if (bookingUrl && !openBookingCard()) {
+      // The visitor asked to meet and Reshad has a booking page: real open slots beat a form
+      // that waits for a reply. The request form stays one tap away as the fallback.
+      var pickText = "I can't confirm a time for Reshad myself, but you can [pick an open slot on his calendar](" +
+        bookingUrl + ') and a Google Meet link is added automatically.';
+      var pickRow = renderMessage('assistant', pickText, null);
+      pickRow.appendChild(buildOfferActions({ links: [], ask: 'Send him a request' }, details, pickRow));
+      scrollToBottom();
+      recordTurn(question, pickText);
+      return;
+    }
     // Stored with the transcript, so both wordings must stay true after a reload, when the
     // card is gone.
     var text = openBookingCard()
@@ -1107,11 +1164,12 @@
   // A softer signal: answer with something useful, offer the request, do not open a form.
   function handleBookingOffer(question) {
     var def = BK_OFFERS[bkVisitorKind(question)] || BK_OFFERS.general;
-    var row = renderMessage('assistant', def.text, null);
+    var text = def.text + bookingSentence();
+    var row = renderMessage('assistant', text, null);
     row.appendChild(buildOfferActions(def, extractBooking(question, bkNowParts(), bkVisitorTz()), row));
     noteOfferShown();
     scrollToBottom();
-    recordTurn(question, def.text);
+    recordTurn(question, text);
   }
 
   // ---- 7. Ask -> POST /api/ask ---------------------------------------------
@@ -1208,6 +1266,7 @@
     restoreTranscript();
     buildTooltip();
     loadSlugKinds();
+    loadBookingConfig();
   }
 
   if (document.readyState === 'loading') {
