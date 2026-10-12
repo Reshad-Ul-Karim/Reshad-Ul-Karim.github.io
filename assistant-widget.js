@@ -153,11 +153,12 @@
     var v = visitor();
     Object.keys(patch).forEach(function (k) { if (patch[k]) v[k] = patch[k]; });
     writeStore('sessionStorage', SS_VISITOR_KEY, v);
-    if (!v.role && !v.formName) return;
+    if (!v.role && !v.formName && !patch.requestedAt && !patch.bookedFor) return;
     var r = returningVisitor(); // the long-lived copy stays small: no email, no full name
     if (v.role) r.role = v.role;
     if (v.formName) r.name = bkGreetName(v.formName);
     if (patch.requestedAt) r.requestedAt = patch.requestedAt;
+    if (patch.bookedFor) r.bookedFor = patch.bookedFor;
     r.seenAt = new Date().toISOString();
     writeStore('localStorage', LS_VISITOR_KEY, r);
   }
@@ -165,12 +166,16 @@
     var r = returningVisitor();
     return !!r.requestedAt && Date.now() - Date.parse(r.requestedAt) < REQUEST_QUIET_DAYS * 864e5;
   }
+  function upcomingCall() {
+    var r = returningVisitor();
+    return !!r.bookedFor && Date.parse(r.bookedFor) > Date.now();
+  }
   function seedReturningVisitor() {
     var v = visitor(), r = returningVisitor();
-    if (Object.keys(v).length || !(r.role || r.name)) return;
+    if (Object.keys(v).length || !(r.role || r.name || r.bookedFor)) return;
     isReturn = true;
     writeStore('sessionStorage', SS_VISITOR_KEY, { role: r.role, formName: r.name });
-    if (recentRequest()) ssSet(SS_OFFERS_KEY, String(MAX_OFFERS)); // already asked to meet: don't offer again
+    if (recentRequest() || upcomingCall()) ssSet(SS_OFFERS_KEY, String(MAX_OFFERS)); // already arranged: don't offer again
   }
   function forgetVisitor() {
     [SS_VISITOR_KEY, SS_ASKED_KEY, SS_PICKED_KEY, SS_DECLINED_KEY, SS_OFFERS_KEY].forEach(function (k) {
@@ -570,6 +575,9 @@
     if (ctx.kind === 'publication') {
       return hello + " You're reading " + bkShortTitle(ctx.title) + '. I can explain it simply or tell you what his part in it was.';
     }
+    if (isReturn && upcomingCall()) {
+      return hello + ' Your call with Reshad is booked for **' + bkFormatSlot(r.bookedFor, bkVisitorTz()) + '**. Anything you would like to know before then?';
+    }
     if (isReturn) {
       return hello + (recentRequest()
         ? ' Your request from ' + bkDay(r.requestedAt) + ' is with Reshad, and he will follow up by email. What else would you like to know?'
@@ -904,7 +912,9 @@
       name: bkExtractName(raw),
       email: em ? em[0] : '',
       purpose: bkExtractTopic(raw),
-      preferredTimes: when.slice(0, 300)
+      preferredTimes: when.slice(0, 300),
+      // The day itself, in the visitor's zone, so a booking page can open on it.
+      preferredDate: date ? date.y + '-' + (date.m < 9 ? '0' : '') + (date.m + 1) + '-' + (date.d < 10 ? '0' : '') + date.d : ''
     };
   }
 
@@ -931,15 +941,40 @@
   // slot. Cal.com and Calendly take name and email as query parameters (Cal.com also notes); a
   // Google booking page takes none, so its link is returned untouched.
   function bkBookingLink(url, details) {
-    if (!bkIsBookingUrl(url) || !BK_PREFILL_URL_RE.test(url) || !details) return url;
-    var parts = [];
-    function add(key, value) { if (value) parts.push(key + '=' + encodeURIComponent(value)); }
-    add('name', details.name);
-    add('email', details.email);
-    if (/^https:\/\/(?:www\.)?cal\.com\//.test(url)) {
-      add('notes', [details.purpose, details.preferredTimes ? 'Preferred time: ' + details.preferredTimes : ''].filter(Boolean).join('\n'));
+    var fields = bkPrefill(url, details), keys = Object.keys(fields);
+    if (!keys.length) return url;
+    return url + (url.indexOf('?') > -1 ? '&' : '?') + keys.map(function (k) {
+      return k + '=' + encodeURIComponent(fields[k]);
+    }).join('&');
+  }
+
+  // The fields a booking page can take ({ name, email, notes, date, month }): the query string above, and
+  // the same values handed to Cal.com's popup.
+  function bkPrefill(url, details) {
+    var out = {};
+    if (!bkIsBookingUrl(url) || !BK_PREFILL_URL_RE.test(url) || !details) return out;
+    if (details.name) out.name = details.name;
+    if (details.email) out.email = details.email;
+    if (bkIsCalUrl(url)) {
+      var notes = [details.purpose, details.preferredTimes ? 'Preferred time: ' + details.preferredTimes : ''].filter(Boolean).join('\n');
+      if (notes) out.notes = notes;
+      // Cal opens its calendar on this day (checked against the live booking page).
+      if (/^\d{4}-\d{2}-\d{2}$/.test(details.preferredDate || '')) {
+        out.date = details.preferredDate;
+        out.month = details.preferredDate.slice(0, 7);
+      }
     }
-    return parts.length ? url + (url.indexOf('?') > -1 ? '&' : '?') + parts.join('&') : url;
+    return out;
+  }
+  function bkIsCalUrl(url) { return /^https:\/\/(?:www\.)?cal\.com\//.test(String(url || '')); }
+
+  // "2026-10-15T12:00:00.000Z" in the visitor's zone -> "Thursday, Oct 15, 6:00 PM GMT+6".
+  function bkFormatSlot(iso, tz) {
+    var d = new Date(iso);
+    if (!iso || isNaN(d.getTime())) return '';
+    var opts = { weekday: 'long', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' };
+    if (tz) opts.timeZone = tz;
+    try { return d.toLocaleString(undefined, opts); } catch (e) { delete opts.timeZone; return d.toLocaleString(undefined, opts); }
   }
 
   // The model sometimes points at something that is not there ("use the booking link below:")
@@ -1239,7 +1274,7 @@
     }
   };
 
-  // ---- 6c. Booking page (a Google Calendar appointment schedule) --------------------------
+  // ---- 6c. Booking page (Cal.com, Calendly or a Google booking page) ----------------------
   // data/booking.json holds { "url": "<booking page link>" }. Empty means "not set up yet" and
   // everything behaves as before (the request form only). Once set, visitors can pick an open
   // slot on Reshad's real calendar and the scheduling service (Cal.com, Calendly or a Google
@@ -1251,6 +1286,10 @@
     if (!bookingUrl) return;
     Array.prototype.forEach.call(document.querySelectorAll('[data-booking-link]'), function (a) {
       a.href = bookingUrl;
+      // The Contact entry opens the same popup; Cal's script loads when it is pointed at.
+      a.addEventListener('pointerenter', ensureCalEmbed);
+      a.addEventListener('focus', ensureCalEmbed);
+      a.addEventListener('click', function (ev) { if (openInCalPopup(a.href)) ev.preventDefault(); });
     });
     Array.prototype.forEach.call(document.querySelectorAll('[data-booking-item]'), function (el) {
       el.hidden = false;
@@ -1292,6 +1331,7 @@
   }
 
   function buildPickLink(details) {
+    ensureCalEmbed(); // so the popup is ready by the time it is clicked
     var pick = document.createElement('a');
     pick.className = 'ask-offer-btn ask-offer-btn--primary';
     pick.textContent = 'Pick a time';
@@ -1383,12 +1423,15 @@
     showSuggestions(nextSuggestions(null, AFTER_BOOKING));
   }
 
-  // "Pick a time" opens the booking page in a new tab, so the chat cannot see whether a slot
-  // was booked. When the visitor comes back to this tab, say what to expect either way.
+  // A Cal.com page opens in Cal's popup (below) and reports the booking. Any other booking page
+  // opens in a new tab, so the chat cannot see whether a slot was booked: when the visitor comes
+  // back to this tab, say what to expect either way.
   function watchBookingPageVisits() {
     messagesEl.addEventListener('click', function (ev) {
       var a = ev.target && ev.target.closest ? ev.target.closest('a') : null;
-      if (a && bookingUrl && a.href.indexOf(bookingUrl) === 0) ssSet(SS_PICKED_KEY, String(Date.now()));
+      if (!a || !bookingUrl || a.href.indexOf(bookingUrl) !== 0) return;
+      if (openInCalPopup(a.href)) { ev.preventDefault(); return; }
+      ssSet(SS_PICKED_KEY, String(Date.now()));
     });
     document.addEventListener('visibilitychange', function () {
       if (document.visibilityState !== 'visible') return;
@@ -1401,6 +1444,91 @@
       ssSet(SS_OFFERS_KEY, String(MAX_OFFERS)); // they have the calendar: no more offers
       showSuggestions(nextSuggestions(null, AFTER_BOOKING));
     });
+  }
+
+  // ---- 6e. Book without leaving the page (Cal.com) ------------------------------------------
+  // A Cal.com booking page opens in Cal's own popup over the site instead of a new tab, with the
+  // visitor's details filled in, and Cal tells this page when a slot is actually booked
+  // (bookingSuccessfulV2: start time, status, video link), so the chat can confirm it. Cal's
+  // script loads only once a "Pick a time" link is shown or the Contact entry is pointed at. If
+  // it fails to load, every link opens the booking page in a new tab as before.
+  var CAL_EMBED_JS = 'https://app.cal.com/embed/embed.js';
+  var calState = ''; // '' | 'loading' | 'ready' | 'failed'
+  var calEverReady = false;
+  var calWanted = false; // the visitor clicked to open the popup and it has not appeared yet
+  var calOpenTimer = null;
+
+  function ensureCalEmbed() {
+    if (calState || !bkIsCalUrl(bookingUrl) || window.Cal) return;
+    calState = 'loading';
+    // Cal.com's loader snippet (packages/embeds/embed-snippet) without namespaces: calls made
+    // before the script arrives are queued in Cal.q, and embed.js replays them when it loads.
+    var Cal = window.Cal = function () { Cal.q.push(arguments); };
+    Cal.q = [];
+    Cal.ns = {};
+    Cal.loaded = true;
+    var script = document.createElement('script');
+    script.src = CAL_EMBED_JS;
+    script.async = true;
+    script.onload = function () { if (calState === 'loading') calState = 'ready'; };
+    script.onerror = function () { calFallback(); };
+    document.head.appendChild(script);
+    Cal('init', { origin: 'https://app.cal.com' });
+    Cal('on', { action: 'linkReady', callback: function () { calEverReady = true; calWanted = false; window.clearTimeout(calOpenTimer); } });
+    Cal('on', { action: 'linkFailed', callback: function () { calFallback(); } });
+    Cal('on', { action: 'bookingSuccessfulV2', callback: function (e) { onCalBooked(e && e.detail && e.detail.data); } });
+  }
+
+  // Returns true when Cal's popup takes over the click; otherwise the link opens normally.
+  function openInCalPopup(href) {
+    if (!bkIsCalUrl(bookingUrl) || calState === 'failed') return false;
+    ensureCalEmbed();
+    var u;
+    try { u = new URL(href, window.location.href); } catch (e) { return false; }
+    if (!window.Cal || !bkIsCalUrl(u.href)) return false;
+    var config = {}, v = visitor();
+    ['name', 'email', 'notes', 'date', 'month'].forEach(function (k) { var val = u.searchParams.get(k); if (val) config[k] = val; });
+    if (!config.name && v.name) config.name = v.name;
+    if (!config.email && v.email) config.email = v.email;
+    window.Cal('ui', { theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light' });
+    window.Cal('modal', { calLink: u.pathname.replace(/^\/+/, ''), config: config });
+    // Only the first opening can fail to load; later ones reuse the popup Cal already has.
+    if (!calEverReady) {
+      calWanted = true;
+      window.clearTimeout(calOpenTimer);
+      calOpenTimer = window.setTimeout(function () { if (!calEverReady) calFallback(); }, 12000);
+    }
+    return true;
+  }
+
+  // From now on links open the booking page in a new tab. Say so only if the visitor is waiting
+  // for the popup; a script that failed to preload in the background needs no message.
+  function calFallback() {
+    if (calState === 'failed') return;
+    calState = 'failed';
+    window.clearTimeout(calOpenTimer);
+    try { window.Cal('closeModal'); } catch (e) { /* never opened */ }
+    if (!calWanted) return;
+    calWanted = false;
+    renderMessage('assistant', "The booking window didn't load here. You can [open his calendar in a new tab](" + bookingUrl + ') instead.', null);
+  }
+
+  function onCalBooked(d) {
+    if (!d) return;
+    window.clearTimeout(calOpenTimer);
+    ssSet(SS_PICKED_KEY, '');
+    var when = bkFormatSlot(d.startTime, bkVisitorTz());
+    var slot = when ? '**' + when + '**' : 'the time you picked';
+    var pending = /pending|awaiting/i.test(String(d.status || ''));
+    var text = pending
+      ? 'Your request for ' + slot + ' is in. Reshad needs to confirm it, and you will get an email either way.'
+      : "You're booked for " + slot + '. The calendar invitation with the video link is on its way to your inbox, and Reshad has it too.';
+    text += '\n\nAnything you would like to know before the call?';
+    renderMessage('assistant', text, null);
+    recordNote('I booked a time on his calendar.', text);
+    rememberVisitor({ bookedFor: d.startTime });
+    ssSet(SS_OFFERS_KEY, String(MAX_OFFERS)); // booked: no more offers
+    showSuggestions(nextSuggestions(null, AFTER_BOOKING));
   }
 
   // An offer is "live" while its buttons are still on screen and near the end of the chat,

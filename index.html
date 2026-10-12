@@ -2656,14 +2656,15 @@
                     
 
                     <!-- Hidden until data/booking.json holds a booking page link (Cal.com, Calendly or Google);
-                         assistant-widget.js then fills in the href and shows it. -->
+                         assistant-widget.js then fills in the href and shows it. No href until then: script.js
+                         binds smooth scrolling to every a[href^="#"] on load and would querySelector the URL. -->
                     <div class="contact-item" data-booking-item hidden>
                         <div class="contact-icon">
                             <i class="fas fa-video"></i>
                         </div>
                         <div class="contact-details">
                             <h4>Book a call</h4>
-                            <a href="#contact" data-booking-link target="_blank" rel="noopener noreferrer">Pick a time for a video call</a>
+                            <a data-booking-link target="_blank" rel="noopener noreferrer">Pick a time for a video call</a>
                         </div>
                     </div>
 
