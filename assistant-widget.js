@@ -1733,7 +1733,9 @@
   }
   function readingLabel(titles) {
     var names = titles.slice(0, 3).map(bkShortTitle).filter(Boolean);
-    return names.length ? 'Reading: ' + names.join(', ') + (titles.length > 3 ? '…' : '') : 'Reading his work…';
+    if (!names.length) return 'Reading his work…';
+    var text = 'Reading: ' + names.join(', ');
+    return titles.length > 3 && !/…$/.test(text) ? text + '…' : text;
   }
 
   // ---- 7. Ask -> POST /api/ask/stream ---------------------------------------
