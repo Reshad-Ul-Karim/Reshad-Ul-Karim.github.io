@@ -1483,6 +1483,50 @@
     rememberVisitor(patch);
   }
 
+  // Appended NEXT TO the dots, not instead of them -- the animation is the whole point of a
+  // loading state, and losing it the moment a wait gets long is backwards.
+  function setTypingLabel(typingRow, text) {
+    var wrap = typingRow.querySelector('.ask-typing-wrap');
+    if (!wrap) return;
+    var label = wrap.querySelector('.ask-cold-start-label');
+    if (!label) {
+      label = document.createElement('div');
+      label.className = 'ask-cold-start-label';
+      wrap.appendChild(label);
+    }
+    label.textContent = text;
+  }
+
+  // One automatic retry when the model is briefly busy (Mistral's free tier rate-limits even at
+  // low traffic, and the same question works a few seconds later) or the API is unreachable, so
+  // a passing hiccup never reaches the visitor. Once only: retrying a rate limit in a loop feeds
+  // the limit it is waiting out. Waits what the API says (retry_after_s), within 2-12 s.
+  var RETRY_STATUSES = { 429: true, 502: true, 503: true, 504: true };
+  function postAsk(body) {
+    return fetch(API_BASE + '/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function (res) {
+      if (res.ok) return res.json();
+      return res.json().catch(function () { return {}; }).then(function (b) {
+        var err = new Error('bad status ' + res.status);
+        err.retryable = !!RETRY_STATUSES[res.status];
+        err.waitS = b && b.error && b.error.retry_after_s;
+        throw err;
+      });
+    });
+  }
+  function askWithRetry(body, onRetry) {
+    return postAsk(body).catch(function (err) {
+      if (!err.retryable && !(err instanceof TypeError)) throw err; // TypeError: network failure
+      onRetry();
+      var waitMs = Math.min(Math.max((Number(err.waitS) || 3) * 1000, 2000), 12000);
+      return new Promise(function (resolve) { window.setTimeout(resolve, waitMs); })
+        .then(function () { return postAsk(body); });
+    });
+  }
+
   // ---- 7. Ask -> POST /api/ask ---------------------------------------------
   function handleAsk(question) {
     chipsEl.hidden = true;
@@ -1520,31 +1564,18 @@
 
     var typingRow = renderTyping();
     var coldStartTimer = window.setTimeout(function () {
-      var wrap = typingRow.querySelector('.ask-typing-wrap');
-      // Appended NEXT TO the dots, not instead of them -- the animation is the whole point
-      // of a loading state, and losing it the moment a wait gets long is backwards.
-      if (wrap && !wrap.querySelector('.ask-cold-start-label')) {
-        var label = document.createElement('div');
-        label.className = 'ask-cold-start-label';
-        label.textContent = 'Waking up the assistant — first request can take a bit…';
-        wrap.appendChild(label);
-      }
+      setTypingLabel(typingRow, 'Waking up the assistant — first request can take a bit…');
     }, COLD_START_HINT_MS);
 
-    fetch(API_BASE + '/api/ask', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        question: question,
-        corpus: 'persona',
-        page: pageContext(),
-        history: transcript.map(function (t) { return { question: t.question, answer: t.answer }; })
-      })
+    askWithRetry({
+      question: question,
+      corpus: 'persona',
+      page: pageContext(),
+      history: transcript.map(function (t) { return { question: t.question, answer: t.answer }; })
+    }, function () {
+      window.clearTimeout(coldStartTimer);
+      setTypingLabel(typingRow, 'Busy for a moment — trying again…');
     })
-      .then(function (res) {
-        if (!res.ok) throw new Error('bad status ' + res.status);
-        return res.json();
-      })
       .then(function (data) {
         window.clearTimeout(coldStartTimer);
         typingRow.parentNode.removeChild(typingRow);
