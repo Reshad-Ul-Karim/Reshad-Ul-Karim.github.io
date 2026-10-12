@@ -55,7 +55,7 @@
       "What's his strongest research work?",
       'Does he have production LLM experience?',
       'Show me a computer-vision project',
-      'Can I set up a call?'
+      'How can I reach him?'
     ],
     index: [
       "What's his strongest research?",
@@ -514,23 +514,21 @@
     });
   }
 
-  // ---- 5b. Booking intent (deterministic -- runs BEFORE any /api/ask call) --------------
-  // Why this exists: the booking card used to appear only if the MODEL chose to end its answer
-  // with <<BOOK>> in exactly the right form. It sometimes wrapped the marker in backticks (no
-  // card, and a literal "<<BOOK>>" on screen), sometimes just said "I can arrange a
-  // conversation" with no card, and once claimed Reshad was "currently available". A request
-  // to meet him is not a question about his documents, so it never needs the model.
-  //
-  // Precision rules -- a false positive pops a form for an ordinary question, so every rule
-  // needs a scheduling verb AND a person or a time:
-  //   1. set up / arrange / schedule / book ... meeting, call, chat, appointment, interview
-  //   2. can/could/may/would/will ... meet | talk / speak / chat / call / connect
-  //      ('meet' alone is enough; the others also need him/Reshad or a time expression)
-  //   3. I/we want / would like / need to ... the same verbs, same object rule
-  //   4. availability: "is he free/available", "his availability/calendar", "free on monday"
-  //   5. contact / reach / hire / interview him, "get in touch", "call me"
-  //   6. meeting / call / appointment / interview with him/Reshad/you
-  // Not a booking: meet the requirements/deadline/..., call stack/back, function call, etc.
+  // ---- 5b. Booking intent (deterministic, runs BEFORE any /api/ask call) -------------------
+  // The widget must never push a meeting on someone who has not asked for one. Messages fall
+  // into three groups:
+  //   request -- an explicit ask to meet, talk or schedule ("can we meet on monday", "please
+  //              set up a meeting with him"). The form opens at once, because that is exactly
+  //              what the visitor asked for. Nothing is sent until they press Send.
+  //   offer   -- availability, contact, hiring or collaboration questions ("is he free?", "how
+  //              can I contact him", "I want to hire him"). These may only want information,
+  //              so the visitor gets a short answer with the right links (CV, projects,
+  //              publications, contact) and an OPTIONAL "send a request" button.
+  //   (none)  -- everything else goes to the model.
+  // A visitor who says no is not asked again, offers are capped per session, and an explicit
+  // request is always honoured. (Showing the form used to depend on the model ending its
+  // answer with <<BOOK>> in exactly the right form, and a first fix that treated every
+  // availability or contact question as a meeting request was too eager.)
   // BEGIN booking-intent (pure functions; no DOM -- exercised by an offline test harness)
   var BK_FULL_DAYS = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };
   var BK_ABBR_DAYS = { sun: 0, mon: 1, tue: 2, tues: 2, wed: 3, thu: 4, thur: 4, thurs: 4, fri: 5, sat: 6 };
@@ -559,24 +557,53 @@
       /\b(?:in person|face to face|on a call|video call|zoom|google meet|teams call|over coffee)\b/.test(t);
   }
 
-  function detectBookingIntent(text) {
+  // Verbs that mean "a meeting" outright. connect / hire / contact / reach / interview are
+  // softer: the visitor may want a link or an address, not a meeting.
+  var BK_REQUEST_VERB_RE = /^(?:meet|talk|speak|chat|call|catch\s*up|sync|schedule|book|set\s*up|setup|arrange)$/;
+
+  // 'request' | 'offer' | '' -- see the header above.
+  function classifyBookingIntent(text) {
     var t = bkNorm(text), m;
-    if (!t || t.length > 600) return false; // a pasted essay is not a scheduling request
-    if (BK_EXCLUDE_RE.test(t)) return false;
-    if (/\b(?:set\s*up|setup|arrange|schedule|book|organi[sz]e|fix|plan)\b[^.?!]{0,40}\b(?:meeting|meet|call|chat|appointment|interview|conversation|catch\s*up|session|talk)\b/.test(t)) return true;
+    if (!t || t.length > 600) return ''; // a pasted essay is not a scheduling request
+    if (BK_EXCLUDE_RE.test(t)) return '';
+    // ---- explicit requests: act on them
+    if (/\b(?:set\s*up|setup|arrange|schedule|book|organi[sz]e|fix|plan)\b[^.?!]{0,40}\b(?:meeting|meet|call|chat|appointment|interview|conversation|catch\s*up|session|talk)\b/.test(t)) return 'request';
     m = t.match(/\b(?:can|could|may|might|would|will|shall)\b[^.?!]{0,30}\b(meet|talk|speak|chat|call|connect|catch\s*up|sync)\b/);
-    if (m && bkVerbOk(m[1], t)) return true;
-    m = t.match(/\b(?:i|we)\b[^.?!]{0,25}\b(?:want|wanted|would like|wanna|need|hope|wish|love|plan)\b[^.?!]{0,12}\bto\b[^.?!]{0,10}\b(meet|talk|speak|chat|call|connect|schedule|book|set\s*up|arrange|interview|hire|contact|reach)\b/);
-    if (m && bkVerbOk(m[1], t)) return true;
+    if (m && bkVerbOk(m[1], t)) return BK_REQUEST_VERB_RE.test(m[1]) ? 'request' : 'offer';
+    m = t.match(/\b(?:i|we)\b[^.?!]{0,25}\b(?:want|wanted|would like|d like|need|hope|wish|love|plan)\b[^.?!]{0,12}\bto\b[^.?!]{0,10}\b(meet|talk|speak|chat|call|connect|schedule|book|set\s*up|arrange|interview|hire|contact|reach)\b/);
+    if (m && bkVerbOk(m[1], t)) return BK_REQUEST_VERB_RE.test(m[1]) ? 'request' : 'offer';
     m = t.match(/\bwanna\b[^.?!]{0,10}\b(meet|talk|speak|chat|call|connect|schedule|book|set\s*up|arrange|interview|hire|contact|reach)\b/);
-    if (m && bkVerbOk(m[1], t)) return true;
-    if (/\b(?:is|are|will|would|could|can)\b[^.?!]{0,12}\b(?:he|reshad|you)\b[^.?!]{0,20}\b(?:free|available|around|in town|reachable)\b/.test(t)) return true;
-    if (/\b(?:his|your)\s+(?:availability|calendar|free time)\b/.test(t)) return true;
-    if (/\b(?:free|available)\s+(?:on|at|this|next|tomorrow|today|tonight)\b/.test(t)) return true;
-    if (/\b(?:contact|reach|reach out to|get in touch with|hire|interview|message|email)\s+(?:him|reshad)\b/.test(t)) return true;
-    if (/\bget in touch\b|\b(?:call|ring|phone)\s+me\b|\bappointment\b/.test(t)) return true;
-    if (/\b(?:meeting|call|appointment|interview|chat|conversation|catch\s*up|session)\b[^.?!]{0,12}\bwith\s+(?:him|reshad|you)\b/.test(t)) return true;
-    return false;
+    if (m && bkVerbOk(m[1], t)) return BK_REQUEST_VERB_RE.test(m[1]) ? 'request' : 'offer';
+    if (/\b(?:call|ring|phone)\s+me\b|\bappointment\b/.test(t)) return 'request';
+    if (/\b(?:meeting|call|appointment|interview|chat|conversation|catch\s*up|session)\b[^.?!]{0,12}\bwith\s+(?:him|reshad|you)\b/.test(t)) return 'request';
+    // ---- softer signals: answer and offer, do not act
+    if (/\b(?:is|are|will|would|could|can)\b[^.?!]{0,12}\b(?:he|reshad|you)\b[^.?!]{0,20}\b(?:free|available|around|in town|reachable)\b/.test(t)) return 'offer';
+    if (/\b(?:his|your)\s+(?:availability|calendar|free time)\b/.test(t)) return 'offer';
+    if (/\b(?:free|available)\s+(?:on|at|this|next|tomorrow|today|tonight)\b/.test(t)) return 'offer';
+    if (/\b(?:contact|reach|reach out to|get in touch with|hire|interview|message|email)\s+(?:him|reshad)\b/.test(t)) return 'offer';
+    if (/\bget in touch\b/.test(t)) return 'offer';
+    if (/\b(?:work(?:ing)?|collaborat\w*|partner\w*)\s+with\s+(?:him|reshad)\b/.test(t)) return 'offer';
+    return '';
+  }
+
+  // Who is asking? Picks the answer and the links that help them most.
+  function bkVisitorKind(text) {
+    var t = bkNorm(text);
+    if (/\b(?:phd|ph\.d|supervis\w*|professor|advisor|admissions?|lab|research group|collaborat\w*|papers?|publications?)\b/.test(t)) return 'academic';
+    if (/\b(?:hire|hiring|recruit\w*|jobs?|roles?|positions?|openings?|vacanc\w*|opportunit\w*|intern(?:ship)?|full[- ]?time|employ\w*)\b/.test(t)) return 'hire';
+    if (/\b(?:freelanc\w*|contract|consult\w*|gig|startup|project for|build (?:us|me|a))\b/.test(t)) return 'project';
+    if (/\b(?:contact|reach|e-?mail|get in touch|linkedin|phone|number|address)\b/.test(t)) return 'contact';
+    return 'general';
+  }
+
+  // Typed answers to an offer, so "yes please" works as well as the button.
+  function bkIsAffirmative(text) {
+    var t = bkNorm(text);
+    return t.length <= 40 && !/thank/.test(t) && /^(?:yes|yeah|yep|yup|sure|please|go ahead|do it|set it up|send it|why not|let'?s do it)\b/.test(t);
+  }
+  function bkIsNegative(text) {
+    var t = bkNorm(text);
+    return t.length <= 40 && /^(?:no|nope|nah|not now|not yet|maybe later|no thanks|no thank you|i'?m good|i am good)\b/.test(t);
   }
 
   function bkAddDays(now, n) {
@@ -688,6 +715,14 @@
     return out.join(' ').replace(/[.,;:!?]+$/, '').slice(0, 120);
   }
 
+  // The reason for the request, only when the visitor actually gave one ("...to discuss a PhD
+  // position"). Echoing "can we meet on monday" into the purpose field would tell Reshad
+  // nothing, so otherwise it stays empty and the visitor writes a line.
+  function bkExtractTopic(text) {
+    var m = String(text || '').match(/\b(?:about|regarding|concerning|to discuss|discussing|discuss)\s+(.{3,200})$/i);
+    return m ? m[1].replace(/[\s.?!,;:]+$/, '').slice(0, 2000) : '';
+  }
+
   // `now` is the visitor's current wall-clock { y, m (0-11), d, dow, h, mi }; `tz` their IANA zone.
   function extractBooking(text, now, tz) {
     var raw = String(text || ''), t = bkNorm(raw);
@@ -716,7 +751,7 @@
     return {
       name: bkExtractName(raw),
       email: em ? em[0] : '',
-      purpose: raw.trim().slice(0, 2000),
+      purpose: bkExtractTopic(raw),
       preferredTimes: when.slice(0, 300)
     };
   }
@@ -728,7 +763,7 @@
     var raw = String(text || '');
     if (raw.length > 300) return false;
     var t = bkNorm(raw);
-    if (/^(?:what|how(?!\s+about)|why|which|who|whom|whose|where|tell me|explain|describe|show)\b/.test(t)) return false;
+    if (/\b(?:what|how(?!\s+about)|why|which|who|whom|whose|where|tell me|explain|describe|show|does|did)\b/.test(t)) return false;
     var time = bkParseTime(t);
     return !!(time || bkParseDate(t, now, time) ||
       /[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}/.test(raw) || bkExtractName(raw));
@@ -774,16 +809,18 @@
       .join('');
   }
 
-  // opts (live messages only, never a transcript restore): { booking: details } shows the
-  // booking card pre-filled from the visitor's own request; { question } lets a card the MODEL
-  // asked for be pre-filled from the question that triggered it.
+  // opts (live messages only, never a transcript restore):
+  //   { booking: details } -- the visitor asked to meet: show the form, pre-filled
+  //   { question }         -- a model reply. If it carries <<BOOK>>, honour it as a FORM only
+  //                           when the visitor really asked to meet; otherwise offer once,
+  //                           and never after a "no" (the model must not push a meeting).
   function renderMessage(role, text, citations, opts) {
     var row = document.createElement('div');
     row.className = 'ask-message ask-message--' + role;
     var bubble = document.createElement('div');
     bubble.className = 'ask-bubble';
 
-    var wantsBooking = role === 'assistant' && (BOOK_MARKER_TEST_RE.test(text) || !!(opts && opts.booking));
+    var marker = role === 'assistant' && BOOK_MARKER_TEST_RE.test(text);
     var clean = role === 'assistant' ? stripBookMarker(text) : text;
     if (role === 'assistant') {
       bubble.innerHTML = renderMarkdown(clean);
@@ -793,27 +830,28 @@
     row.appendChild(bubble);
 
     if (role === 'assistant') renderCitations(row, citations);
-    var card = null;
-    if (wantsBooking) {
-      var initial = (opts && opts.booking) ||
-        (opts && opts.question ? extractBooking(opts.question, bkNowParts(), bkVisitorTz()) : null);
-      // One open form at a time: refill it and move it under the newest message (appendChild
-      // moves an existing node), so it is never left scrolled out of sight above.
-      var open = messagesEl.querySelectorAll('.ask-booking-card[data-open="1"]');
-      card = open.length ? open[open.length - 1] : null;
-      if (card) fillBookingCard(card, initial); else card = buildBookingCard(initial);
-      row.appendChild(card);
+    var card = null, offerFor = '';
+    if (role === 'assistant' && opts && opts.booking) {
+      card = openOrBuildCard(opts.booking);
+    } else if (marker && opts && opts.question) {
+      if (classifyBookingIntent(opts.question) === 'request') {
+        card = openOrBuildCard(extractBooking(opts.question, bkNowParts(), bkVisitorTz()));
+      } else if (canOffer()) {
+        offerFor = opts.question;
+      }
     }
+    if (card) row.appendChild(card);
 
     messagesEl.appendChild(row);
     scrollToBottom();
     if (card && opts) {
       // A card taller than the panel would otherwise open scrolled to its bottom, with the
-      // fields the visitor must fill (and the focused Name box) out of sight above.
+      // fields the visitor must fill (and the focused box) out of sight above.
       var rr = row.getBoundingClientRect(), mr = messagesEl.getBoundingClientRect();
       if (rr.height > mr.height) messagesEl.scrollTop += rr.top - mr.top - 8;
       focusBookingCard(card);
     }
+    if (offerFor) attachOffer(row, offerFor);
     return row;
   }
 
@@ -855,23 +893,51 @@
     }
   }
 
+  // One open form at a time: refill it and move it under the newest message (appendChild moves
+  // an existing node), so it is never left scrolled out of sight above.
+  function openBookingCard() {
+    var open = messagesEl.querySelectorAll('.ask-booking-card[data-open="1"]');
+    return open.length ? open[open.length - 1] : null;
+  }
+  function openOrBuildCard(details) {
+    var card = openBookingCard();
+    if (card) fillBookingCard(card, details); else card = buildBookingCard(details);
+    return card;
+  }
+  // Is the open form still part of the live conversation (one of the last few messages)?
+  function recentOpenCard() {
+    var card = openBookingCard();
+    if (!card) return null;
+    var row = card.parentNode, kids = messagesEl.children;
+    return Array.prototype.indexOf.call(kids, row) >= kids.length - 5 ? card : null;
+  }
+
   function buildBookingCard(initial) {
     var card = document.createElement('form');
     card.className = 'ask-booking-card';
     card.setAttribute('data-open', '1'); // still unsent: a later request refills it, not a second card
     card.innerHTML =
-      '<p class="ask-booking-title">Set up a conversation with Reshad</p>' +
-      '<p class="ask-booking-hint">Check the details, then send. Reshad will reply by email.</p>' +
+      '<p class="ask-booking-title">Send Reshad a request</p>' +
+      '<p class="ask-booking-hint">Add what you would like to discuss and check the details. Nothing is sent until you press Send, and Reshad will follow up by email.</p>' +
       '<label>Name<input type="text" name="name" required></label>' +
       '<label>Email<input type="email" name="email" required></label>' +
-      '<label>What would you like to talk about?<textarea name="purpose" rows="2" required></textarea></label>' +
+      '<label>What would you like to talk about?<textarea name="purpose" rows="2" required placeholder="For example: a role, a research collaboration, a question about a project"></textarea></label>' +
       '<label>Preferred times (optional)<input type="text" name="preferred_times"></label>' +
       // Honeypot: real visitors never see or fill this (see CSS); a bot filling every
       // field on the form will fill this one too.
       '<label class="ask-booking-honeypot" aria-hidden="true">Leave blank<input type="text" name="website" tabindex="-1" autocomplete="off"></label>' +
+      '<div class="ask-booking-actions">' +
       '<button type="submit" class="ask-booking-submit">Send</button>' +
+      '<button type="button" class="ask-booking-dismiss">Not now</button>' +
+      '</div>' +
       '<p class="ask-booking-status" aria-live="polite"></p>';
     fillBookingCard(card, initial);
+
+    card.querySelector('.ask-booking-dismiss').addEventListener('click', function () {
+      ssSet(SS_DECLINED_KEY, '1'); // they said no: no more soft offers this session
+      if (card.parentNode) card.parentNode.removeChild(card);
+      renderMessage('assistant', 'No problem. Ask me anything about his work.', null);
+    });
 
     card.addEventListener('submit', function (ev) {
       ev.preventDefault();
@@ -901,6 +967,7 @@
         if (!res.ok) throw new Error('bad status');
         status.textContent = "Sent — Reshad will follow up by email.";
         card.removeAttribute('data-open');
+        ssSet(SS_OFFERS_KEY, String(MAX_OFFERS)); // done: no further offers this session
         card.querySelectorAll('input, textarea, button').forEach(function (el) { el.disabled = true; });
       }).catch(function () {
         window.clearTimeout(wakeTimer);
@@ -911,21 +978,140 @@
     return card;
   }
 
-  // A request to meet Reshad, recognised in the browser (section 5b). Honest by design: the
-  // assistant cannot see his calendar or confirm anything, it only passes the request on, and
-  // nothing is sent until the visitor presses Send.
-  function handleBookingIntent(question) {
+  // ---- 6b. Soft offers: answer first, ask second ---------------------------------------
+  var SS_DECLINED_KEY = 'askReshad.declinedBooking';
+  var SS_OFFERS_KEY = 'askReshad.offersShown';
+  var MAX_OFFERS = 2;
+  var BK_CV_PATH = 'assets/papers/Reshad_Ul_Karim_Resume.pdf';
+  var activeOffer = null; // { wrap, row, details } -- the offer a typed "yes" or "no" answers
+
+  function ssGet(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }
+  function ssSet(k, v) { try { sessionStorage.setItem(k, v); } catch (e) { /* not fatal */ } }
+  function offersShown() { return parseInt(ssGet(SS_OFFERS_KEY) || '0', 10) || 0; }
+  function canOffer() { return ssGet(SS_DECLINED_KEY) !== '1' && offersShown() < MAX_OFFERS; }
+
+  // Wording stays true without the buttons, because only the text survives a reload. Nothing
+  // here claims availability, and every answer points at something the visitor can use now.
+  var BK_OFFERS = {
+    hire: {
+      text: "Reshad's site says he's open to AI/ML roles. His CV and projects are the quickest way to see if there's a fit, and if you'd like to talk with him, just say so and I'll pass on a request.",
+      links: [{ label: 'Download CV', path: BK_CV_PATH, download: true }, { label: 'See projects', hash: '#projects' }],
+      ask: 'Send him a request'
+    },
+    academic: {
+      text: "Reshad is looking for PhD and research opportunities, and his publications and research projects are on this site. If you'd like to reach him, just say so and I'll pass on a message.",
+      links: [{ label: 'See publications', hash: '#research' }, { label: 'Download CV', path: BK_CV_PATH, download: true }],
+      ask: 'Send him a message'
+    },
+    project: {
+      text: "I can't speak for his availability on projects, but his work is on this site. If you'd like to discuss something with him, just say so and I'll pass on a message.",
+      links: [{ label: 'See projects', hash: '#projects' }],
+      ask: 'Send him a message'
+    },
+    contact: {
+      text: "His email and profiles are in the Contact section of this page. If you'd rather, just say so and I'll pass a message to him.",
+      links: [{ label: 'Open Contact section', hash: '#contact' }],
+      ask: 'Send him a message'
+    },
+    general: {
+      text: "I can't see Reshad's calendar, so I can't say when he's free. If you'd like to talk with him, just say so and I'll pass on a request, and he'll follow up by email.",
+      links: [],
+      ask: 'Send him a request'
+    }
+  };
+
+  function homeHref(hash) { return pageContext().kind === 'home' ? hash : BASE + 'index.html' + hash; }
+
+  function declineOffer(offer) {
+    ssSet(SS_DECLINED_KEY, '1');
+    if (offer.wrap.parentNode) offer.wrap.parentNode.removeChild(offer.wrap);
+    activeOffer = null;
+  }
+  function acceptOffer(offer) {
+    if (offer.wrap.parentNode) offer.wrap.parentNode.removeChild(offer.wrap);
+    activeOffer = null;
+    var card = openOrBuildCard(offer.details);
+    offer.row.appendChild(card);
+    scrollToBottom();
+    focusBookingCard(card);
+  }
+
+  function buildOfferActions(def, details, row) {
+    var wrap = document.createElement('div');
+    wrap.className = 'ask-offer-actions';
+    wrap.setAttribute('role', 'group');
+    wrap.setAttribute('aria-label', 'Next steps');
+    def.links.forEach(function (l) {
+      var a = document.createElement('a');
+      a.className = 'ask-offer-btn';
+      a.textContent = l.label;
+      a.href = l.path ? BASE + l.path : homeHref(l.hash);
+      if (l.download) a.setAttribute('download', '');
+      wrap.appendChild(a);
+    });
+    var yes = document.createElement('button');
+    yes.type = 'button';
+    yes.className = 'ask-offer-btn ask-offer-btn--primary';
+    yes.textContent = def.ask;
+    var no = document.createElement('button');
+    no.type = 'button';
+    no.className = 'ask-offer-btn';
+    no.textContent = 'No thanks';
+    var offer = { wrap: wrap, row: row, details: details };
+    yes.addEventListener('click', function () { acceptOffer(offer); });
+    no.addEventListener('click', function () {
+      declineOffer(offer);
+      renderMessage('assistant', 'No problem. Ask me anything about his work.', null);
+    });
+    wrap.appendChild(yes);
+    wrap.appendChild(no);
+    activeOffer = offer;
+    return wrap;
+  }
+
+  // An offer is "live" while its buttons are still on screen and near the end of the chat,
+  // so a typed "yes" or "no" answers it and an old, scrolled-away one is ignored.
+  function liveOffer() {
+    if (!activeOffer || !activeOffer.wrap.parentNode) return null;
+    var kids = messagesEl.children;
+    return Array.prototype.indexOf.call(kids, activeOffer.row) >= kids.length - 4 ? activeOffer : null;
+  }
+
+  // Attach the buttons to an existing assistant message (the model's own reply).
+  function attachOffer(row, question) {
+    var def = BK_OFFERS[bkVisitorKind(question)] || BK_OFFERS.general;
+    row.appendChild(buildOfferActions(def, extractBooking(question, bkNowParts(), bkVisitorTz()), row));
+    noteOfferShown();
+    scrollToBottom();
+  }
+  function noteOfferShown() { ssSet(SS_OFFERS_KEY, String(offersShown() + 1)); }
+
+  function recordTurn(question, answer) {
+    var transcript = loadTranscript();
+    transcript.push({ question: question, answer: answer });
+    saveTranscript(transcript);
+  }
+
+  // The visitor asked to meet: open the form, pre-filled, and say plainly what it does.
+  function handleBookingRequest(question) {
     var details = extractBooking(question, bkNowParts(), bkVisitorTz());
-    var hasOpenCard = !!messagesEl.querySelector('.ask-booking-card[data-open="1"]');
     // Stored with the transcript, so both wordings must stay true after a reload, when the
     // card is gone.
-    var text = hasOpenCard
+    var text = openBookingCard()
       ? "I've updated your request to Reshad with those details."
-      : "I can't see Reshad's calendar or confirm a time, but I can send him your request.";
+      : "I can't see Reshad's calendar or confirm a time, but I can pass your request on to him if you'd like.";
     renderMessage('assistant', text, null, { booking: details });
-    var transcript = loadTranscript();
-    transcript.push({ question: question, answer: text });
-    saveTranscript(transcript);
+    recordTurn(question, text);
+  }
+
+  // A softer signal: answer with something useful, offer the request, do not open a form.
+  function handleBookingOffer(question) {
+    var def = BK_OFFERS[bkVisitorKind(question)] || BK_OFFERS.general;
+    var row = renderMessage('assistant', def.text, null);
+    row.appendChild(buildOfferActions(def, extractBooking(question, bkNowParts(), bkVisitorTz()), row));
+    noteOfferShown();
+    scrollToBottom();
+    recordTurn(question, def.text);
   }
 
   // ---- 7. Ask -> POST /api/ask ---------------------------------------------
@@ -933,9 +1119,26 @@
     chipsEl.hidden = true;
     renderMessage('user', question, null);
     // A request to meet him goes straight to the booking form -- no model call (section 5b).
-    var hasOpenCard = !!messagesEl.querySelector('.ask-booking-card[data-open="1"]');
-    if (detectBookingIntent(question) || (hasOpenCard && bkIsFormUpdate(question, bkNowParts()))) {
-      handleBookingIntent(question);
+    // Booking (section 5b): act only on what the visitor actually asked for.
+    var pending = liveOffer();
+    if (pending && bkIsAffirmative(question)) {
+      acceptOffer(pending);
+      recordTurn(question, "Okay, I can pass your request on to him.");
+      return;
+    }
+    if (pending && bkIsNegative(question)) {
+      declineOffer(pending);
+      renderMessage('assistant', 'No problem. Ask me anything about his work.', null);
+      recordTurn(question, 'No problem. Ask me anything about his work.');
+      return;
+    }
+    var level = classifyBookingIntent(question);
+    if (level === 'request' || (recentOpenCard() && bkIsFormUpdate(question, bkNowParts()))) {
+      handleBookingRequest(question);
+      return;
+    }
+    if (level === 'offer' && canOffer()) {
+      handleBookingOffer(question);
       return;
     }
     var transcript = loadTranscript();

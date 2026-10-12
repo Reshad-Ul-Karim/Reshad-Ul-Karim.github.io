@@ -630,6 +630,69 @@ a.ask-citation-chip:hover {
   cursor: default;
 }
 
+.ask-booking-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.ask-booking-dismiss {
+  background: none;
+  border: none;
+  padding: 0.2rem 0.1rem;
+  color: var(--text-secondary);
+  font-family: var(--font-secondary);
+  font-size: 0.76rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.ask-booking-dismiss:hover,
+.ask-booking-dismiss:focus-visible {
+  color: var(--text-primary);
+}
+
+/* Soft offers: optional next steps under an answer, never a form that opens by itself. */
+.ask-offer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.55rem;
+}
+
+.ask-offer-btn {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border-radius: 1rem;
+  padding: 0.35rem 0.8rem;
+  font-family: var(--font-secondary);
+  font-size: 0.78rem;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ask-offer-btn:hover,
+.ask-offer-btn:focus-visible {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.ask-offer-btn--primary {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: #fff;
+}
+
+.ask-offer-btn--primary:hover,
+.ask-offer-btn--primary:focus-visible {
+  color: #fff;
+  opacity: 0.92;
+}
+
 .ask-booking-status {
   font-size: 0.72rem;
   color: var(--text-secondary);
@@ -676,7 +739,9 @@ a.ask-citation-chip:hover {
    shows up in this one accent+theme combination. */
 [data-accent="mono"][data-theme="dark"] .ask-send,
 [data-accent="mono"][data-theme="dark"] .ask-message--user .ask-bubble,
-[data-accent="mono"][data-theme="dark"] .ask-booking-submit {
+[data-accent="mono"][data-theme="dark"] .ask-booking-submit,
+[data-accent="mono"][data-theme="dark"] .ask-offer-btn--primary,
+[data-accent="mono"][data-theme="dark"] .ask-offer-btn--primary:hover {
   color: #0a0a0a;
 }
 
