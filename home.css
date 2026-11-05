@@ -1414,7 +1414,7 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.18e
   .hero__stage { order: -1; }
   .hero__portrait { height: min(44svh, 400px, 100cqi); }
   .hero__copy { gap: 14px; padding-bottom: 36px; max-width: none; }
-  .hero__title { font-size: clamp(2.6rem, 1.6rem + 6vw, 3.6rem); }
+  .hero__title { order: -1; font-size: clamp(2.6rem, 1.6rem + 6vw, 3.6rem); } /* name before the PhD pill and role line */
   .hero__lede { font-size: 1.08rem; max-width: none; }
   .hero__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .hero__actions .btn { padding: 0 12px; min-width: 0; }
