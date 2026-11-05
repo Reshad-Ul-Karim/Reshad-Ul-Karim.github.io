@@ -90,16 +90,27 @@
 
   // Computed from positions on scroll (rAF-throttled) rather than from
   // intersection events, so a smooth scroll back to the top always clears it.
+  // Section extents are cached (re-measured on resize and content changes):
+  // reading layout on every scroll frame forced a style and layout pass.
+  var pageMeasures = [];
+  var remeasure = function () { pageMeasures.forEach(function (fn) { fn(); }); };
+  if (window.ResizeObserver) { var mainEl = doc.querySelector('main'); if (mainEl) new ResizeObserver(remeasure).observe(mainEl); }
+  window.addEventListener('load', remeasure);
   if (spySections.length) {
     var spyTicking = false;
     var current = null;
+    var spans = [];
+    var measureSpy = function () {
+      var sy = window.scrollY;
+      spans = spySections.map(function (s) { var r = s.getBoundingClientRect(); return [r.top + sy, r.bottom + sy]; });
+    };
+    pageMeasures.push(function () { measureSpy(); updateSpy(); });
     var updateSpy = function () {
       spyTicking = false;
-      var line = window.innerHeight * 0.4;
+      var line = window.scrollY + window.innerHeight * 0.4;
       var next = null;
-      for (var i = 0; i < spySections.length; i++) {
-        var r = spySections[i].getBoundingClientRect();
-        if (r.top <= line && r.bottom > line) {
+      for (var i = 0; i < spans.length; i++) {
+        if (spans[i][0] <= line && spans[i][1] > line) {
           next = spySections[i].getAttribute('data-spy') || spySections[i].id;
           break;
         }
@@ -114,7 +125,8 @@
     window.addEventListener('scroll', function () {
       if (!spyTicking) { spyTicking = true; requestAnimationFrame(updateSpy); }
     }, { passive: true });
-    window.addEventListener('resize', updateSpy, { passive: true });
+    window.addEventListener('resize', function () { measureSpy(); updateSpy(); }, { passive: true });
+    measureSpy();
     updateSpy();
   }
 
@@ -122,15 +134,19 @@
   var hero = doc.querySelector('[data-hero]');
   if (header && hero) {
     var surfaceTicking = false;
+    var heroBottom = 0; var surface = '';
+    var measureHero = function () { heroBottom = hero.getBoundingClientRect().bottom + window.scrollY; };
     var updateSurface = function () {
       surfaceTicking = false;
-      var bottom = hero.getBoundingClientRect().bottom;
-      header.setAttribute('data-surface', bottom > 48 ? 'dark' : 'light');
+      var next = heroBottom - window.scrollY > 48 ? 'dark' : 'light';
+      if (next !== surface) { surface = next; header.setAttribute('data-surface', next); } // a same-value write still restyles the header
     };
+    pageMeasures.push(function () { measureHero(); updateSurface(); });
     window.addEventListener('scroll', function () {
       if (!surfaceTicking) { surfaceTicking = true; requestAnimationFrame(updateSurface); }
     }, { passive: true });
-    window.addEventListener('resize', updateSurface, { passive: true });
+    window.addEventListener('resize', function () { measureHero(); updateSurface(); }, { passive: true });
+    measureHero();
     updateSurface();
   }
 

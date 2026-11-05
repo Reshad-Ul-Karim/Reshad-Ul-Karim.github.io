@@ -79,7 +79,7 @@
     track.style.transform = '';
     if (!want) {
       pin.style.height = ''; sticky.style.top = '';
-      cards.forEach(function (c) { c.style.removeProperty('--cv'); });
+      cards.forEach(function (c) { c.__cv = null; c.style.opacity = ''; c.style.transform = ''; });
       return;
     }
     // Layout offsets (the track is positioned in pin mode), so the cards' depth
@@ -113,7 +113,21 @@
   var intent = false; var touching = false; var lastInput = 0;
   var scrollV = 0;
   var morphCache = [];
+  var morphEls = sections.map(function (s, k) {
+    if (k === 0) return null;
+    var card = doc.createElement('span'); card.className = 'cs-card'; card.setAttribute('aria-hidden', 'true');
+    s.appendChild(card); // last, so :first-child rules on chapter content are unaffected
+    return { wrap: s.querySelector(':scope > .wrap'), card: card };
+  });
 
+  var spans = []; var pinTop = 0; var maxS = 0;
+  function measure() {
+    var sy = win.scrollY;
+    maxS = root.scrollHeight - win.innerHeight;
+    spans = sections.map(function (s) { var r = s.getBoundingClientRect(); return [r.top + sy, r.bottom + sy]; });
+    if (pin) pinTop = pin.getBoundingClientRect().top + sy;
+    if (list.firstElementChild) gap = list.firstElementChild.offsetHeight || gap;
+  }
   function maxScroll() { return root.scrollHeight - win.innerHeight; }
 
   function glideTo(y, dur, done) {
@@ -163,14 +177,15 @@
       win.scrollTo(0, Math.round(glide.from + glide.d * ease(t)));
       if (t >= 1) { var dn = glide.done; glide = null; if (dn) dn(); } else busy = true;
     }
-    var sy = win.scrollY; var vh = win.innerHeight; var max = maxScroll();
+    var sy = win.scrollY; var vh = win.innerHeight; var max = maxS;
     var motion = !reduceMQ.matches;
 
-    // Reads
-    tops = sections.map(function (s, i) { return clamp(s.getBoundingClientRect().top + sy - margins[i], 0, max); });
-    var rects = motion ? sections.map(function (s) { return s.getBoundingClientRect(); }) : null;
-    if (P.on) P.start = pin.getBoundingClientRect().top + sy - P.top;
-    if (list.firstElementChild) gap = list.firstElementChild.offsetHeight || gap;
+    // Reads: page offsets cached by measure() (sections are never transformed,
+    // only their .wrap), so no layout is read during the scroll itself.
+    if (!spans.length) measure();
+    tops = spans.map(function (s, i) { return clamp(s[0] - margins[i], 0, max); });
+    var rects = motion ? spans.map(function (s) { return { top: s[0] - sy, bottom: s[1] - sy }; }) : null;
+    if (P.on) P.start = pinTop - P.top;
 
     // Position along the chapters, as a fractional index
     var i = 0;
@@ -208,9 +223,12 @@
     // Writes: liquid-glass highlight follows the speed
     // Coarse steps: each change restyles the page and repaints every visible sheen.
     var sq = Math.round(clamp(vel / 2.5, -1, 1) * 20) / 20;
-    if (sq !== scrollV) { scrollV = sq; root.style.setProperty('--scroll-v', String(sq)); }
+    if (sq !== scrollV) {
+      scrollV = sq;
+      if (win.__lgScrollV) win.__lgScrollV(sq); else root.style.setProperty('--scroll-v', String(sq));
+    }
 
-    // Writes: chapter morphs
+    // Writes: chapter morphs (inline transform/opacity on two elements only)
     if (rects) {
       rects.forEach(function (r, k) {
         if (k === 0) return;
@@ -219,8 +237,13 @@
         var key = e.toFixed(3) + '|' + l.toFixed(3);
         if (morphCache[k] === key) return;
         morphCache[k] = key;
-        sections[k].style.setProperty('--ce', e.toFixed(3));
-        sections[k].style.setProperty('--cl', l.toFixed(3));
+        var m = morphEls[k];
+        // Always a 3D transform, settled or not: dropping it would tear down the
+        // chapter's GPU layer and repaint the whole chapter when it moves again.
+        if (m.wrap) m.wrap.style.transform = 'translate3d(0,' + ((1 - e) * 7).toFixed(3) + 'vh,0) scale(' + (1 - (1 - e) * 0.05 - l * 0.035).toFixed(4) + ')';
+        var o = (1 - e) * (1 - l);
+        m.card.style.opacity = o > 0.001 ? o.toFixed(3) : '';
+        m.card.style.transform = o > 0.001 ? 'scaleX(' + (1 + e * 0.136).toFixed(4) + ')' : '';
       });
     }
 
@@ -234,7 +257,11 @@
       var L = P.trackL - 24; var R = P.trackR + 24;
       cards.forEach(function (c, k) {
         var left = P.trackL + P.lefts[k] - x; var w = P.widths[k];
-        c.style.setProperty('--cv', clamp(Math.min(left + w - L, R - left) / w, 0, 1).toFixed(3));
+        var cv = Math.round(clamp(Math.min(left + w - L, R - left) / w, 0, 1) * 500) / 500;
+        if (c.__cv === cv) return;
+        c.__cv = cv;
+        c.style.opacity = cv >= 1 ? '' : (0.35 + 0.65 * cv).toFixed(3);
+        c.style.transform = cv >= 1 ? '' : 'translateY(' + ((1 - cv) * 14).toFixed(2) + 'px) scale(' + (0.9 + 0.1 * cv).toFixed(4) + ')';
       });
       var inPin = sy > P.start - 2 && sy < P.start + P.shift + 2;
       if (projectsDot) { projectsDot.classList.toggle('is-carousel', inPin); projectsDot.style.setProperty('--pin', p.toFixed(3)); }
@@ -359,11 +386,17 @@
   }
 
   /* ---- Layout changes ---------------------------------------------------- */
-  var relayout = function () { measureMargins(); measurePin(); morphCache = []; syncCarouselBtns(); kick(); };
+  var relayout = function () {
+    measureMargins(); measurePin(); measure(); morphCache = [];
+    if (reduceMQ.matches) morphEls.forEach(function (m) { if (!m) return; if (m.wrap) m.wrap.style.transform = ''; m.card.style.opacity = ''; m.card.style.transform = ''; });
+    syncCarouselBtns(); kick();
+  };
   win.addEventListener('resize', relayout, { passive: true });
   win.addEventListener('load', relayout);
   pinMQ.addEventListener('change', relayout);
   reduceMQ.addEventListener('change', relayout);
-  if (win.ResizeObserver && sticky) new ResizeObserver(function () { if (!glide) { measurePin(); kick(); } }).observe(sticky);
+  if (win.ResizeObserver && sticky) new ResizeObserver(function () { if (!glide) { measurePin(); measure(); kick(); } }).observe(sticky);
+  var mainEl = doc.querySelector('main');
+  if (win.ResizeObserver && mainEl) new ResizeObserver(function () { measure(); morphCache = []; kick(); }).observe(mainEl);
   relayout();
 })();

@@ -166,28 +166,25 @@
    A chapter arrives as a floating glass card (inset, rounded, lit rim) that
    opens to full width as it reaches the top, while its content rises out of
    depth; it recedes a little as it leaves. --ce / --cl: 0..1 from the loop. */
+/* chapter-scroll.js writes transform and opacity inline on .wrap and on the
+   injected .cs-card. (Custom properties on the section were inherited by every
+   element inside it, so each scroll frame restyled whole chapters.) The card
+   keeps one fixed look and only scales and fades; fully open it has opacity 0
+   and is not painted at all. */
 @media (prefers-reduced-motion: no-preference) {
-  .cs-on main > .section > .wrap {
-    transform-origin: 50% 0;
-    transform:
-      translate3d(0, calc((1 - var(--ce, 1)) * 7vh), 0)
-      scale(calc(1 - (1 - var(--ce, 1)) * 0.05 - var(--cl, 0) * 0.035));
-  }
-  /* The card keeps one fixed look and only scales and fades; animating its
-     insets re-laid out the page on every scroll frame. Fully open, it has
-     opacity 0 and is not painted at all. */
-  .cs-on main > .section::before {
-    content: "";
+  .cs-on main > .section > .wrap { transform-origin: 50% 0; }
+  .cs-on main > .section > .cs-card {
     position: absolute; z-index: 0;
     top: 0; bottom: 0; left: 6vw; right: 6vw;
     border-radius: 56px;
     background: linear-gradient(180deg, rgba(var(--hl-rgb), 0.12), transparent 45%);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
-    transform: scaleX(calc(1 + var(--ce, 1) * 0.136));
-    opacity: calc((1 - var(--ce, 1)) * (1 - var(--cl, 0)));
+    opacity: 0;
     pointer-events: none;
   }
 }
+.cs-card { display: none; }
+@media (prefers-reduced-motion: no-preference) { .cs-on main > .section > .cs-card { display: block; } }
 main > .section:focus { outline: none; }
 
 /* ---- Pinned projects carousel (wide screens) -------------------------------- */
@@ -202,9 +199,7 @@ main > .section:focus { outline: none; }
 }
 .cs-pin .projects > li {
   animation: none;
-  opacity: calc(0.35 + 0.65 * var(--cv, 1));
-  transform: translateY(calc((1 - var(--cv, 1)) * 14px)) scale(calc(0.9 + 0.1 * var(--cv, 1)));
-  transform-origin: 50% 60%;
+  transform-origin: 50% 60%; /* opacity and transform are written inline by chapter-scroll.js */
   transition: none;
 }
 .cs-pin .projects-pin__bar {

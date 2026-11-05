@@ -35,8 +35,11 @@
     '.theme-toggle', '#accent-switcher .accent-trigger', '#accent-switcher .accent-tray'
   ].join(',');
 
+  // Touch screens use the frosted glass (heavier blur, stronger edge, glint
+  // pulse; liquid-glass.css): at phone sizes the bent rim barely shows, and the
+  // displacement filter is the costliest per-frame effect on mobile GPUs.
   var canRefract = (function () {
-    try { return CSS.supports('backdrop-filter', 'url(#a)') && /Chrome|Chromium|Edg\//.test(navigator.userAgent) && !/Firefox/.test(navigator.userAgent); } catch (e) { return false; }
+    try { return fineMQ.matches && CSS.supports('backdrop-filter', 'url(#a)') && /Chrome|Chromium|Edg\//.test(navigator.userAgent) && !/Firefox/.test(navigator.userAgent); } catch (e) { return false; }
   })();
 
   // One hidden <svg> hosts every filter; filters are shared by size bucket.
@@ -191,6 +194,19 @@
       nearIO.unobserve(el);
     });
   }, { rootMargin: '600px 0px' }) : null;
+  // Scroll speed for the highlight (chapter-scroll.js calls window.__lgScrollV).
+  // Written only on glass that is on screen: on <html> it restyled the page.
+  var onScreen = new Set(); var scrollV = '0';
+  var viewIO = 'IntersectionObserver' in window ? new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      if (e.isIntersecting) { onScreen.add(e.target); if (e.target.__sv !== scrollV) { e.target.__sv = scrollV; e.target.style.setProperty('--scroll-v', scrollV); } }
+      else onScreen.delete(e.target);
+    });
+  }) : null;
+  window.__lgScrollV = function (v) {
+    scrollV = String(v);
+    onScreen.forEach(function (el) { if (el.__sv !== scrollV) { el.__sv = scrollV; el.style.setProperty('--scroll-v', scrollV); } });
+  };
   function scan() {
     var fresh = Array.prototype.filter.call(doc.querySelectorAll(SELECTOR), function (el) { return !el.__lg; });
     var styles = fresh.map(function (el) { return getComputedStyle(el); });
@@ -201,6 +217,7 @@
       if (ro) ro.observe(el);
       if (nearIO) nearIO.observe(el);
       if (glintIO) glintIO.observe(el);
+      if (viewIO) viewIO.observe(el);
     });
   }
 

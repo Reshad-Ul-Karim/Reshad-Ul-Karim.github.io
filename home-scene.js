@@ -1300,12 +1300,24 @@ async function createEngine(T, envImg) {
 
   /* ---- Single render scheduler --------------------------------------------- */
   let raf = 0; let lastT = 0; let glShown = false; let anchoredAt = -1; let canvasEmpty = false;
+  // Frame governor: when 3D frames cost more than ~7 ms of main thread (slow
+  // phones and laptops), they are drawn every other display frame while the
+  // page is scrolling. The canvas is anchored to the page, so a skipped frame
+  // scrolls along with it; the page itself keeps the full frame rate.
+  let cost = 0; let lastScrollT = 0; let tick = 0;
   function requestRender() {
     if (raf || document.hidden || contextLost) return;
     raf = requestAnimationFrame(frame);
   }
   function frame(now) {
     raf = 0;
+    const every = cost > 14 ? 3 : cost > 7 ? 2 : 1; // over ~14 ms: every third frame
+    if (every > 1 && now - lastScrollT < 150 && (++tick % every) !== 0) { raf = requestAnimationFrame(frame); return; }
+    const t0 = performance.now();
+    frameWork(now);
+    cost += (performance.now() - t0 - cost) * 0.1;
+  }
+  function frameWork(now) {
     const dt = lastT ? Math.min(0.05, (now - lastT) / 1000) : 1 / 60;
     lastT = now;
     let moving = false;
@@ -1378,7 +1390,7 @@ async function createEngine(T, envImg) {
     pointerInside = now;
   }
   function onPointerLeave() { pointer.x = -1e4; pointer.y = -1e4; requestRender(); }
-  const onScroll = () => requestRender();
+  const onScroll = () => { lastScrollT = performance.now(); requestRender(); };
   const onFocus = () => requestRender();
   function onVisibility() {
     if (document.hidden) { cancelAnimationFrame(raf); raf = 0; lastT = 0; } else requestRender();
