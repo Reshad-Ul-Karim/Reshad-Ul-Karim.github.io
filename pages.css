@@ -168,3 +168,8 @@ html[data-v2] :is(.xp-label, .xp-readout dt, .xp-explain, .xp-status, .xp-note) 
 @media (forced-colors: active) {
   html[data-v2] .navbar .nav-container, html[data-v2] .nav-menu { background: Canvas !important; border: 1px solid CanvasText; backdrop-filter: none !important; }
 }
+
+/* Contrast: legacy accent text uses --primary-color, which is too dark on the
+   dark grey theme; use the theme-aware link colour instead. */
+html[data-v2] .xp-kind { color: var(--link) !important; background: rgba(var(--link-rgb), 0.12) !important; }
+html[data-v2] :is(.footer, .site-footer, footer) a { color: var(--link) !important; }
