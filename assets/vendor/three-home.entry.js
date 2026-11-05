@@ -3,8 +3,9 @@ export {
   PlaneGeometry, SphereGeometry, CylinderGeometry, BoxGeometry, TorusGeometry, ShapeGeometry, Shape,
   BufferGeometry, Float32BufferAttribute, ShaderMaterial,
   MeshPhysicalMaterial, MeshStandardMaterial, MeshBasicMaterial, LineBasicMaterial, LineSegments, EdgesGeometry,
-  TextureLoader, Color, Vector2, Vector3, Vector4, Plane, Raycaster, CatmullRomCurve3, Curve,
+  TextureLoader, Color, Box3, Vector2, Vector3, Vector4, Plane, Raycaster, CatmullRomCurve3, Curve,
   DirectionalLight, HemisphereLight, PMREMGenerator,
   SRGBColorSpace, NeutralToneMapping, EquirectangularReflectionMapping, LinearMipmapLinearFilter, LinearFilter, DoubleSide, REVISION
 } from './package/src/Three.js';
 export { RoomEnvironment } from './package/examples/jsm/environments/RoomEnvironment.js';
+export { GLTFLoader } from './package/examples/jsm/loaders/GLTFLoader.js';

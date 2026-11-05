@@ -114,7 +114,7 @@ function createEngine(T) {
     out.hero.set(get('--hero') || '#102525');
     out.glow.set('rgb(' + (get('--glow-rgb') || '48, 128, 116') + ')');
     out.porcelain.set(dark ? '#CFCBC2' : '#DCD7CD');
-    if (dark) out.glaze.copy(out.hl).lerp(new T.Color('#151E1D'), 0.18);
+    if (dark) out.glaze.copy(out.hl).lerp(new T.Color('#16171A'), 0.18);
     else out.glaze.copy(out.primary);
     out.frost.set(dark ? '#2B3735' : '#FFFFFF').lerp(out.hl, dark ? 0.12 : 0.32);
     out.glass.set('#F4FBF8').lerp(out.hl, 0.22); // tinted with the accent chosen in the colour widget
@@ -172,6 +172,7 @@ function createEngine(T) {
       t.dispose();
       const prev = envTex; envTex = next;
       MATERIALS.forEach((m) => { if (m.envMap) m.envMap = envTex; });
+      views.forEach((vv) => { if (vv.scene.environment) vv.scene.environment = envTex; });
       if (prev) prev.dispose();
       requestRender();
     });
@@ -331,13 +332,118 @@ function createEngine(T) {
   const tilt = { on: false, got: false, x: 0, y: 0, base: null };
   const inside = (r, x, y) => x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
 
-  /* Hero: portrait plane inside a ceramic ribbon loop ------------------------ */
+  /* Hero: portrait inside a ring of glass shards ------------------------------
+     Trionn-style: shards assemble on load, scatter as the hero scrolls away,
+     glint and throw electric arcs when the cursor touches them, and blast
+     apart on press-and-hold (reassembling on release). One explode value
+     combines scroll, intro and blast, so every state reverses smoothly. */
+  function ribbonChunks(curve, o, n) {
+    const segs = o.segments; const ring = o.ring || (LITE ? 8 : 10);
+    const frames = curve.computeFrenetFrames(segs, true);
+    const P = new T.Vector3(); const nn = new T.Vector3(); const b = new T.Vector3(); const q = new T.Vector3();
+    const rings = [];
+    for (let i = 0; i <= segs; i++) {
+      const u = i / segs; curve.getPointAt(u, P);
+      const a = o.twist(u); const ca = Math.cos(a); const sa = Math.sin(a);
+      nn.copy(frames.normals[i]).multiplyScalar(ca).addScaledVector(frames.binormals[i], sa);
+      b.copy(frames.binormals[i]).multiplyScalar(ca).addScaledVector(frames.normals[i], -sa);
+      const hw = (o.width * o.widthAt(u)) / 2; const ht = o.thickness / 2; const r = [];
+      for (let j = 0; j < ring; j++) {
+        const t = (j / ring) * Math.PI * 2; const c = Math.cos(t); const s = Math.sin(t);
+        q.copy(P).addScaledVector(nn, Math.sign(c) * Math.pow(Math.abs(c), 0.55) * hw).addScaledVector(b, Math.sign(s) * Math.pow(Math.abs(s), 0.55) * ht);
+        r.push(q.x, q.y, q.z);
+      }
+      rings.push(r);
+    }
+    const out = []; const per = segs / n;
+    for (let k = 0; k < n; k++) {
+      const i0 = Math.round(k * per); const i1 = Math.round((k + 1) * per);
+      const center = new T.Vector3(); let cnt = 0;
+      for (let i = i0; i <= i1; i++) for (let j = 0; j < ring; j++) { center.x += rings[i][j * 3]; center.y += rings[i][j * 3 + 1]; center.z += rings[i][j * 3 + 2]; cnt++; }
+      center.multiplyScalar(1 / cnt);
+      const pos = []; const idx = [];
+      for (let i = i0; i <= i1; i++) for (let j = 0; j < ring; j++) pos.push(rings[i][j * 3] - center.x, rings[i][j * 3 + 1] - center.y, rings[i][j * 3 + 2] - center.z);
+      for (let i = 0; i < i1 - i0; i++) for (let j = 0; j < ring; j++) {
+        const a = i * ring + j; const b2 = i * ring + ((j + 1) % ring); const c = (i + 1) * ring + j; const d = (i + 1) * ring + ((j + 1) % ring);
+        idx.push(a, c, b2, b2, c, d);
+      }
+      // close both ends so a flying shard reads as a solid piece of glass
+      const capA = []; const capB = [];
+      for (let j = 1; j < ring - 1; j++) { capA.push(0, j + 1, j); const o2 = (i1 - i0) * ring; capB.push(o2, o2 + j, o2 + j + 1); }
+      const g = new T.BufferGeometry();
+      g.setAttribute('position', new T.Float32BufferAttribute(pos, 3));
+      g.setIndex(idx.concat(capA, capB));
+      g.computeVertexNormals();
+      out.push({ geo: g, center });
+    }
+    return out;
+  }
+
+  // Synthesised sound (Web Audio), off until the visitor turns it on.
+  const sfx = (() => {
+    let ctx = null; let on = false; let hum = null; let noiseBuf = null;
+    const btn = document.querySelector('[data-sound-toggle]');
+    const ensure = () => {
+      if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null; ctx = new AC(); }
+      if (ctx.state === 'suspended') ctx.resume();
+      if (!noiseBuf) {
+        noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+        const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      }
+      return ctx;
+    };
+    const tone = (type, f0, f1, dur, vol) => {
+      const c = ensure(); if (!c) return; const t = c.currentTime;
+      const o = c.createOscillator(); const g = c.createGain(); o.type = type;
+      o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + dur);
+      g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + 0.02);
+    };
+    const noise = (dur, type, f0, f1, vol) => {
+      const c = ensure(); if (!c) return; const t = c.currentTime;
+      const s = c.createBufferSource(); s.buffer = noiseBuf;
+      const f = c.createBiquadFilter(); f.type = type; f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(f1, t + dur);
+      const g = c.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      s.connect(f).connect(g).connect(c.destination); s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.02);
+    };
+    const api = {
+      get on() { return on; },
+      beep() { if (on) tone('sine', 1320, 990, 0.09, 0.035); },
+      crackle() { if (on) noise(0.11, 'highpass', 3200, 6000, 0.05); },
+      blast() { if (on) { noise(0.7, 'lowpass', 1400, 90, 0.16); tone('sine', 90, 40, 0.5, 0.12); } },
+      join() { if (on) { tone('triangle', 520, 780, 0.16, 0.04); } },
+      charge(level) {
+        if (!on || !ensure()) return;
+        if (!hum) {
+          const o = ctx.createOscillator(); const f = ctx.createBiquadFilter(); const g = ctx.createGain();
+          o.type = 'sawtooth'; f.type = 'lowpass'; f.frequency.value = 900; g.gain.value = 0;
+          o.connect(f).connect(g).connect(ctx.destination); o.start(); hum = { o, g };
+        }
+        hum.o.frequency.setTargetAtTime(70 + level * 260, ctx.currentTime, 0.05);
+        hum.g.gain.setTargetAtTime(level * 0.035, ctx.currentTime, 0.05);
+      },
+      stopCharge() { if (hum) { hum.g.gain.setTargetAtTime(0, ctx.currentTime, 0.06); const h = hum; hum = null; setTimeout(() => { try { h.o.stop(); } catch (e) {} }, 400); } }
+    };
+    if (btn) {
+      btn.hidden = !!reduced; // the effects it voices are off with reduced motion
+      btn.addEventListener('click', () => {
+        on = !on; if (on) ensure();
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        btn.querySelector('span').textContent = on ? 'Sound on' : 'Sound off';
+        if (on) api.join();
+      });
+    }
+    return api;
+  })();
+
   function heroView(el) {
     if (!portraitImg) return;
     const v = baseView(el, 'hero');
     v.ready = false;
     v.clipEl = masthead; // never draw past the hero's own edge
-    const state = { px: 0, py: 0, lx: 0, ly: 0, s: 0, intro: 0, introStart: 0, charge: 0 };
+    const stageEl = masthead.querySelector('[data-hero-stage]') || el;
+    const state = { px: 0, py: 0, lx: 0, ly: 0, s: 0, intro: 0, introStart: 0, charge: 0, blast: 0, hold: false, holdT: 0,
+      vib: 0, jolt: 0, hovered: -1, burstLeft: 0, cooldown: 0, blasted: false };
     const pickCam = new T.PerspectiveCamera(FOV, 1, 1, 20000);
     const ray = new T.Raycaster();
     const ndc = new T.Vector2();
@@ -345,8 +451,8 @@ function createEngine(T) {
     const glowMat = blobMaterial(cur.glow, 0.55);
     const glow = new T.Mesh(shared.plane, glowMat);
     glow.renderOrder = 0;
-    const ribbonTilt = new T.Group();
-    let ribbon = null;
+    const ring = new T.Group();
+    let shards = []; let R = 100;
     const portraitUniforms = {
       map: { value: null }, uLight: { value: new T.Vector2(-0.006, 0.004) },
       uRim: { value: cur.hl.clone() }, uOpacity: { value: 1 }
@@ -383,14 +489,67 @@ function createEngine(T) {
     });
     disposables.push(dustMat, dustGeo);
     const dust = new T.Points(dustGeo, dustMat);
-    dust.renderOrder = 1; // before the portrait, which then covers dust behind it
-    v.scene.add(glow, ribbonTilt, portrait, dust);
+    dust.renderOrder = 1;
+
+    // Electric arcs: a small pool of glowing strips (no post-processing bloom).
+    const BOLT_PTS = 14; const BOLTS = 10;
+    const boltMat = new T.ShaderMaterial({
+      transparent: true, premultipliedAlpha: true, depthTest: false, depthWrite: false,
+      uniforms: { uCore: { value: new T.Color('#ffffff') }, uGlow: { value: cur.hl.clone() } },
+      vertexShader: 'attribute float aSide; attribute float aLife; varying float vSide; varying float vLife; void main(){ vSide = aSide; vLife = aLife; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+      fragmentShader: 'uniform vec3 uCore; uniform vec3 uGlow; varying float vSide; varying float vLife; void main(){ float d = abs(vSide); float core = smoothstep(0.3, 0.0, d); float glo = smoothstep(1.0, 0.0, d) * 0.6; float a = clamp(core + glo, 0.0, 1.0) * vLife; gl_FragColor = vec4(mix(uGlow, uCore, core) * a, a); }'
+    });
+    disposables.push(boltMat);
+    const bolts = [];
+    for (let i = 0; i < BOLTS; i++) {
+      const g = new T.BufferGeometry();
+      const side = new Float32Array(BOLT_PTS * 2); for (let k = 0; k < BOLT_PTS; k++) { side[k * 2] = -1; side[k * 2 + 1] = 1; }
+      const idx = []; for (let k = 0; k < BOLT_PTS - 1; k++) { const a = k * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+      g.setAttribute('position', new T.Float32BufferAttribute(new Float32Array(BOLT_PTS * 6), 3));
+      g.setAttribute('aSide', new T.Float32BufferAttribute(side, 1));
+      g.setAttribute('aLife', new T.Float32BufferAttribute(new Float32Array(BOLT_PTS * 2), 1));
+      g.setIndex(idx);
+      const m = new T.Mesh(g, boltMat); m.renderOrder = 5; m.visible = false; m.frustumCulled = false;
+      ring.add(m); disposables.push(g);
+      bolts.push({ m, a: -1, b: -1, t: 0, life: 0 });
+    }
+    const tA = new T.Vector3(); const tB = new T.Vector3();
+    function spawnBolt(a, b, life) {
+      if (a < 0 || b < 0 || a === b) return;
+      const bo = bolts.find((x) => x.t <= 0); if (!bo) return;
+      Object.assign(bo, { a, b, t: life, life }); bo.m.visible = true;
+    }
+    function drawBolt(bo) {
+      const pa = shards[bo.a].back.position; const pb = shards[bo.b].back.position;
+      const pos = bo.m.geometry.attributes.position.array; const lifeA = bo.m.geometry.attributes.aLife.array;
+      const dx = pb.x - pa.x; const dy = pb.y - pa.y; const len = Math.hypot(dx, dy) || 1;
+      const nx = -dy / len; const ny = dx / len; const w = 3.2; const k = bo.t / bo.life;
+      for (let i = 0; i < BOLT_PTS; i++) {
+        const u = i / (BOLT_PTS - 1); const env = Math.sin(Math.PI * u);
+        const off = (i === 0 || i === BOLT_PTS - 1) ? 0 : (Math.random() - 0.5) * len * 0.22 * env;
+        tA.lerpVectors(pa, pb, u); tA.x += nx * off; tA.y += ny * off;
+        pos.set([tA.x - nx * w, tA.y - ny * w, tA.z, tA.x + nx * w, tA.y + ny * w, tA.z], i * 6);
+        lifeA[i * 2] = lifeA[i * 2 + 1] = k;
+      }
+      bo.m.geometry.attributes.position.needsUpdate = true; bo.m.geometry.attributes.aLife.needsUpdate = true;
+    }
+    function zap(from, count) {
+      for (let i = 0; i < count; i++) {
+        const step = 2 + Math.floor(Math.random() * 4);
+        const to = (from + (Math.random() < 0.5 ? step : -step) + shards.length) % shards.length;
+        spawnBolt(from, to, 0.12 + Math.random() * 0.1);
+      }
+      sfx.crackle();
+    }
+
+    v.scene.add(glow, ring, portrait, dust);
 
     shaderUniformSinks.push(() => {
       glowMat.uniforms.uColor.value.copy(cur.glow);
       portraitUniforms.uRim.value.copy(cur.hl);
       dustMat.uniforms.uA.value.copy(cur.hl);
       dustMat.uniforms.uB.value.copy(cur.decor);
+      boltMat.uniforms.uGlow.value.copy(cur.hl);
     });
 
     const tex = new T.TextureLoader().load(portraitImg.currentSrc || portraitImg.src, () => {
@@ -399,7 +558,7 @@ function createEngine(T) {
     tex.colorSpace = T.SRGBColorSpace;
     tex.minFilter = T.LinearMipmapLinearFilter;
     tex.magFilter = T.LinearFilter;
-    tex.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
+    tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
     portraitUniforms.map.value = tex;
     disposables.push(tex);
 
@@ -415,39 +574,41 @@ function createEngine(T) {
       glow.scale.set(pr.width * 2.6, pr.height * 1.5, 1);
       glow.position.set(cx, cy + pr.height * 0.12, -520);
 
-      // Fit the loop inside the window around the portrait's actual centre. The
-      // bust is wide, so the loop hugs the shoulders and crosses the chest.
+      // The loop hugs the shoulders and crosses the chest.
       const room = Math.min(cx + w / 2, w / 2 - cx) - 14;
-      const R = Math.max(60, Math.min(pr.width * 0.6, room));
+      R = Math.max(60, Math.min(pr.width * 0.6, room));
       const pts = [];
       for (let k = 0; k < 14; k++) {
         const a = (k / 14) * Math.PI * 2;
         pts.push(new T.Vector3(R * Math.cos(a), -R * 0.24 * Math.sin(a) + R * 0.05 * Math.sin(2 * a + 0.8), R * Math.sin(a)));
       }
-      if (ribbon) { ribbonTilt.remove(ribbon, ribbon.userData.front); ribbon.geometry.dispose(); }
+      shards.forEach((sh) => { ring.remove(sh.back, sh.front); sh.back.geometry.dispose(); });
+      shards = [];
       const width = clamp(R * 0.085, 10, 34);
-      const geo = ribbonGeometry(new T.CatmullRomCurve3(pts, true, 'centripetal'), {
-        closed: true, segments: LITE ? 150 : 240, width, thickness: Math.max(2, width * 0.13),
+      let seed = 11; const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+      ribbonChunks(new T.CatmullRomCurve3(pts, true, 'centripetal'), {
+        segments: LITE ? 144 : 240, width, thickness: Math.max(2, width * 0.13),
         twist: (u) => u * Math.PI * 3, widthAt: (u) => 0.72 + 0.28 * Math.sin(u * Math.PI * 4 + 0.6)
+      }, LITE ? 18 : 30).forEach(({ geo, center }, i) => {
+        // Back half before the portrait, front half after it: the face shows through the glass in front.
+        const back = new T.Mesh(geo, glassBack); back.renderOrder = 1; back.userData.i = i;
+        const front = new T.Mesh(geo, glassFront); front.renderOrder = 3; front.userData.i = i;
+        back.position.copy(center); front.position.copy(center);
+        ring.add(back, front);
+        const dir = new T.Vector3(center.x, 0, center.z).normalize()
+          .add(new T.Vector3((rand() - 0.5) * 0.6, (rand() - 0.35) * 1.3, (rand() - 0.5) * 0.9)).normalize();
+        const axis = new T.Vector3(rand() - 0.5, rand() - 0.5, rand() - 0.5).normalize();
+        shards.push({ back, front, center, dir, axis, spin: 0.5 + rand() * 1.5, delay: rand() * 0.35, flash: 0 });
       });
-      // Same geometry twice: the back half draws before the portrait, the front
-      // half after it, so the glass shows the face through it in front.
-      ribbon = new T.Mesh(geo, glassBack);
-      ribbon.renderOrder = 1;
-      const front = new T.Mesh(geo, glassFront);
-      front.renderOrder = 3;
-      ribbon.userData.front = front;
-      ribbonTilt.add(ribbon, front);
-      ribbonTilt.position.set(cx, cy - pr.height * 0.2, 0); // below the chin, across the upper chest
-      ribbonTilt.rotation.set(0, 0, -0.1);
+      ring.position.set(cx, cy - pr.height * 0.2, 0);
+      ring.rotation.set(0, 0, -0.1);
 
-      // Deterministic dust around the portrait, never over the face.
-      let seed = 7; const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+      let s2 = 7; const r2 = () => ((s2 = (s2 * 16807) % 2147483647) / 2147483647);
       const p = []; const sz = []; const tn = []; const al = [];
       for (let i = 0; i < DUST; i++) {
-        const x = cx + (rand() - 0.5) * pr.width * 1.7; const y = cy + (rand() - 0.5) * pr.height * 1.05; const z = -380 + rand() * 520;
+        const x = cx + (r2() - 0.5) * pr.width * 1.7; const y = cy + (r2() - 0.5) * pr.height * 1.05; const z = -380 + r2() * 520;
         if (Math.abs(x - cx) < pr.width * 0.26 && Math.abs(y - (cy + pr.height * 0.16)) < pr.height * 0.24) { i--; continue; }
-        p.push(x, y, z); sz.push(1.6 + rand() * 2.6); tn.push(rand() < 0.3 ? 1 : 0); al.push(0.2 + rand() * 0.4);
+        p.push(x, y, z); sz.push(1.6 + r2() * 2.6); tn.push(r2() < 0.3 ? 1 : 0); al.push(0.2 + r2() * 0.4);
       }
       dustGeo.setAttribute('position', new T.Float32BufferAttribute(p, 3));
       dustGeo.setAttribute('aSize', new T.Float32BufferAttribute(sz, 1));
@@ -456,10 +617,42 @@ function createEngine(T) {
       dustGeo.computeBoundingSphere();
       dustMat.uniforms.uDist.value = v.dist;
     };
+
+    // Press and hold the portrait: charge (nearby UI trembles), then blast.
+    // A drag cancels it so touch scrolling is never blocked.
+    const vibEls = [document.querySelector('.site-header .nav'), masthead.querySelector('.hero__title'), masthead.querySelector('.hero__status')].filter(Boolean);
+    let down = null;
+    function onDown(e) {
+      if (reduced || (e.pointerType === 'mouse' && e.button !== 0)) return;
+      down = { x: e.clientX, y: e.clientY, t: performance.now() };
+      state.hold = true; state.holdT = 0; requestRender();
+    }
+    function onMove(e) { if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 12) release(true); }
+    function release(cancelled) {
+      if (!down) return;
+      const quick = performance.now() - down.t < 260;
+      down = null; state.hold = false; sfx.stopCharge();
+      if (!cancelled && quick && shards.length) { state.jolt = 1; zap(Math.floor(Math.random() * shards.length), 3); sfx.beep(); }
+      if (state.blasted) { state.blasted = false; sfx.join(); }
+      requestRender();
+    }
+    const onUp = () => release(false); const onCancel = () => release(true);
+    stageEl.addEventListener('pointerdown', onDown);
+    window.addEventListener('pointermove', onMove, { passive: true });
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onCancel);
+
     if (window.ResizeObserver) {
       const ro = new ResizeObserver(() => { if (v.w) v.layout(v.w, v.h); requestRender(); });
       ro.observe(portraitImg);
-      v.cleanup = () => ro.disconnect();
+      v.cleanup = () => {
+        ro.disconnect();
+        stageEl.removeEventListener('pointerdown', onDown);
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+        window.removeEventListener('pointercancel', onCancel);
+        sfx.stopCharge();
+      };
     }
 
     v.update = (dt, now, r) => {
@@ -472,53 +665,99 @@ function createEngine(T) {
         tpy = clamp(((pointer.y - mr.top) / mr.height) * 2 - 1, -1, 1);
       }
       const ts = reduced ? 0 : clamp(-mr.top / Math.max(1, mr.height));
-      // The virtual light: cursor on desktop, device tilt when enabled, else a
-      // scroll-driven sweep on touch. Reduced motion keeps it still.
       let tlx = tpx; let tly = tpy;
       if (!pointer.fine && !reduced) {
-        if (tilt.on) { tlx = tilt.x; tly = tilt.y; } else { tlx = Math.sin(ts * Math.PI * 1.4) * 0.8; tly = -0.2 + ts * 0.6; }
+        if (tilt.on) { tlx = tilt.x; tly = tilt.y; tpx = tilt.x; tpy = tilt.y * 0.8; } else { tlx = Math.sin(ts * Math.PI * 1.4) * 0.8; tly = -0.2 + ts * 0.6; }
       }
       if (reduced) { tlx = -0.35; tly = -0.2; }
-      if (reduced) { state.intro = 1; state.px = 0; state.py = 0; state.s = 0; state.lx = tlx; state.ly = tly; } else {
+      if (reduced) { Object.assign(state, { intro: 1, px: 0, py: 0, s: 0, lx: tlx, ly: tly, blast: 0, vib: 0, jolt: 0 }); } else {
         if (!state.introStart) state.introStart = now;
-        state.intro = clamp((now - state.introStart) / 1500);
+        state.intro = clamp((now - state.introStart) / 1800);
         state.px = damp(state.px, tpx, dt); state.py = damp(state.py, tpy, dt); state.s = damp(state.s, ts, dt, 9);
-        state.lx = damp(state.lx, tlx, dt, 4); state.ly = damp(state.ly, tly, dt, 4); // the light trails a little
+        state.lx = damp(state.lx, tlx, dt, 4); state.ly = damp(state.ly, tly, dt, 4);
+        // hold -> charge (0.5 s) -> blast; release eases back
+        if (state.hold) {
+          state.holdT += dt; state.vib = Math.min(1, state.holdT / 0.5);
+          sfx.charge(state.vib);
+          if (state.holdT >= 0.5) {
+            if (!state.blasted) { state.blasted = true; sfx.stopCharge(); sfx.blast(); for (let i = 0; i < 6; i++) zap(Math.floor(Math.random() * shards.length), 1); }
+            state.vib *= 0.88; state.blast = Math.min(1, state.blast + dt * 2.4);
+          }
+        } else {
+          state.vib = Math.max(0, state.vib - dt * 4); state.blast = Math.max(0, state.blast - dt * 1.6);
+        }
+        state.jolt = Math.max(0, state.jolt - dt * 5);
       }
-      // Hovering the glass itself "charges" it briefly (raycast against the real geometry).
-      if (pointerIn && ribbon && state.intro >= 1) {
+      // nearby UI trembles while charging, then settles with an ease
+      vibEls.forEach((elx) => {
+        if (state.vib > 0.01 && state.hold) {
+          elx.style.transition = 'none';
+          elx.style.transform = `translate(${((Math.random() - 0.5) * 3 * state.vib).toFixed(2)}px, ${((Math.random() - 0.5) * 2 * state.vib).toFixed(2)}px)`;
+        } else if (elx.style.transform) {
+          elx.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+          elx.style.transform = '';
+        }
+      });
+
+      // Hover: raycast against the real shard geometry; a new shard glints and throws arcs.
+      let hit = -1;
+      if (pointerIn && shards.length && state.intro >= 1 && state.blast < 0.05) {
         pickCam.copy(v.camera); pickCam.clearViewOffset(); pickCam.aspect = v.w / v.h; pickCam.updateProjectionMatrix();
         const r0 = el.getBoundingClientRect();
         ndc.set(((pointer.x - r0.left) / r0.width) * 2 - 1, -((pointer.y - r0.top) / r0.height) * 2 + 1);
         ray.setFromCamera(ndc, pickCam);
-        if (ray.intersectObjects([ribbon, ribbon.userData.front], false).length) state.charge = 1;
+        const hits = ray.intersectObjects(shards.map((sh) => sh.front).concat(shards.map((sh) => sh.back)), false);
+        if (hits.length) hit = hits[0].object.userData.i;
       }
-      state.charge *= Math.exp(-dt * 3.2);
-      if (state.charge < 0.002) state.charge = 0;
+      if (hit !== state.hovered) {
+        if (hit >= 0) { shards[hit].flash = 1; state.charge = 1; state.burstLeft = 5 + Math.floor(Math.random() * 2); sfx.beep(); }
+        state.hovered = hit;
+      }
+      state.cooldown -= dt;
+      if (hit >= 0 && state.burstLeft > 0 && state.cooldown <= 0) {
+        zap(hit, Math.random() > 0.5 ? 1 : 2); state.burstLeft--; state.cooldown = 0.04 + Math.random() * 0.06;
+      }
+      state.charge *= Math.exp(-dt * 3.2); if (state.charge < 0.002) state.charge = 0;
+
       const c = state.charge;
       [glassFront, glassBack].forEach((g) => {
-        g.envMapIntensity = 1.7 + c * 1.5;
-        if ('clearcoatRoughness' in g) g.clearcoatRoughness = 0.03 - c * 0.02;
+        g.envMapIntensity = 1.7 + c * 1.5 + state.vib * 0.8;
+        if ('clearcoatRoughness' in g) g.clearcoatRoughness = Math.max(0.005, 0.03 - c * 0.02);
         g.opacity = 0.86 + c * 0.1;
       });
+
       const e = easeOut(state.intro);
       const { px, py, s, lx, ly } = state;
-      v.camera.position.set(px * 18 - (1 - e) * 70, -py * 12 + s * 34, v.dist * (1 + 0.09 * (1 - e)));
+      // One explode value for intro (assembling), scroll (scattering) and blast.
+      const scrollEx = smooth(clamp((s - 0.06) / 0.55));
+      const ex = Math.max(1 - e, scrollEx, state.blast);
+      const par = tilt.on ? 30 : 18; // phones get a stronger, obvious parallax from tilt
+      v.camera.position.set(px * par - (1 - e) * 70, -py * 12 + s * 34, v.dist * (1 + 0.09 * (1 - e) + s * 0.12));
       v.camera.lookAt(0, s * 10, 0);
-      // Face stays steady; the glass frame moves more and catches the light.
       portrait.rotation.set(py * 0.008, px * 0.018, 0);
       portrait.position.y = pbox.cy + s * 6;
       portraitUniforms.uLight.value.set(-0.005 - lx * 0.004, 0.004 + ly * 0.003);
-      ribbonTilt.rotation.y = lx * 0.2 - (1 - e) * 0.55 + s * 0.3;
-      ribbonTilt.rotation.x = -ly * 0.1 + s * 0.1;
+      ring.rotation.y = lx * (tilt.on ? 0.42 : 0.2) + s * 0.3;
+      ring.rotation.x = -ly * (tilt.on ? 0.22 : 0.1) + s * 0.1;
+      let busy = false;
+      shards.forEach((sh) => {
+        const a = smooth(clamp(ex * 1.25 - sh.delay * (1 - ex) - sh.delay * 0.4));
+        const lift = sh.flash * 7 + state.jolt * 6 * (0.5 + sh.delay);
+        tB.copy(sh.dir).multiplyScalar(a * R * 1.15 + lift);
+        sh.back.position.copy(sh.center).add(tB);
+        sh.back.quaternion.setFromAxisAngle(sh.axis, a * Math.PI * sh.spin + state.vib * 0.05 * Math.sin(now * 0.05 + sh.delay * 40));
+        sh.front.position.copy(sh.back.position); sh.front.quaternion.copy(sh.back.quaternion);
+        sh.flash *= Math.exp(-dt * 4); if (sh.flash < 0.003) sh.flash = 0; else busy = true;
+      });
+      bolts.forEach((bo) => { if (bo.t > 0) { bo.t -= dt; if (bo.t > 0) { drawBolt(bo); busy = true; } else bo.m.visible = false; } });
+
       v.lights.rim.position.set(lx * 1.5, 0.45 - ly * 0.9, 0.95);
-      v.lights.rim.intensity = 2.2 + c * 1.6;
-      if (ribbon) { reveal(ribbon, 0.08 + e * 0.92); ribbon.userData.front.geometry.setDrawRange(ribbon.geometry.drawRange.start, ribbon.geometry.drawRange.count); }
+      v.lights.rim.intensity = 2.2 + c * 1.6 + state.blast * 1.2;
       glowMat.uniforms.uOpacity.value = e;
       dustMat.uniforms.uOpacity.value = e;
       dustMat.uniforms.uPR.value = renderer.getPixelRatio();
-      return state.intro < 1 || !settled(state.px, tpx) || !settled(state.py, tpy) || !settled(state.s, ts) ||
-        !settled(state.lx, tlx) || !settled(state.ly, tly) || state.charge > 0;
+      return busy || state.hold || state.intro < 1 || state.blast > 0 || state.vib > 0 || state.jolt > 0 || state.charge > 0 ||
+        !settled(state.px, tpx) || !settled(state.py, tpy) || !settled(state.s, ts) || !settled(state.lx, tlx) || !settled(state.ly, tly);
     };
     v.onShown = () => masthead.classList.add('scene-ready');
     v.onHidden = () => masthead.classList.remove('scene-ready');
@@ -565,66 +804,72 @@ function createEngine(T) {
     };
   }
 
-  /* Expertise: a family of small glazed forms ------------------------------ */
-  function capView(el) {
-    const v = baseView(el, 'cap');
-    const card = el.closest('.cap') || el;
-    const form = el.getAttribute('data-form');
-    const g = new T.Group();
-    const add = (geo, mat, s, p, rot) => {
-      const m = new T.Mesh(geo, mat); m.scale.set(s[0], s[1], s[2]);
-      if (p) m.position.set(p[0], p[1], p[2]); if (rot) m.rotation.set(rot[0], rot[1], rot[2]);
-      g.add(m); return m;
-    };
-    v.scene.add(g);
-    v.layout = (w) => {
-      g.clear();
-      const u = w / 64; // forms are designed for a 64 px window
-      if (form === 'lens') {
-        add(shared.sphere, glaze, [17 * u, 17 * u, 8 * u]);
-        add(shared.torus, porcelain, [23 * u, 23 * u, 23 * u]);
-        add(shared.sphere, coreMat, [3.2 * u, 3.2 * u, 3.2 * u], [0, 0, 8 * u]);
-      } else if (form === 'nodes') {
-        const P = [[-14, 10], [14, 10], [0, -14]].map(([x, y]) => new T.Vector3(x * u, y * u, 0));
-        P.forEach((p) => add(shared.sphere, glaze, [7 * u, 7 * u, 7 * u], [p.x, p.y, p.z]));
-        [[0, 1], [1, 2], [2, 0]].forEach(([a, b]) => {
-          const m = add(shared.cyl, porcelain, [1.6 * u, P[a].distanceTo(P[b]), 1.6 * u]);
-          m.position.copy(P[a]).add(P[b]).multiplyScalar(0.5);
-          m.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), P[b].clone().sub(P[a]).normalize());
+  /* Expertise + awards: high-quality PBR models (Poly Haven, CC0) ----------- */
+  const gltfLoader = new T.GLTFLoader();
+  const MODEL_ROOT = new URL('./assets/models/', import.meta.url).href;
+  function modelView(el, opts) {
+    const v = baseView(el, 'model');
+    v.ready = false;
+    const card = el.closest(opts.cardSel) || el;
+    const section = el.closest('section') || el;
+    const pivot = new T.Group(); const spin = new T.Group(); pivot.add(spin); v.scene.add(pivot);
+    const shadow = new T.Mesh(shared.plane, blobMaterial(new T.Color(0, 0, 0), 0.34));
+    shadow.rotation.x = -Math.PI / 2; v.scene.add(shadow);
+    v.scene.environment = envTex;
+    let model = null; let radius = 1; let bottom = 0;
+    v.near = () => {
+      if (v.loading) return; v.loading = true;
+      gltfLoader.load(MODEL_ROOT + opts.model + '/' + opts.model + '.gltf', (g) => {
+        model = g.scene;
+        model.traverse((o) => {
+          if (!o.isMesh) return;
+          disposables.push(o.geometry);
+          [].concat(o.material).forEach((m) => {
+            m.envMapIntensity = opts.env || 1.1; disposables.push(m);
+            ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap'].forEach((k) => { if (m[k]) { m[k].anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy()); disposables.push(m[k]); } });
+          });
         });
-      } else if (form === 'layers') {
-        [-10, 0, 10].forEach((y, i) => add(shared.box, i === 1 ? porcelain : glaze, [34 * u, 5 * u, 24 * u], [i * 2 * u - 2 * u, y * u, 0], [0, i * 0.2, 0]));
-      } else {
-        add(shared.box, glaze, [26 * u, 6 * u, 26 * u]);
-        add(shared.box, porcelain, [14 * u, 7 * u, 14 * u]);
-        for (let i = -1; i <= 1; i += 2) {
-          for (let k = -1; k <= 1; k++) {
-            add(shared.box, porcelain, [3 * u, 2 * u, 6 * u], [k * 8 * u, 0, i * 16 * u]);
-            add(shared.box, porcelain, [6 * u, 2 * u, 3 * u], [i * 16 * u, 0, k * 8 * u]);
-          }
-        }
-      }
+        const box = new T.Box3().setFromObject(model);
+        const size = box.getSize(new T.Vector3()); const c = box.getCenter(new T.Vector3());
+        model.position.sub(c);
+        radius = Math.max(size.x, size.y, size.z) / 2; bottom = -size.y / 2;
+        spin.add(model);
+        v.ready = true; v.layout(v.w, v.h); requestRender();
+      }, undefined, () => { v.disabled = true; });
     };
-    const state = { e: 0, hx: 0, hy: 0 };
+    v.layout = (w, h) => {
+      if (!model) return;
+      const k = (Math.min(w * 0.8, h) * (opts.fit || 0.4)) / radius;
+      pivot.scale.setScalar(k);
+      shadow.scale.set(radius * k * 3, radius * k * 3, 1);
+      shadow.position.y = bottom * k - 3;
+    };
+    const state = { e: 0, hx: 0, hy: 0, p: 0 };
     v.update = (dt, now, r) => {
-      const t = reduced ? 1 : smooth(enterOf(r, 0.98, 0.45));
+      if (!v.ready) return false;
+      const te = reduced ? 1 : smooth(enterOf(r, 1.0, 0.5));
       let thx = 0; let thy = 0;
-      if (pointer.fine && !reduced) {
-        const cr = card.getBoundingClientRect();
-        if (inside(cr, pointer.x, pointer.y)) {
-          thx = clamp(((pointer.x - cr.left) / cr.width) * 2 - 1, -1, 1); thy = clamp(((pointer.y - cr.top) / cr.height) * 2 - 1, -1, 1);
-        }
+      if (!reduced) {
+        if (pointer.fine) {
+          const cr = card.getBoundingClientRect();
+          if (inside(cr, pointer.x, pointer.y)) { thx = clamp(((pointer.x - cr.left) / cr.width) * 2 - 1, -1, 1); thy = clamp(((pointer.y - cr.top) / cr.height) * 2 - 1, -1, 1); }
+        } else if (tilt.on) { thx = tilt.x; thy = tilt.y; }
       }
-      if (reduced) { state.e = 1; state.hx = 0; state.hy = 0; } else {
-        state.e = damp(state.e, t, dt, 5); state.hx = damp(state.hx, thx, dt, 8); state.hy = damp(state.hy, thy, dt, 8);
+      let tp = 0;
+      if (opts.scrollTurn) {
+        const sr = section.getBoundingClientRect();
+        tp = reduced ? 0.15 : clamp((vh * 0.6 - sr.top) / Math.max(1, sr.height - vh * 0.4));
       }
-      const e = state.e;
-      const tilt = form === 'chip' || form === 'layers' ? 0.55 : 0.2;
-      g.rotation.set(tilt + 0.5 * (1 - e) + state.hy * 0.3, -1.3 * (1 - e) + 0.5 + state.hx * 0.45, 0);
-      const sweep = (1 - e) * Math.PI * 0.9 + state.hx * 0.4; // the rim light passes across as the form arrives
-      v.lights.rim.position.set(Math.cos(sweep) * 1.2, 0.4, -Math.sin(sweep) * 0.8 - 0.3);
-      g.scale.setScalar(0.85 + 0.15 * e);
-      return !settled(state.e, t) || !settled(state.hx, thx) || !settled(state.hy, thy);
+      if (reduced) Object.assign(state, { e: 1, hx: 0, hy: 0, p: tp }); else {
+        state.e = damp(state.e, te, dt, 5); state.hx = damp(state.hx, thx, dt, 6); state.hy = damp(state.hy, thy, dt, 6); state.p = damp(state.p, tp, dt, 5);
+      }
+      spin.rotation.y = (opts.yaw || 0.55) - (1 - state.e) * 1.6 + state.hx * 0.6 + state.p * Math.PI * 1.6;
+      spin.rotation.x = (opts.pitch || 0.12) + state.hy * 0.22;
+      pivot.position.y = (1 - state.e) * -18;
+      const sweep = (1 - state.e) * Math.PI + state.hx * 0.7 + state.p * Math.PI * 2;
+      v.lights.rim.position.set(Math.cos(sweep) * 1.3, 0.6, Math.sin(sweep) * 1.2);
+      v.lights.rim.intensity = 1.8;
+      return !settled(state.e, te) || !settled(state.hx, thx) || !settled(state.hy, thy) || !settled(state.p, tp);
     };
   }
 
@@ -833,37 +1078,6 @@ function createEngine(T) {
     v.onHidden = () => el.classList.remove('is-gl');
   }
 
-  /* Awards: a faceted prism that turns to a new face through the list ------- */
-  function prismView(el) {
-    const v = baseView(el, 'prism');
-    const section = el.closest('section') || el;
-    const prism = new T.Mesh(shared.hex, glazeFlat);
-    const base = new T.Mesh(shared.cyl, porcelain);
-    const shadow = new T.Mesh(shared.plane, blobMaterial(new T.Color(0, 0, 0), 0.28));
-    shadow.rotation.x = -Math.PI / 2;
-    const g = new T.Group(); g.add(prism, base, shadow);
-    v.scene.add(g);
-    v.layout = (w, h) => {
-      const s = Math.min(w * 0.36, h * 0.42);
-      prism.scale.set(s * 0.62, s * 1.5, s * 0.62);
-      base.scale.set(s * 0.9, s * 0.06, s * 0.9); base.position.y = -s * 0.78;
-      shadow.scale.set(s * 2.4, s * 2.4, 1); shadow.position.y = -s * 0.82;
-      g.position.y = s * 0.06;
-    };
-    const state = { p: 0, e: 0 };
-    v.update = (dt, now, r) => {
-      const sr = section.getBoundingClientRect();
-      const tp = reduced ? 0.25 : clamp((vh * 0.6 - sr.top) / Math.max(1, sr.height - vh * 0.4));
-      const te = reduced ? 1 : smooth(enterOf(r, 1.0, 0.5));
-      if (reduced) { state.p = tp; state.e = 1; } else { state.p = damp(state.p, tp, dt, 5); state.e = damp(state.e, te, dt, 5); }
-      prism.rotation.set(0.12, state.p * Math.PI * 2 + (1 - state.e) * -1.2, 0);
-      g.rotation.x = 0.22;
-      const sweep = state.p * Math.PI * 2;
-      v.lights.rim.position.set(Math.cos(sweep) * 1.2, 0.5, Math.sin(sweep) * 1.2);
-      return !settled(state.p, tp) || !settled(state.e, te);
-    };
-  }
-
   /* Footer: the ribbon resolves into a small knot that catches a light ------ */
   function signatureView(el) {
     const v = baseView(el, 'signature');
@@ -904,11 +1118,10 @@ function createEngine(T) {
     const k = el.getAttribute('data-gl');
     if (k === 'hero') heroView(el);
     else if (k === 'about') aboutView(el);
-    else if (k === 'cap') capView(el);
+    else if (k === 'model') modelView(el, { model: el.getAttribute('data-model'), cardSel: '.cap, .awards__grid', scrollTurn: el.hasAttribute('data-scroll-turn'), fit: parseFloat(el.getAttribute('data-fit')) || 0.4, yaw: parseFloat(el.getAttribute('data-yaw')) || 0.55 });
     else if (k === 'rail') railView(el);
     else if (k === 'feature') mediaView(el, { kind: 'feature', cardSel: '.feature', frame: true, fade: true, bend: 120 });
     else if (k === 'media') mediaView(el, { kind: 'media', cardSel: '.project', bend: 70 });
-    else if (k === 'prism') prismView(el);
     else if (k === 'signature') signatureView(el);
   });
   applyPalette();
@@ -935,8 +1148,9 @@ function createEngine(T) {
     let x = e.gamma; let y = e.beta;
     if (angle === 90) { x = e.beta; y = -e.gamma; } else if (angle === -90 || angle === 270) { x = -e.beta; y = e.gamma; }
     if (!tilt.base) tilt.base = { x, y }; // relative to how the phone is held when enabled
-    tilt.x = clamp((x - tilt.base.x) / 22, -1, 1);
-    tilt.y = clamp((y - tilt.base.y) / 22, -1, 1);
+    tilt.base.x += (x - tilt.base.x) * 0.006; tilt.base.y += (y - tilt.base.y) * 0.006; // slowly re-centre
+    tilt.x = clamp((x - tilt.base.x) / 18, -1, 1);
+    tilt.y = clamp((y - tilt.base.y) / 18, -1, 1);
     requestRender();
   }
   function setTiltUi(on) {
@@ -973,8 +1187,8 @@ function createEngine(T) {
   function resize() {
     vw = canvas.clientWidth || window.innerWidth;
     vh = canvas.clientHeight || window.innerHeight;
-    const cap = LITE ? 1.25 : 1.5;
-    const budget = LITE ? 1.2e6 : 2.6e6;
+    const cap = 2;
+    const budget = LITE ? 2.2e6 : 4.4e6; // sharp on retina phones and laptops; windows are small
     const dpr = Math.min(window.devicePixelRatio || 1, cap, Math.sqrt(budget / Math.max(1, vw * vh)));
     renderer.setPixelRatio(dpr);
     renderer.setSize(vw, vh, false);

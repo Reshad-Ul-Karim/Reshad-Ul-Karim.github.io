@@ -11,8 +11,7 @@
     <script>
     (function(){var d=document.documentElement;d.classList.add('js');try{
       var t=localStorage.getItem('theme'), a=localStorage.getItem('accent');
-      if(t)d.setAttribute('data-theme',t);
-      else if(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)d.setAttribute('data-theme','dark');
+      d.setAttribute('data-theme',t||'dark'); /* dark grey is this page's default */
       if(a)d.setAttribute('data-accent',a);
     }catch(e){}})();
     </script>
@@ -23,7 +22,7 @@
     <meta name="description" content="Reshad Ul Karim - AI/ML engineer and published IEEE researcher building Generative AI and agentic LLM systems, computer vision, autonomous systems and MLOps. 4 peer-reviewed publications (three IEEE, incl. first-author IEEE Access). Open to AI/ML engineering roles and strong PhD/research opportunities.">
     <meta name="keywords" content="Computer Vision Researcher, Explainable AI, XAI, Multimodal Learning, Medical Imaging, IEEE, IEEE Access, PhD applicant, Machine Learning Research, Vision Transformers, SegFormer, YOLO, SHAP, Assistive Technology, Autonomous Systems">
     <meta name="author" content="Reshad Ul Karim">
-    <meta name="theme-color" content="#102525">
+    <meta name="theme-color" content="#111214">
 
     <!-- Open Graph Meta Tags -->
     <meta property="og:title" content="Reshad Ul Karim - AI/ML Engineer & IEEE Researcher | Generative AI, Agentic LLMs, Computer Vision & MLOps">
@@ -195,6 +194,7 @@
                          only after this tap, as iOS requires. -->
                     <div class="tilt-offer">
                         <button class="tilt-toggle pressable" type="button" data-tilt-toggle aria-pressed="false" hidden><span>Enable tilt effects</span></button>
+                        <button class="tilt-toggle pressable" type="button" data-sound-toggle aria-pressed="false" hidden><span>Sound off</span></button>
                         <p class="tilt-status" data-tilt-status role="status" aria-live="polite"></p>
                     </div>
                 </div>
@@ -285,8 +285,9 @@
                 </header>
                 <ul class="caps">
                     <li class="cap">
+                        <div class="cap__stage gl-window" data-gl="model" data-model="security_camera_01" data-yaw="0.9" aria-hidden="true"></div>
                         <div class="cap__head">
-                            <span class="cap__icon cap__viz gl-window" data-gl="cap" data-form="lens" aria-hidden="true"><svg class="icon icon--stroke gl-fallback"><use href="#i-eye"/></svg></span>
+                            <span class="cap__icon" aria-hidden="true"><svg class="icon icon--stroke"><use href="#i-eye"/></svg></span>
                             <h3>Computer vision &amp; explainable AI</h3>
                         </div>
                         <p class="cap__outcome">Detection, segmentation and landmark models whose predictions come with a reason a person can check.</p>
@@ -299,8 +300,9 @@
                         </p>
                     </li>
                     <li class="cap">
+                        <div class="cap__stage gl-window" data-gl="model" data-model="magnifying_glass_01" data-yaw="0.4" aria-hidden="true"></div>
                         <div class="cap__head">
-                            <span class="cap__icon cap__viz gl-window" data-gl="cap" data-form="nodes" aria-hidden="true"><svg class="icon icon--stroke gl-fallback"><use href="#i-nodes"/></svg></span>
+                            <span class="cap__icon" aria-hidden="true"><svg class="icon icon--stroke"><use href="#i-nodes"/></svg></span>
                             <h3>LLM &amp; agentic systems</h3>
                         </div>
                         <p class="cap__outcome">Retrieval and agent pipelines that cite their sources, measure themselves, and decline when they are unsure.</p>
@@ -313,8 +315,9 @@
                         </p>
                     </li>
                     <li class="cap">
+                        <div class="cap__stage gl-window" data-gl="model" data-model="classic_laptop" data-yaw="0.6" aria-hidden="true"></div>
                         <div class="cap__head">
-                            <span class="cap__icon cap__viz gl-window" data-gl="cap" data-form="layers" aria-hidden="true"><svg class="icon icon--stroke gl-fallback"><use href="#i-layers"/></svg></span>
+                            <span class="cap__icon" aria-hidden="true"><svg class="icon icon--stroke"><use href="#i-layers"/></svg></span>
                             <h3>Product engineering &amp; deployment</h3>
                         </div>
                         <p class="cap__outcome">Full-stack apps and APIs taken from a repository to a live URL, with tests and CI along the way.</p>
@@ -327,8 +330,9 @@
                         </p>
                     </li>
                     <li class="cap">
+                        <div class="cap__stage gl-window" data-gl="model" data-model="circuit_board" data-yaw="0.3" aria-hidden="true"></div>
                         <div class="cap__head">
-                            <span class="cap__icon cap__viz gl-window" data-gl="cap" data-form="chip" aria-hidden="true"><svg class="icon icon--stroke gl-fallback"><use href="#i-chip"/></svg></span>
+                            <span class="cap__icon" aria-hidden="true"><svg class="icon icon--stroke"><use href="#i-chip"/></svg></span>
                             <h3>Robotics &amp; embedded systems</h3>
                         </div>
                         <p class="cap__outcome">Circuits, PCBs, microcontrollers and on-robot vision for machines that move.</p>
@@ -604,7 +608,7 @@
                     <p class="eyebrow">Recognition</p>
                     <h2 id="awards-title">Honours &amp; awards</h2>
                     <p class="lede">Competitions, academic honours and certifications, newest first.</p>
-                    <div class="gl-window awards__viz" data-gl="prism" aria-hidden="true">
+                    <div class="gl-window awards__viz" data-gl="model" data-model="marble_bust_01" data-scroll-turn data-fit="0.46" data-yaw="0.35" aria-hidden="true">
                         <svg class="gl-fallback" viewBox="0 0 120 160" focusable="false">
                             <path d="M60 8 104 34v92L60 152 16 126V34z" fill="none" stroke="currentColor" stroke-width="2" opacity="0.5"/>
                             <path d="M60 8v144M16 34l44 26 44-26" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>

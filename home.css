@@ -155,24 +155,33 @@ html[data-accent="mono"] {
   color-scheme: light;
 }
 
-/* Dark theme: the page and cards go dark; the hero is dark in both themes. */
+/* Dark grey theme (the default): neutral charcoal surfaces in every accent;
+   the accent only colours light, highlights and controls. */
 html[data-theme="dark"] {
-  --page: #0E1514;
-  --card: #151E1D;
-  --card-tint: color-mix(in srgb, var(--hl) 8%, #151E1D);
-  --card-warm: color-mix(in srgb, var(--decor) 7%, #151E1D);
-  --ink: #E6EEEB; --ink-rgb: 230, 238, 235;
-  --ink-2: #A6B8B3;
-  --tint: color-mix(in srgb, var(--hl) 13%, #151E1D);
-  --decor-soft: color-mix(in srgb, var(--decor) 20%, #151E1D);
+  --page: #0D0E10;
+  --card: #16171A;
+  --card-tint: color-mix(in srgb, var(--hl) 6%, #16171A);
+  --card-warm: color-mix(in srgb, var(--decor) 6%, #16171A);
+  --ink: #ECEDEE; --ink-rgb: 236, 237, 238;
+  --ink-2: #A8ACB1;
+  --tint: color-mix(in srgb, var(--hl) 11%, #16171A);
+  --decor-soft: color-mix(in srgb, var(--decor) 18%, #16171A);
+  --hero: #111214; --hero-rgb: 17, 18, 20;
+  --hero-deep: #0A0B0C; --hero-deep-rgb: 10, 11, 12;
+  --hero-2: #131416;
+  --hero-top: #1E2023;
+  --glow2-rgb: 38, 40, 44;
+  --glow3-rgb: 30, 32, 35;
+  --hero-ink: #EEEFF0; --hero-ink-rgb: 238, 239, 240;
+  --hero-ink-2: #AEB2B6;
   --decor-ink: var(--decor);
   --link: var(--hl); --link-rgb: var(--hl-rgb);
   --action-bg: var(--hl);
   --action-hover: var(--hl-hover);
   --action-ink: var(--on-hl);
-  --glass-light: rgba(18, 26, 25, 0.62);
-  --glass-light-solid: rgba(18, 26, 25, 0.95);
-  --glass-light-panel: rgba(18, 26, 25, 0.88);
+  --glass-light: rgba(22, 23, 26, 0.62);
+  --glass-light-solid: rgba(22, 23, 26, 0.95);
+  --glass-light-panel: rgba(22, 23, 26, 0.9);
   --glass-light-hi: rgba(255, 255, 255, 0.06);
   color-scheme: dark;
 }
@@ -1579,3 +1588,45 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.18e
 .tilt-toggle[aria-pressed="true"]::before { background: var(--hl); box-shadow: 0 0 0 4px rgba(var(--hl-rgb), 0.2); }
 .tilt-status { font-size: var(--step--1); color: var(--hero-ink-2); min-height: 0; }
 .tilt-status:empty { display: none; }
+
+
+/* ---- 22. Phones: portrait first, compact copy -------------------------------------
+   Any iPhone or Android in portrait orientation: the headshot leads the hero so it
+   is always in the first screen, then the name and actions. The stage and copy do
+   not overlap, because the 3D canvas draws above page content inside the stage. */
+@media (max-width: 959px) and (orientation: portrait), (max-width: 600px) {
+  .hero__inner {
+    padding-top: calc(env(safe-area-inset-top, 0px) + var(--header-h) + 14px);
+    row-gap: 4px;
+  }
+  .hero__stage { order: -1; }
+  .hero__portrait { height: min(44svh, 400px, 100cqi); }
+  .hero__copy { gap: 14px; padding-bottom: 36px; max-width: none; }
+  .hero__title { font-size: clamp(2.6rem, 1.6rem + 6vw, 3.6rem); }
+  .hero__lede { font-size: 1.08rem; max-width: none; }
+  .hero__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .hero__actions .btn { padding: 0 12px; min-width: 0; }
+  .hero__halo::after { top: 74%; }
+}
+@media (max-width: 359px) {
+  .hero__actions { grid-template-columns: 1fr; }
+}
+.hero__stage, .hero__portrait { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+
+/* Controls row under the hero actions (tilt on phones, sound everywhere) */
+.tilt-offer { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.tilt-offer .tilt-status { flex-basis: 100%; }
+.tilt-toggle[data-sound-toggle]::before { border-radius: 2px; width: 7px; height: 9px; clip-path: polygon(0 30%, 40% 30%, 100% 0, 100% 100%, 40% 70%, 0 70%); }
+
+/* ---- 23. Model stages (high-quality PBR models in the capability cards) ------------ */
+.cap__stage {
+  position: relative;
+  height: clamp(160px, 15vw, 210px);
+  margin: -8px -8px 4px;
+  border-radius: 18px;
+  overflow: hidden;
+  background:
+    radial-gradient(110% 80% at 50% 100%, rgba(var(--link-rgb), 0.14), transparent 62%),
+    var(--card-tint);
+}
+.awards__viz { height: clamp(220px, 22vw, 300px); }

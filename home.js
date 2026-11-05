@@ -324,11 +324,10 @@
   var year = doc.querySelector('[data-year]');
   if (year) year.textContent = String(new Date().getFullYear());
 
-  /* ---- 11. Theme toggle: same control, key and rules as script.js on the
-         other pages (localStorage 'theme' -> html[data-theme]; with nothing
-         saved it follows the system setting). The pre-paint script in <head>
-         already applied the initial theme. ------------------------------------ */
-  var systemDark = window.matchMedia('(prefers-color-scheme: dark)');
+  /* ---- 11. Theme toggle: same control and key as script.js on the other
+         pages (localStorage 'theme' -> html[data-theme]). This page defaults
+         to dark grey when nothing is saved; the pre-paint script in <head>
+         already applied it. -------------------------------------------------- */
   var themeBtn = doc.createElement('button');
   themeBtn.type = 'button';
   themeBtn.className = 'theme-toggle';
@@ -343,7 +342,7 @@
   }
   var savedTheme = null;
   try { savedTheme = localStorage.getItem('theme'); } catch (e) {}
-  root.setAttribute('data-theme', savedTheme || (systemDark.matches ? 'dark' : 'light'));
+  root.setAttribute('data-theme', savedTheme || 'dark');
   paintThemeIcon(currentTheme());
   themeBtn.addEventListener('click', function () {
     var next = currentTheme() === 'dark' ? 'light' : 'dark';
@@ -352,13 +351,6 @@
     paintThemeIcon(next);
     themeBtn.classList.add('is-pressed');
     setTimeout(function () { themeBtn.classList.remove('is-pressed'); }, 150);
-  });
-  systemDark.addEventListener('change', function (e) {
-    var stored = null;
-    try { stored = localStorage.getItem('theme'); } catch (err) {}
-    if (stored) return;
-    root.setAttribute('data-theme', e.matches ? 'dark' : 'light');
-    paintThemeIcon(currentTheme());
   });
   doc.body.appendChild(themeBtn);
 
