@@ -1,10 +1,12 @@
 /* =========================================================================
    bg-field.js: a lightweight 3D background behind every page.
    Raw WebGL2, one full-screen fragment shader, no library. Three lit glass
-   orbs at different depths drift with scroll and pointer (parallax) and
-   loop down the page, tinted by the current accent and theme. Rendered at
-   half resolution and only when scroll, pointer, size or theme changes:
-   no frames at idle. Reduced motion keeps it still.
+   orbs at different depths drift with scroll (parallax) and loop down the
+   page, tinted by the current accent and theme. Rendered at half resolution
+   and only when scroll, size or theme changes: no frames at idle. It does not
+   follow the pointer: every redraw changes what sits behind each glass
+   element, and re-blurring all of them on every mouse move kept the GPU busy.
+   Reduced motion keeps it still.
    ========================================================================= */
 (function () {
   'use strict';
@@ -83,7 +85,7 @@
 
   var W = 1; var H = 1; var ptr = { x: 0, y: 0 }; var raf = 0;
   function resize() {
-    var k = Math.min(1, (window.devicePixelRatio || 1) * 0.6); // ~0.6-1x: soft content, smooth edges
+    var k = Math.min(0.7, (window.devicePixelRatio || 1) * 0.5); // ~0.5-0.7x: soft content, upscaled smoothly
     W = Math.max(2, Math.round(window.innerWidth * k)); H = Math.max(2, Math.round(window.innerHeight * k));
     canvas.width = W; canvas.height = H; request();
   }
@@ -108,10 +110,6 @@
     readColors(); resize();
     window.addEventListener('resize', resize, { passive: true });
     window.addEventListener('scroll', function () { if (!reduce.matches) request(); }, { passive: true });
-    window.addEventListener('pointermove', function (e) {
-      if (e.pointerType !== 'mouse' || reduce.matches) return;
-      ptr.x = (e.clientX / window.innerWidth) * 2 - 1; ptr.y = -((e.clientY / window.innerHeight) * 2 - 1); request();
-    }, { passive: true });
     new MutationObserver(function () { readColors(); request(); }).observe(root, { attributes: true, attributeFilter: ['data-accent', 'data-theme'] });
     canvas.addEventListener('webglcontextlost', function (e) { e.preventDefault(); canvas.classList.remove('is-on'); });
     canvas.addEventListener('webglcontextrestored', function () { canvas.remove(); });

@@ -31,7 +31,7 @@
   root.classList.add('cs-on');
 
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
-  function ease(t) { return t < 0.5 ? 16 * t * t * t * t * t : 1 - Math.pow(-2 * t + 2, 5) / 2; }
+  function ease(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
   function marginOf(el) { return parseFloat(getComputedStyle(el).scrollMarginTop) || 0; }
   var margins = [];
   function measureMargins() { margins = sections.map(function (s, i) { return i === 0 ? 0 : marginOf(s); }); }
@@ -121,7 +121,14 @@
     if (reduceMQ.matches) { win.scrollTo(0, y); if (done) done(); return; }
     var from = win.scrollY; var d = y - from;
     if (Math.abs(d) < 2) { if (done) done(); return; }
-    glide = { from: from, d: d, t0: performance.now(), dur: dur || clamp(420 + Math.sqrt(Math.abs(d)) * 16, 520, 1300), done: done };
+    // Far targets: jump to 1.2 screens short, then glide in. Flying through every
+    // chapter in between meant drawing (and revealing) all of them at speed.
+    var far = win.innerHeight * 2.2;
+    if (Math.abs(d) > far) {
+      from = y - (d > 0 ? 1 : -1) * win.innerHeight * 1.2;
+      win.scrollTo(0, Math.round(from)); d = y - from;
+    }
+    glide = { from: from, d: d, t0: performance.now(), dur: dur || clamp(420 + Math.sqrt(Math.abs(d)) * 14, 520, 1000), done: done };
     kick();
   }
   function goChapter(i, done) {
@@ -199,7 +206,8 @@
     }
 
     // Writes: liquid-glass highlight follows the speed
-    var sq = Math.round(clamp(vel / 2.5, -1, 1) * 50) / 50;
+    // Coarse steps: each change restyles the page and repaints every visible sheen.
+    var sq = Math.round(clamp(vel / 2.5, -1, 1) * 20) / 20;
     if (sq !== scrollV) { scrollV = sq; root.style.setProperty('--scroll-v', String(sq)); }
 
     // Writes: chapter morphs

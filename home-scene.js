@@ -758,7 +758,8 @@ async function createEngine(T, envImg) {
       if (reduced) { Object.assign(state, { intro: 1, px: 0, py: 0, s: 0, lx: tlx, ly: tly, blast: 0, vib: 0, jolt: 0 }); } else {
         if (!state.introStart && !root.classList.contains('is-preloading')) state.introStart = now; // assemble as the preloader leaves
         state.intro = state.introStart ? clamp((now - state.introStart) / 3000) : 0;
-        state.px = damp(state.px, tpx, dt); state.py = damp(state.py, tpy, dt); state.s = damp(state.s, ts, dt, 9);
+        // Scroll is not damped: the portrait must move and fade in step with the page.
+        state.px = damp(state.px, tpx, dt); state.py = damp(state.py, tpy, dt); state.s = ts;
         state.lx = damp(state.lx, tlx, dt, 4); state.ly = damp(state.ly, tly, dt, 4);
         // hold -> charge (0.5 s) -> blast; release eases back
         if (state.hold) {
@@ -805,11 +806,16 @@ async function createEngine(T, envImg) {
       state.charge *= Math.exp(-dt * 3.2); if (state.charge < 0.002) state.charge = 0;
 
       const c = state.charge;
+      // The whole scene fades out over the first ~half of the hero's scroll; fully
+      // faded, the view is skipped (v.skip) so it costs nothing further down.
+      const fade = 1 - smooth(clamp((state.s - 0.12) / 0.4));
+      v.skip = fade < 0.002;
       [glassFront, glassBack].forEach((g) => {
         g.envMapIntensity = 1.7 + c * 1.5 + state.vib * 0.8;
         if ('clearcoatRoughness' in g) g.clearcoatRoughness = Math.max(0.005, 0.03 - c * 0.02);
-        g.opacity = 0.86 + c * 0.1;
+        g.opacity = (0.86 + c * 0.1) * fade;
       });
+      portraitUniforms.uOpacity.value = fade;
 
       const ti = state.intro;
       const e = ti * ti * ti * (ti * (ti * 6 - 15) + 10); // smootherstep: no snap at either end
@@ -839,8 +845,8 @@ async function createEngine(T, envImg) {
 
       v.lights.rim.position.set(lx * 1.5, 0.45 - ly * 0.9, 0.95);
       v.lights.rim.intensity = 2.2 + c * 1.6 + state.blast * 1.2;
-      glowMat.uniforms.uOpacity.value = e;
-      dustMat.uniforms.uOpacity.value = e;
+      glowMat.uniforms.uOpacity.value = e * fade;
+      dustMat.uniforms.uOpacity.value = e * fade;
       dustMat.uniforms.uPR.value = renderer.getPixelRatio();
       return busy || state.hold || state.intro < 1 || state.blast > 0 || state.vib > 0 || state.jolt > 0 || state.charge > 0 ||
         !settled(state.px, tpx) || !settled(state.py, tpy) || !settled(state.s, ts) || !settled(state.lx, tlx) || !settled(state.ly, tly);
@@ -1293,7 +1299,7 @@ async function createEngine(T, envImg) {
   canvasRO.observe(canvasHost);
 
   /* ---- Single render scheduler --------------------------------------------- */
-  let raf = 0; let lastT = 0; let glShown = false;
+  let raf = 0; let lastT = 0; let glShown = false; let anchoredAt = -1; let canvasEmpty = false;
   function requestRender() {
     if (raf || document.hidden || contextLost) return;
     raf = requestAnimationFrame(frame);
@@ -1312,20 +1318,31 @@ async function createEngine(T, envImg) {
       moving = moving || paletteT < 1;
     }
 
-    renderer.setScissorTest(false);
-    renderer.clear();
-    renderer.setScissorTest(true);
+    // The canvas is anchored to the page at the scroll offset it was drawn for
+    // (not position: fixed), so when the compositor scrolls ahead of the next
+    // frame, the last frame scrolls with the page instead of sticking on screen.
+    // Near the bottom it stops at the end of the document (top = sy - off).
+    const pr = window.devicePixelRatio || 1;
+    const sy = Math.round(window.scrollY * pr) / pr; // whole device pixels: no resampling blur
+    const top = Math.max(0, Math.min(sy, document.body.getBoundingClientRect().bottom + sy - vh));
+    const off = sy - top;
+    if (top !== anchoredAt) { anchoredAt = top; canvasHost.style.transform = 'translate3d(0,' + top + 'px,0)'; }
+    let drawn = 0; let cleared = false;
+    const clearOnce = () => {
+      if (cleared) return; cleared = true;
+      renderer.setScissorTest(false); renderer.clear(); renderer.setScissorTest(true);
+    };
     for (let i = 0; i < views.length; i++) {
       const v = views[i];
       if (v.disabled) continue;
       const r = v.el.getBoundingClientRect();
-      if (r.width < 2 || r.height < 2 || r.bottom < 0 || r.top > vh || r.right < 0 || r.left > vw) continue;
+      if (r.width < 2 || r.height < 2 || r.bottom < -off || r.top > vh - off || r.right < 0 || r.left > vw) continue;
       if (Math.abs(r.width - v.w) > 0.5 || Math.abs(r.height - v.h) > 0.5) v.fit(r.width, r.height);
       if (v.near && !v.ready) v.near();
       if (v.update(dt, now, r)) moving = true;
-      if (!v.ready) continue;
-      let x0 = Math.max(0, r.left); let y0 = Math.max(0, r.top);
-      let x1 = Math.min(vw, r.right); let y1 = Math.min(vh, r.bottom);
+      if (!v.ready || v.skip) continue;
+      let x0 = Math.max(0, r.left); let y0 = Math.max(-off, r.top);
+      let x1 = Math.min(vw, r.right); let y1 = Math.min(vh - off, r.bottom);
       if (v.clipEl) {
         const c = v.clipEl.getBoundingClientRect();
         x0 = Math.max(x0, c.left); y0 = Math.max(y0, c.top); x1 = Math.min(x1, c.right); y1 = Math.min(y1, c.bottom);
@@ -1335,11 +1352,16 @@ async function createEngine(T, envImg) {
       cam.aspect = r.width / r.height;
       cam.setViewOffset(r.width, r.height, x0 - r.left, y0 - r.top, x1 - x0, y1 - y0);
       if (v.beforeRender) v.beforeRender(r);
-      renderer.setViewport(x0, vh - y1, x1 - x0, y1 - y0);
-      renderer.setScissor(x0, vh - y1, x1 - x0, y1 - y0);
+      clearOnce();
+      renderer.setViewport(x0, vh - off - y1, x1 - x0, y1 - y0);
+      renderer.setScissor(x0, vh - off - y1, x1 - x0, y1 - y0);
       renderer.render(v.scene, cam);
+      drawn++;
       if (!v.shown) { v.shown = true; if (v.onShown) v.onShown(); else v.el.classList.add('is-gl'); }
     }
+    // An empty canvas is still a full-screen layer the GPU blends every frame.
+    const empty = drawn === 0;
+    if (empty !== canvasEmpty) { if (empty) clearOnce(); canvasEmpty = empty; canvasHost.style.visibility = empty ? 'hidden' : ''; }
     if (!glShown) { glShown = true; root.classList.add('gl-ready'); root.dataset.gl = 'ready'; }
     if (moving && !reduced) requestRender();
     else lastT = 0;
