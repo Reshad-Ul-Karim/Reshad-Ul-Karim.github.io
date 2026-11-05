@@ -50,13 +50,33 @@ function whenIdle(fn) {
   else window.addEventListener('load', run, { once: true });
 }
 
+// The first-visit preloader (index.html) listens for these: 'gl:progress'
+// (0..1) while windows are built and compiled, 'gl:primed' when the 3D is
+// ready to show without stalls, or has given up and left the static DOM.
+const announce = (type, detail) => document.dispatchEvent(new CustomEvent(type, { detail }));
+const pause = () => new Promise((r) => setTimeout(r, 0)); // let input, CSS animations and the loader through
+
+// Studio reflections: a low-resolution local copy of Poly Haven's
+// "Studio Small 03" (CC0, Greg Zaal), fetched alongside the library.
+const ENV_URL = new URL('./assets/env/studio_small_03_1k.jpg', import.meta.url).href;
+function loadImage(url) {
+  const img = new Image();
+  img.decoding = 'async';
+  img.src = url;
+  return img.decode().then(() => img);
+}
+
 if (!shouldSkip()) {
   root.dataset.gl = 'pending';
-  whenIdle(() => {
-    import('./assets/vendor/three-home.min.js')
-      .then((T) => createEngine(T))
-      .catch(() => { root.dataset.gl = 'failed'; });
-  });
+  const start = () => {
+    Promise.all([import('./assets/vendor/three-home.min.js?v=186.1-2'), loadImage(ENV_URL).catch(() => null)])
+      .then(([T, envImg]) => createEngine(T, envImg))
+      .catch(() => { root.dataset.gl = 'failed'; announce('gl:primed'); });
+  };
+  // Behind the preloader there is nothing to compete with, so start at once.
+  if (root.classList.contains('is-preloading')) start(); else whenIdle(start);
+} else {
+  announce('gl:primed');
 }
 
 /* ------------------------------------------------------------------------ */
@@ -65,7 +85,7 @@ const lerp = (a, b, t) => a + (b - a) * t;
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 const smooth = (t) => t * t * (3 - 2 * t);
 
-function createEngine(T) {
+async function createEngine(T, envImg) {
   const LITE = !fineMQ.matches || window.innerWidth < 768; // cheaper path for phones/tablets
   let reduced = reduceMQ.matches;
 
@@ -78,10 +98,16 @@ function createEngine(T) {
     renderer = new T.WebGLRenderer({ antialias: (window.devicePixelRatio || 1) < 1.5, alpha: true, powerPreference: 'default' });
   } catch (e) {
     root.dataset.gl = 'unsupported';
+    announce('gl:primed');
     return;
   }
+  announce('gl:progress', 0.08);
+  await pause();
   renderer.setClearColor(0x000000, 0);
   renderer.autoClear = false;
+  // The error check reads shader logs on a program's first use: a synchronous
+  // GPU round trip that waits for every queued compile (100-300 ms per chapter).
+  renderer.debug.checkShaderErrors = false;
   renderer.toneMapping = T.NeutralToneMapping;
   renderer.toneMappingExposure = 1.0;
   renderer.localClippingEnabled = true; // the hero glass is drawn as a back half and a front half
@@ -91,15 +117,28 @@ function createEngine(T) {
   canvas.tabIndex = -1;
   canvasHost.appendChild(canvas);
 
+  // The studio photo is the environment; RoomEnvironment is only the fallback
+  // when it failed to load, so the page pays for one PMREM bake, not two.
   const pmrem = new T.PMREMGenerator(renderer);
   let envTex = null;
   function makeEnvironment() {
+    if (envImg) {
+      const t = new T.Texture(envImg);
+      t.mapping = T.EquirectangularReflectionMapping;
+      t.colorSpace = T.SRGBColorSpace;
+      t.needsUpdate = true;
+      const out = pmrem.fromEquirectangular(t).texture;
+      t.dispose();
+      return out;
+    }
     const room = new T.RoomEnvironment();
     const rt = pmrem.fromScene(room, 0.04);
     if (room.dispose) room.dispose();
     return rt.texture;
   }
   envTex = makeEnvironment();
+  announce('gl:progress', 0.16);
+  await pause();
 
   /* ---- Palette: CSS tokens -> eased colours ------------------------------- */
   const NAMES = ['hl', 'decor', 'primary', 'hero', 'glow', 'porcelain', 'glaze', 'frost', 'glass', 'key', 'sky', 'ground'];
@@ -163,22 +202,29 @@ function createEngine(T) {
   const coreDecorMat = new T.MeshBasicMaterial({ color: cur.decor, toneMapped: false });
   const MATERIALS = [porcelain, glaze, glazeFlat, frost, glassFront, glassBack, coreMat, coreDecorMat];
 
-  // Studio reflections: a low-resolution local copy of Poly Haven's
-  // "Studio Small 03" (CC0, Greg Zaal). RoomEnvironment stays as the
-  // instant default and the fallback if this file cannot load.
-  const ENV_URL = new URL('./assets/env/studio_small_03_1k.jpg', import.meta.url).href;
-  function useStudioEnvironment() {
-    new T.TextureLoader().load(ENV_URL, (t) => {
-      t.mapping = T.EquirectangularReflectionMapping;
-      t.colorSpace = T.SRGBColorSpace;
-      const next = pmrem.fromEquirectangular(t).texture;
-      t.dispose();
-      const prev = envTex; envTex = next;
-      MATERIALS.forEach((m) => { if (m.envMap) m.envMap = envTex; });
-      views.forEach((vv) => { if (vv.scene.environment) vv.scene.environment = envTex; });
-      if (prev) prev.dispose();
-      requestRender();
-    });
+  // Images decode off the main thread where ImageBitmap options are reliable
+  // (the same browser test GLTFLoader uses); elsewhere TextureLoader.
+  const ua = navigator.userAgent;
+  const safariV = /^((?!chrome|android).)*safari/i.test(ua) ? +((ua.match(/Version\/(\d+)/) || [])[1] || 0) : -1;
+  const firefoxV = +((ua.match(/Firefox\/(\d+)/) || [])[1] || -1);
+  const BITMAPS = typeof createImageBitmap === 'function' && !!T.Texture &&
+    !(safariV >= 0 && safariV < 17) && !(firefoxV >= 0 && firefoxV < 98);
+  function loadTexture(url, maxW, onLoad, onError) {
+    if (!BITMAPS) return new T.TextureLoader().load(url, onLoad, undefined, onError);
+    const tex = new T.Texture();
+    tex.flipY = false; // flipped while decoding instead; WebGL ignores flipY for bitmaps
+    fetch(url, { mode: 'cors', credentials: 'same-origin' })
+      .then((res) => { if (!res.ok) throw new Error(String(res.status)); return res.blob(); })
+      .then((blob) => createImageBitmap(blob, { imageOrientation: 'flipY', premultiplyAlpha: 'none' }))
+      .then((bmp) => {
+        if (!maxW || bmp.width <= maxW) return bmp;
+        const h = Math.round((bmp.height * maxW) / bmp.width);
+        return createImageBitmap(bmp, { resizeWidth: maxW, resizeHeight: h, resizeQuality: 'high', premultiplyAlpha: 'none' })
+          .then((small) => { bmp.close(); return small; });
+      })
+      .then((bmp) => { tex.image = bmp; tex.needsUpdate = true; onLoad(tex); })
+      .catch(onError);
+    return tex;
   }
 
   const lights = [];
@@ -326,6 +372,40 @@ function createEngine(T) {
     };
     views.push(v);
     return v;
+  }
+
+  // Compile a window's programs off the main thread (KHR_parallel_shader_compile)
+  // and upload its textures one per task, so its first frame does neither.
+  const TEX_KEYS = ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap'];
+  const uploaded = new WeakSet();
+  async function prepare(v) {
+    if (v.disabled) return;
+    if (renderer.compileAsync) await renderer.compileAsync(v.scene, v.camera).catch(() => {});
+    const texs = new Set();
+    v.scene.traverse((o) => {
+      [].concat(o.material || []).forEach((m) => {
+        TEX_KEYS.forEach((k) => { if (m[k]) texs.add(m[k]); });
+        if (m.uniforms) Object.values(m.uniforms).forEach((u) => { if (u.value && u.value.isTexture) texs.add(u.value); });
+      });
+    });
+    for (const t of texs) {
+      if (uploaded.has(t) || !t.image) continue;
+      uploaded.add(t);
+      renderer.initTexture(t);
+      await pause();
+    }
+    // One draw into an empty scissor box creates whatever compile() cannot
+    // foresee (buffers, extra passes); the next frame resets viewport and scissor.
+    renderer.setScissorTest(true);
+    renderer.setViewport(0, 0, 1, 1);
+    renderer.setScissor(0, 0, 0, 0);
+    renderer.render(v.scene, v.camera);
+    requestRender(); // a draw marks the canvas for presentation: repaint it fully before that
+  }
+  // A window whose texture or model just arrived is drawn only once prepared.
+  function goLive(v, relayout) {
+    if (relayout) v.layout(v.w, v.h);
+    prepare(v).then(() => { v.ready = true; requestRender(); });
   }
   const damp = (c, t, dt, k = 7) => c + (t - c) * (1 - Math.exp(-dt * k));
   const settled = (a, b) => Math.abs(a - b) < 1e-3;
@@ -555,9 +635,9 @@ function createEngine(T) {
       boltMat.uniforms.uGlow.value.copy(cur.hl);
     });
 
-    const tex = new T.TextureLoader().load(portraitImg.currentSrc || portraitImg.src, () => {
-      v.ready = true; v.layout(v.w, v.h); requestRender();
-    }, undefined, () => { v.disabled = true; });
+    const tex = loadTexture(portraitImg.currentSrc || portraitImg.src, 0, () => {
+      goLive(v, !shards.length); // the shards do not depend on the image; keep any already built
+    }, () => { v.disabled = true; });
     tex.colorSpace = T.SRGBColorSpace;
     tex.minFilter = T.LinearMipmapLinearFilter;
     tex.magFilter = T.LinearFilter;
@@ -674,8 +754,8 @@ function createEngine(T) {
       }
       if (reduced) { tlx = -0.35; tly = -0.2; }
       if (reduced) { Object.assign(state, { intro: 1, px: 0, py: 0, s: 0, lx: tlx, ly: tly, blast: 0, vib: 0, jolt: 0 }); } else {
-        if (!state.introStart) state.introStart = now;
-        state.intro = clamp((now - state.introStart) / 1800);
+        if (!state.introStart && !root.classList.contains('is-preloading')) state.introStart = now; // assemble as the preloader leaves
+        state.intro = state.introStart ? clamp((now - state.introStart) / 1800) : 0;
         state.px = damp(state.px, tpx, dt); state.py = damp(state.py, tpy, dt); state.s = damp(state.s, ts, dt, 9);
         state.lx = damp(state.lx, tlx, dt, 4); state.ly = damp(state.ly, tly, dt, 4);
         // hold -> charge (0.5 s) -> blast; release eases back
@@ -837,7 +917,7 @@ function createEngine(T) {
         model.position.sub(c);
         radius = Math.max(size.x, size.y, size.z) / 2; bottom = -size.y / 2;
         spin.add(model);
-        v.ready = true; v.layout(v.w, v.h); requestRender();
+        goLive(v, true);
       }, undefined, () => { v.disabled = true; });
     };
     v.layout = (w, h) => {
@@ -1008,9 +1088,12 @@ function createEngine(T) {
     let tex = null; let aspect = 1;
     const load = () => {
       if (tex) return;
-      tex = new T.TextureLoader().load(img.currentSrc || img.src, (t) => {
-        aspect = t.image.width / t.image.height; v.ready = true; v.layout(v.w, v.h); requestRender();
-      }, undefined, () => { v.disabled = true; }); // e.g. a host without CORS: keep the <img>
+      // No larger than the window needs at the capped pixel ratio (the plane overfills ~10%).
+      const ew = el.getBoundingClientRect().width;
+      const maxW = ew ? Math.min(2048, Math.max(512, Math.ceil(ew * Math.min(2, window.devicePixelRatio || 1) * 1.15))) : 1280;
+      tex = loadTexture(img.currentSrc || img.src, maxW, (t) => {
+        aspect = t.image.width / t.image.height; goLive(v, true);
+      }, () => { v.disabled = true; }); // e.g. a host without CORS: keep the <img>
       tex.colorSpace = T.SRGBColorSpace;
       tex.minFilter = T.LinearMipmapLinearFilter;
       tex.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
@@ -1187,15 +1270,20 @@ function createEngine(T) {
   if (tiltBtn) { tiltBtn.addEventListener('click', toggleTilt); syncTiltOffer(); }
 
   /* ---- Canvas size: viewport, capped density and pixel budget -------------- */
+  let sized = '';
   function resize() {
     vw = canvas.clientWidth || window.innerWidth;
     vh = canvas.clientHeight || window.innerHeight;
     const cap = 2;
     const budget = LITE ? 2.2e6 : 4.4e6; // sharp on retina phones and laptops; windows are small
     const dpr = Math.min(window.devicePixelRatio || 1, cap, Math.sqrt(budget / Math.max(1, vw * vh)));
-    renderer.setPixelRatio(dpr);
-    renderer.setSize(vw, vh, false);
-    views.forEach((v) => { v.w = 0; }); // re-fit on the next frame
+    const key = vw + 'x' + vh + '@' + dpr;
+    if (key !== sized) { // the observer's first call repeats the initial size: keep what prime() built
+      if (sized) views.forEach((v) => { v.w = 0; }); // re-fit on the next frame
+      sized = key;
+      renderer.setPixelRatio(dpr);
+      renderer.setSize(vw, vh, false);
+    }
     requestRender();
   }
   const canvasRO = new ResizeObserver(resize);
@@ -1280,6 +1368,7 @@ function createEngine(T) {
   document.addEventListener('focusin', onFocus);
   document.addEventListener('focusout', onFocus);
   document.addEventListener('visibilitychange', onVisibility);
+  document.addEventListener('preloader:done', onFocus); // start the hero intro
   reduceMQ.addEventListener('change', onReduce);
   fineMQ.addEventListener('change', onFine);
 
@@ -1318,6 +1407,7 @@ function createEngine(T) {
     document.removeEventListener('focusin', onFocus);
     document.removeEventListener('focusout', onFocus);
     document.removeEventListener('visibilitychange', onVisibility);
+    document.removeEventListener('preloader:done', onFocus);
     reduceMQ.removeEventListener('change', onReduce);
     fineMQ.removeEventListener('change', onFine);
     themeObserver.disconnect();
@@ -1345,10 +1435,30 @@ function createEngine(T) {
   window.addEventListener('pagehide', (e) => { if (!e.persisted) destroy(); });
 
   resize();
-  useStudioEnvironment();
-  // Pre-compile the shared programs during idle time so the first scroll into a
-  // chapter does not stall on shader compilation.
-  if (renderer.compileAsync) {
-    Promise.all(views.map((v) => renderer.compileAsync(v.scene, v.camera).catch(() => {}))).then(requestRender);
+  prime();
+
+  /* ---- Warm-up: every window is built, compiled and uploaded before it is
+     seen, one piece per task, so scrolling into a chapter never stalls. ---- */
+  async function prime() {
+    const t0 = performance.now();
+    for (let i = 0; i < views.length; i++) {
+      const v = views[i];
+      const r = v.el.getBoundingClientRect();
+      if (!v.w && r.width >= 2 && r.height >= 2) v.fit(r.width, r.height); // ribbons and shards are built here
+      announce('gl:progress', 0.16 + 0.34 * ((i + 1) / views.length));
+      await pause();
+    }
+    // Desktop fetches every texture and model now; phones keep loading them
+    // as their window approaches, to save data (each is still prepared first).
+    if (!LITE) views.forEach((v) => { if (v.near) v.near(); });
+    for (const v of views) if (v.ready) await prepare(v);
+    const pending = (v) => !v.ready && !v.disabled && !(LITE && v.near);
+    while (views.some(pending) && performance.now() - t0 < 8000) {
+      announce('gl:progress', 0.5 + 0.5 * (views.filter((v) => !pending(v)).length / views.length));
+      await new Promise((r) => setTimeout(r, 80));
+    }
+    announce('gl:progress', 1);
+    announce('gl:primed');
+    requestRender();
   }
 }

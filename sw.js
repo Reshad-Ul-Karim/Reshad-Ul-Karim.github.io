@@ -44,12 +44,16 @@ self.addEventListener('fetch', (event) => {
 
   if (url.origin !== self.location.origin) {
     if (CDN_HOSTS.includes(url.hostname)) event.respondWith(cacheFirst(req, STATIC));
+    else if (url.hostname === 'img.youtube.com') event.respondWith(staleWhileRevalidate(req, IMAGES, event)); // 3D project textures
     return;
   }
   if (req.mode === 'navigate') { event.respondWith(page(req)); return; }
   const path = url.pathname;
   if (path.startsWith('/data/') || path.endsWith('.json') || path.endsWith('.pdf') || path === '/sw.js') return;
   if (url.searchParams.has('v') || path.startsWith('/assets/vendor/')) { event.respondWith(cacheFirst(req, STATIC)); return; }
+  // 3D models (glTF + bin + textures) and the studio map are fetched without a
+  // request destination, so they need their own rule to be kept offline.
+  if (path.startsWith('/assets/models/') || path.startsWith('/assets/env/')) { event.respondWith(staleWhileRevalidate(req, STATIC, event)); return; }
   if (req.destination === 'image') { event.respondWith(staleWhileRevalidate(req, IMAGES, event)); return; }
   if (req.destination === 'style' || req.destination === 'script' || req.destination === 'font') {
     event.respondWith(staleWhileRevalidate(req, STATIC, event));

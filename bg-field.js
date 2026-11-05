@@ -53,19 +53,24 @@
     '}'
   ].join('\n');
 
-  function sh(type, src) { var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; }
-  var prog;
-  try {
-    prog = gl.createProgram();
-    gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS));
-    gl.linkProgram(prog);
+  // Any status query blocks until the driver has compiled and linked, so with
+  // KHR_parallel_shader_compile the program is polled once per frame instead.
+  function sh(type, src) { var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; }
+  var parallel = gl.getExtension('KHR_parallel_shader_compile');
+  var prog = gl.createProgram();
+  gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS));
+  gl.linkProgram(prog);
+  var U = {};
+  function whenLinked(cb) {
+    if (parallel && !gl.getProgramParameter(prog, parallel.COMPLETION_STATUS_KHR)) { requestAnimationFrame(function () { whenLinked(cb); }); return; }
     if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
-  } catch (e) { return; }
-  gl.useProgram(prog);
-  var buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-  var loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-  var U = {}; ['uRes', 'uScroll', 'uPtr', 'uBase', 'uA', 'uB'].forEach(function (n) { U[n] = gl.getUniformLocation(prog, n); });
+    gl.useProgram(prog);
+    var buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    var loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    ['uRes', 'uScroll', 'uPtr', 'uBase', 'uA', 'uB'].forEach(function (n) { U[n] = gl.getUniformLocation(prog, n); });
+    cb();
+  }
 
   var probe = doc.createElement('span'); probe.style.display = 'none';
   function rgb(cssVar, fallback) {
@@ -111,5 +116,6 @@
     canvas.addEventListener('webglcontextlost', function (e) { e.preventDefault(); canvas.classList.remove('is-on'); });
     canvas.addEventListener('webglcontextrestored', function () { canvas.remove(); });
   }
-  if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', start); else start();
+  function boot() { whenLinked(start); }
+  if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', boot); else boot();
 })();

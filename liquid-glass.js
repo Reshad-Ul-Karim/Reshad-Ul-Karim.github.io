@@ -48,12 +48,10 @@
   svg.appendChild(defs);
   var cache = {}; var count = 0;
 
-  function mapURL(w, h, r, bezel) {
-    var s = 0.5; // half resolution is plenty for a smooth lens profile
-    var W = Math.max(8, Math.round(w * s)); var H = Math.max(8, Math.round(h * s));
-    var c = doc.createElement('canvas'); c.width = W; c.height = H;
-    var ctx = c.getContext('2d'); var img = ctx.createImageData(W, H); var d = img.data;
-    var rr = Math.min(r * s, W / 2, H / 2); var b = Math.max(2, bezel * s);
+  // The map is drawn and PNG-encoded in a worker (OffscreenCanvas): encoding
+  // on the main thread cost ~20-30 ms per map, mostly while scrolling into a
+  // section. Without worker support it is drawn here.
+  function drawMap(d, W, H, rr, b) {
     for (var y = 0; y < H; y++) {
       for (var x = 0; x < W; x++) {
         var px = x + 0.5 - W / 2; var py = y + 0.5 - H / 2;
@@ -71,8 +69,29 @@
         var i = (y * W + x) * 4; d[i] = R; d[i + 1] = G; d[i + 2] = 128; d[i + 3] = 255;
       }
     }
+  }
+  var worker = null; var jobs = {}; var jobN = 0;
+  try {
+    if (canRefract && typeof OffscreenCanvas === 'function' && OffscreenCanvas.prototype.convertToBlob) {
+      var src = 'var drawMap = ' + drawMap.toString() + ';\n' +
+        'onmessage = function (e) { var m = e.data; var c = new OffscreenCanvas(m.W, m.H); var ctx = c.getContext("2d");' +
+        ' var img = ctx.createImageData(m.W, m.H); drawMap(img.data, m.W, m.H, m.rr, m.b); ctx.putImageData(img, 0, 0);' +
+        ' c.convertToBlob({ type: "image/png" }).then(function (blob) { postMessage({ id: m.id, blob: blob }); }); };';
+      worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+      worker.onmessage = function (e) { var done = jobs[e.data.id]; delete jobs[e.data.id]; if (done) done(URL.createObjectURL(e.data.blob)); };
+      worker.onerror = function () { worker = null; };
+    }
+  } catch (e) { worker = null; }
+  function mapURL(w, h, r, bezel, done) {
+    var s = 0.5; // half resolution is plenty for a smooth lens profile
+    var W = Math.max(8, Math.round(w * s)); var H = Math.max(8, Math.round(h * s));
+    var rr = Math.min(r * s, W / 2, H / 2); var b = Math.max(2, bezel * s);
+    if (worker) { var id = ++jobN; jobs[id] = done; worker.postMessage({ id: id, W: W, H: H, rr: rr, b: b }); return; }
+    var c = doc.createElement('canvas'); c.width = W; c.height = H;
+    var ctx = c.getContext('2d'); var img = ctx.createImageData(W, H);
+    drawMap(img.data, W, H, rr, b);
     ctx.putImageData(img, 0, 0);
-    return c.toDataURL();
+    done(c.toDataURL());
   }
 
   function filterFor(w, h, r) {
@@ -88,7 +107,7 @@
     f.setAttribute('color-interpolation-filters', 'sRGB');
     f.innerHTML =
       '<feGaussianBlur in="SourceGraphic" stdDeviation="2.4" result="blur"/>' +
-      '<feImage href="' + mapURL(bw, bh, br, bezel) + '" x="0" y="0" width="' + bw + '" height="' + bh + '" preserveAspectRatio="none" result="map"/>' +
+      '<feImage x="0" y="0" width="' + bw + '" height="' + bh + '" preserveAspectRatio="none" result="map"/>' +
       '<feDisplacementMap in="blur" in2="map" scale="' + strength + '" xChannelSelector="R" yChannelSelector="G" result="dr"/>' +
       '<feColorMatrix in="dr" type="matrix" values="1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0" result="r"/>' +
       '<feDisplacementMap in="blur" in2="map" scale="' + (strength * 0.88) + '" xChannelSelector="R" yChannelSelector="G" result="dg"/>' +
@@ -97,38 +116,74 @@
       '<feColorMatrix in="db" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0" result="b"/>' +
       '<feBlend in="r" in2="g" mode="screen" result="rg"/><feBlend in="rg" in2="b" mode="screen"/>';
     defs.appendChild(f);
-    cache[key] = { id: id, el: f, strength: strength };
-    return cache[key];
+    var entry = cache[key] = { id: id, el: f, strength: strength, ready: false, waiting: [] };
+    mapURL(bw, bh, br, bezel, function (url) {
+      f.querySelector('feImage').setAttribute('href', url);
+      entry.ready = true;
+      entry.waiting.forEach(function (el) { if (el.__lgFilter === entry) useFilter(el, entry); });
+      entry.waiting = [];
+    });
+    return entry;
+  }
+  function useFilter(el, f) {
+    el.style.setProperty('--lg-filter', 'url(#' + f.id + ')');
+    el.classList.add('lg--refract');
   }
 
-  function apply(el) {
-    if (el.__lg) return;
+  // Reads and writes are kept apart: a style read after a class change forces
+  // a full style and layout pass, and doing that per element stalled scrolling.
+  function apply(el, cs) {
     el.__lg = true;
+    el.__lgRad = parseFloat(cs.borderTopLeftRadius) || 0;
     el.classList.add('lg');
-    if (getComputedStyle(el).position === 'static') el.style.position = 'relative'; // anchor the sheen
+    if (cs.position === 'static') el.style.position = 'relative'; // anchor the sheen
     if (!el.querySelector(':scope > .lg-sheen')) {
       var sheen = doc.createElement('span'); sheen.className = 'lg-sheen'; sheen.setAttribute('aria-hidden', 'true');
       el.appendChild(sheen); // last child, so :first-child styles on the content keep working
     }
-    refit(el);
   }
-  function refit(el) {
+  var toUse = []; var useRaf = 0;
+  function refit(el, w, h) {
     if (!canRefract || lessGlass.matches) { el.style.removeProperty('--lg-filter'); el.classList.remove('lg--refract'); return; }
-    var r = el.getBoundingClientRect();
-    if (r.width < 8 || r.height < 8) return;
-    var rad = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0;
-    var f = filterFor(r.width, r.height, Math.min(rad, r.height / 2));
-    el.style.setProperty('--lg-filter', 'url(#' + f.id + ')');
+    if (!el.__lgNear) return; // frosted until it nears the viewport: maps are drawn on the main thread
+    if (w == null) { var r = el.getBoundingClientRect(); w = r.width; h = r.height; }
+    if (w < 8 || h < 8) return;
+    var f = filterFor(w, h, Math.min(el.__lgRad || 0, h / 2));
     el.__lgFilter = f;
-    el.classList.add('lg--refract');
+    if (!f.ready) { f.waiting.push(el); return; } // stays frosted until its map is encoded
+    toUse.push(el);
+    if (!useRaf) useRaf = requestAnimationFrame(function () {
+      useRaf = 0;
+      toUse.splice(0).forEach(function (x) { useFilter(x, x.__lgFilter); });
+    });
   }
 
-  var ro = window.ResizeObserver ? new ResizeObserver(function (entries) { entries.forEach(function (e) { refit(e.target); }); }) : null;
+  var ro = window.ResizeObserver ? new ResizeObserver(function (entries) {
+    entries.forEach(function (e) {
+      var b = e.borderBoxSize && e.borderBoxSize[0];
+      var w = b ? b.inlineSize : e.target.offsetWidth; var h = b ? b.blockSize : e.target.offsetHeight;
+      e.target.__lgSize = [w, h];
+      refit(e.target, w, h);
+    });
+  }) : null;
+  var nearIO = 'IntersectionObserver' in window ? new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      if (!e.isIntersecting) return;
+      var el = e.target; var s = el.__lgSize;
+      el.__lgNear = true;
+      refit(el, s ? s[0] : e.boundingClientRect.width, s ? s[1] : e.boundingClientRect.height);
+      nearIO.unobserve(el);
+    });
+  }, { rootMargin: '600px 0px' }) : null;
   function scan() {
-    Array.prototype.forEach.call(doc.querySelectorAll(SELECTOR), function (el) {
-      if (el.__lg) return;
-      apply(el);
+    var fresh = Array.prototype.filter.call(doc.querySelectorAll(SELECTOR), function (el) { return !el.__lg; });
+    var styles = fresh.map(function (el) { return getComputedStyle(el); });
+    var reads = styles.map(function (cs) { return { position: cs.position, borderTopLeftRadius: cs.borderTopLeftRadius }; });
+    fresh.forEach(function (el, i) {
+      if (!nearIO) el.__lgNear = true;
+      apply(el, reads[i]);
       if (ro) ro.observe(el);
+      if (nearIO) nearIO.observe(el);
       if (glintIO) glintIO.observe(el);
     });
   }
@@ -252,7 +307,7 @@
     // Widgets and some page parts are injected after load (palette, theme toggle, chat, render.js).
     var pending = false;
     new MutationObserver(function () { if (!pending) { pending = true; requestAnimationFrame(function () { pending = false; scan(); }); } }).observe(doc.body, { childList: true, subtree: true });
-    lessGlass.addEventListener('change', function () { Array.prototype.forEach.call(doc.querySelectorAll('.lg'), refit); });
+    lessGlass.addEventListener('change', function () { Array.prototype.forEach.call(doc.querySelectorAll('.lg'), function (el) { refit(el); }); });
   }
   if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', start); else start();
 })();
