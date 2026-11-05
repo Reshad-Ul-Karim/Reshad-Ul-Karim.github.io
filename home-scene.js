@@ -38,6 +38,9 @@ const forcedMQ = window.matchMedia('(forced-colors: active)');
 function shouldSkip() {
   if (!canvasHost || root.dataset.gl) return true; // initialise at most once
   if (forcedMQ.matches) return true;
+  // Low-end devices (perf-tier.js) keep the static images: no 3D library,
+  // models or textures to download, parse and upload.
+  if (root.classList.contains('perf-lite')) return true;
   const conn = navigator.connection;
   return !!(conn && conn.saveData);
 }
