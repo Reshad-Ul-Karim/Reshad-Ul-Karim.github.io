@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-v2 data-accent-default="teal">
 <head>
-    <script>(function(){try{var t=localStorage.getItem('theme'),a=localStorage.getItem('accent');if(t)document.documentElement.setAttribute('data-theme',t);if(a)document.documentElement.setAttribute('data-accent',a);}catch(e){}})();</script>
+    <script>(function(){try{var t=localStorage.getItem('theme'),a=localStorage.getItem('accent');document.documentElement.setAttribute('data-theme',t||'dark');document.documentElement.setAttribute('data-accent',a||'teal');}catch(e){}})();</script>
     <style>section[id]{scroll-margin-top:5rem}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -39,10 +39,17 @@
     <link rel="stylesheet" href="../modern-ui.css?v=1.0.0">
     <link rel="stylesheet" href="../multipage.css?v=1.0.0">
     <link rel="stylesheet" href="../assistant-widget.css?v=1.0.0">
+    <link rel="stylesheet" href="../demo-pane.css?v=1.0.0">
+    <link rel="stylesheet" href="../tokens.css?v=1.0.0">
+    <link rel="stylesheet" href="../pages.css?v=1.0.0">
+    <link rel="stylesheet" href="../liquid-glass.css?v=1.0.0">
+    <script src="../liquid-glass.js?v=1.0.0" defer></script>
+    <script src="../bg-field.js?v=1.0.0" defer></script>
     <script src="../reveal-motion.js?v=1.1.0" defer></script>
     <script src="../morph-motion.js?v=1.0.0" defer></script>
     <script src="../accent-theme.js?v=1.0.0" defer></script>
     <script src="../assistant-widget.js?v=1.0.0" defer></script>
+    <script type="module" src="../demo-pane.js?v=1.0.0"></script>
 </head><body>
     <div id="shell-chrome"></div>
     <script src="../site-shell.js?v=1.1.0"></script>
@@ -56,7 +63,22 @@
           <p class="detail-lead">Vision-based hand-gesture virtual keyboard-mouse with bilingual (English/Bangla) LSTM next-word prediction — a low-latency touchless text-entry system (IEEE, JCSSE 2026).</p>
           <div class="detail-links"><a class="detail-link" href="https://github.com/Reshad-Ul-Karim/Autonomous-Keyboard-typing-test" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> Source code</a><button type="button" class="detail-link pdf-viewer-btn" data-pdf="../assets/papers/hand-gesture-keyboard-mouse-slides.pdf" data-title="Vision-based Hand Gesture Virtual Keyboard-Mouse"><i class="fas fa-file-pdf"></i> Slides / PDF</button><a class="detail-link" href="https://ieeexplore.ieee.org/document/11596610/" target="_blank" rel="noopener noreferrer"><i class="fas fa-file-alt"></i> Paper</a></div>
         </header>
-        <img class="detail-cover" src="../assets/images/project-cards/vision-based-hand-gesture.png" alt="Vision-based hand gesture virtual keyboard and mouse interface in use" loading="lazy" decoding="async">
+        <section class="xp" id="interactive-demo" data-demo="trace" aria-labelledby="xp-title">
+          <div class="xp-head">
+            <h2 class="xp-title" id="xp-title">One hand, two modes</h2>
+            <span class="xp-kind">Illustrative example</span>
+          </div>
+          <div class="xp-body">
+            <div class="xp-stage" data-xp-stage>
+              <img class="xp-poster" src="../assets/images/project-cards/vision-based-hand-gesture.png" alt="Vision-based hand gesture virtual keyboard and mouse interface in use" loading="lazy" decoding="async">
+              <button class="xp-start" type="button" data-xp-start>Explore demo</button>
+            </div>
+            <div class="xp-panel" data-xp-panel hidden></div>
+          </div>
+          <p class="xp-status" data-xp-status role="status" aria-live="polite"></p>
+          <p class="xp-note">Authored walk-through of the documented pipeline. It shows how the system works, not recorded results.</p>
+          <script type="application/json">{"scenarios": [{"label": "Type a word", "result": "Keys are typed by hand gestures and the next word is suggested in English or Bangla.", "steps": [{"label": "Hand landmarks", "detail": "MediaPipe tracks the hand from a plain USB webcam.", "state": "ok"}, {"label": "Finger states", "detail": "Deliberately non-probabilistic geometric rules read which fingers are raised.", "state": "ok"}, {"label": "Key event", "detail": "A held gesture becomes one key press.", "state": "ok"}, {"label": "Next-word suggestion", "detail": "A bilingual LSTM suggests the next word.", "state": "ok"}]}, {"label": "Move the pointer", "result": "The same hand drives the mouse.", "steps": [{"label": "Hand landmarks", "detail": "The hand is tracked in real time.", "state": "ok"}, {"label": "Mouse mode", "detail": "A gesture switches to pointer control.", "state": "ok"}, {"label": "Pointer moves", "detail": "The cursor follows the hand.", "state": "ok"}]}]}</script>
+        </section>
         <div class="detail-body">
           <section class="detail-section"><h2 class="detail-section-title">Overview</h2><div class="detail-prose"><p>Touchless typing tends to trade off against itself: enough gestures to be useful and it gets confused by lighting or hand shape, fast enough to feel responsive and it drops accuracy, or it supports one language and locks out Bangla speakers. This project (IEEE JCSSE 2026) builds one real-time pipeline that handles keyboard typing, mouse control and bilingual English/Bangla next-word prediction from a plain USB webcam, with no wearable hardware.</p></div></section><section class="detail-section"><h2 class="detail-section-title">Approach</h2><div class="detail-prose"><p>Gesture recognition is deliberately non-probabilistic: MediaPipe extracts 21 hand landmarks per frame, and each finger's extension state is read directly from the ratio of fingertip-to-base versus base-to-palm distance, packed into a 4-bit code &mdash; cheap enough to classify in under 0.03 ms. Nine gestures cover both interaction modes: a sustained 'v' drives the mouse cursor, grab/open-hand/click gestures handle clicks and drag-and-drop, and a debounced 'pinky-down' registers keyboard keystrokes. Typed text is completed by a two-layer LSTM (128 units, 64-dim embeddings) trained separately on English (Project Gutenberg) and Bangla (Kaggle) corpora, with automatic language detection switching between them and HarfBuzz/PyQt5 handling correct Bangla glyph rendering.</p></div></section><section class="detail-section"><h2 class="detail-section-title">Results</h2><div class="detail-prose"><p>All nine gestures were recognized at &ge;97.3% accuracy (100% for grab and open-hand) across five hardware platforms &mdash; from a 4th-gen Intel i5 to an Apple M2 &mdash; sustaining up to 37.7 FPS. The English LSTM reached 97.0% top-1 accuracy (perplexity 1.15) and Bangla 97.2% (perplexity 1.10), giving character error rates of 3.43% and 8.34% respectively. A seven-condition lighting sweep (50&ndash;2000 lux, including backlit and flickering light) held accuracy above 90% throughout, with only a 6.6-point drop in the worst case &mdash; the robustness prior single-condition systems in this space were missing.</p></div></section><section class="detail-section"><h2 class="detail-section-title">Highlights</h2><ul class="detail-prose"><li>Hand Gesture Recognition</li><li>Bilingual Prediction</li><li>Touchless Interface</li></ul></section><section class="detail-section"><h2 class="detail-section-title">Tech stack &amp; key skills</h2><p class="detail-prose">Core tools, methods and skills demonstrated in this project:</p><div class="detail-tags"><span class="tech-tag">Python</span><span class="tech-tag">MediaPipe (hand landmarks)</span><span class="tech-tag">LSTM</span><span class="tech-tag">Bilingual next-word prediction</span><span class="tech-tag">Real-time gesture recognition</span><span class="tech-tag">Human-computer interaction</span></div></section><div class="detail-related"><a class="detail-back" href="index.html"><i class="fas fa-arrow-left"></i> Back to all projects</a></div>
         </div>

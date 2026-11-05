@@ -16,240 +16,7 @@
    Every colour below is a token, so both switches recolour the whole page.
    ========================================================================= */
 
-/* ---- 1. Tokens ---------------------------------------------------------- */
-:root,
-html[data-accent="teal"] {
-  /* Action on light surfaces */
-  --primary: #0B5D56; --primary-rgb: 11, 93, 86;
-  --primary-hover: #094D47;
-  --primary-ink: #FFFFFF;
-  /* Highlight on dark surfaces (buttons, focus, the 3D rim and ring) */
-  --hl: #8CF0D3; --hl-rgb: 140, 240, 211;
-  --hl-hover: #B5F6E3;
-  --on-hl: #0C2120;
-  /* Decorative second accent */
-  --decor: #D8B98B; --decor-rgb: 216, 185, 139;
-  --decor-soft: #F1E6D3;
-  --decor-ink: #6B4E22;
-  /* Hero stage */
-  --hero: #102525; --hero-rgb: 16, 37, 37;
-  --hero-deep: #0C1F1F; --hero-deep-rgb: 8, 20, 20;
-  --hero-2: #0F2524;
-  --hero-top: #183B39;
-  --glow-rgb: 48, 128, 116;
-  --glow2-rgb: 29, 74, 69;
-  --glow3-rgb: 24, 59, 57;
-  --hero-ink: #EAF3EE; --hero-ink-rgb: 234, 243, 238;
-  --hero-ink-2: #ABCCC2;
-  --mark-mid: #3FB7A0;
-  --tint-light: #E9EFEA;
-}
-html[data-accent="blue"] {
-  --primary: #4F46E5; --primary-rgb: 79, 70, 229;
-  --primary-hover: #4338CA;
-  --hl: #A5B4FC; --hl-rgb: 165, 180, 252;
-  --hl-hover: #C7D2FE;
-  --on-hl: #1E1B4B;
-  --decor: #F472B6; --decor-rgb: 244, 114, 182;
-  --decor-soft: #FCE7F3;
-  --decor-ink: #9D174D;
-  --hero: #15142E; --hero-rgb: 21, 20, 46;
-  --hero-deep: #0E0D22; --hero-deep-rgb: 14, 13, 34;
-  --hero-2: #141331;
-  --hero-top: #26245A;
-  --glow-rgb: 99, 102, 241;
-  --glow2-rgb: 70, 40, 120;
-  --glow3-rgb: 50, 40, 100;
-  --hero-ink: #EEF0FF; --hero-ink-rgb: 238, 240, 255;
-  --hero-ink-2: #B9BEEA;
-  --mark-mid: #818CF8;
-  --tint-light: #ECEEFE;
-}
-html[data-accent="red"] {
-  --primary: #BE123C; --primary-rgb: 190, 18, 60;
-  --primary-hover: #9F1239;
-  --hl: #FDA4AF; --hl-rgb: 253, 164, 175;
-  --hl-hover: #FECDD3;
-  --on-hl: #4C0519;
-  --decor: #F59E0B; --decor-rgb: 245, 158, 11;
-  --decor-soft: #FEF3C7;
-  --decor-ink: #92400E;
-  --hero: #2A0E16; --hero-rgb: 42, 14, 22;
-  --hero-deep: #1C090F; --hero-deep-rgb: 28, 9, 15;
-  --hero-2: #2A0E17;
-  --hero-top: #4A1626;
-  --glow-rgb: 225, 29, 72;
-  --glow2-rgb: 110, 25, 45;
-  --glow3-rgb: 90, 22, 38;
-  --hero-ink: #FFF1F3; --hero-ink-rgb: 255, 241, 243;
-  --hero-ink-2: #EDB8C1;
-  --mark-mid: #FB7185;
-  --tint-light: #FDECEF;
-}
-html[data-accent="orange"] {
-  --primary: #C2410C; --primary-rgb: 194, 65, 12;
-  --primary-hover: #9A3412;
-  --hl: #FDBA74; --hl-rgb: 253, 186, 116;
-  --hl-hover: #FED7AA;
-  --on-hl: #431407;
-  --decor: #FBBF24; --decor-rgb: 251, 191, 36;
-  --decor-soft: #FEF3C7;
-  --decor-ink: #92400E;
-  --hero: #26150A; --hero-rgb: 38, 21, 10;
-  --hero-deep: #1A0E06; --hero-deep-rgb: 26, 14, 6;
-  --hero-2: #27160B;
-  --hero-top: #4A2A12;
-  --glow-rgb: 234, 88, 12;
-  --glow2-rgb: 110, 50, 15;
-  --glow3-rgb: 90, 45, 15;
-  --hero-ink: #FFF5EB; --hero-ink-rgb: 255, 245, 235;
-  --hero-ink-2: #EBC9A8;
-  --mark-mid: #FB923C;
-  --tint-light: #FCEFE4;
-}
-html[data-accent="mono"] {
-  --primary: #171717; --primary-rgb: 23, 23, 23;
-  --primary-hover: #000000;
-  --hl: #F5F5F5; --hl-rgb: 245, 245, 245;
-  --hl-hover: #FFFFFF;
-  --on-hl: #0A0A0A;
-  --decor: #A3A3A3; --decor-rgb: 163, 163, 163;
-  --decor-soft: #EDEDED;
-  --decor-ink: #404040;
-  --hero: #141414; --hero-rgb: 20, 20, 20;
-  --hero-deep: #0A0A0A; --hero-deep-rgb: 10, 10, 10;
-  --hero-2: #151515;
-  --hero-top: #2A2A2A;
-  --glow-rgb: 140, 140, 140;
-  --glow2-rgb: 60, 60, 60;
-  --glow3-rgb: 50, 50, 50;
-  --hero-ink: #F5F5F5; --hero-ink-rgb: 245, 245, 245;
-  --hero-ink-2: #BDBDBD;
-  --mark-mid: #737373;
-  --tint-light: #ECECEC;
-}
-
-/* Light theme surfaces (default) */
-:root {
-  --page: #F4F3EE;
-  --card: #FFFFFF;
-  --card-tint: color-mix(in srgb, var(--tint-light) 70%, #FFFFFF);
-  --card-warm: color-mix(in srgb, var(--decor-soft) 35%, #FFFFFF);
-  --ink: #152526; --ink-rgb: 21, 37, 38;
-  --ink-2: #425B58;
-  --line: rgba(var(--ink-rgb), 0.11);
-  --line-strong: rgba(var(--ink-rgb), 0.2);
-  --tint: var(--tint-light);
-  --hero-line: rgba(var(--hero-ink-rgb), 0.16);
-  /* Text links, labels and focus on the page surface */
-  --link: var(--primary); --link-rgb: var(--primary-rgb);
-  /* Filled buttons on the page surface */
-  --action-bg: var(--primary);
-  --action-hover: var(--primary-hover);
-  --action-ink: var(--primary-ink);
-  /* Nav glass once it floats over the page instead of the hero */
-  --glass-light: rgba(255, 255, 255, 0.68);
-  --glass-light-solid: rgba(255, 255, 255, 0.95);
-  --glass-light-panel: rgba(255, 255, 255, 0.93);
-  --glass-light-hi: rgba(255, 255, 255, 0.9);
-  color-scheme: light;
-}
-
-/* Dark grey theme (the default): neutral charcoal surfaces in every accent;
-   the accent only colours light, highlights and controls. */
-html[data-theme="dark"] {
-  --page: #0D0E10;
-  --card: #16171A;
-  --card-tint: color-mix(in srgb, var(--hl) 6%, #16171A);
-  --card-warm: color-mix(in srgb, var(--decor) 6%, #16171A);
-  --ink: #ECEDEE; --ink-rgb: 236, 237, 238;
-  --ink-2: #A8ACB1;
-  --tint: color-mix(in srgb, var(--hl) 11%, #16171A);
-  --decor-soft: color-mix(in srgb, var(--decor) 18%, #16171A);
-  --hero: #111214; --hero-rgb: 17, 18, 20;
-  --hero-deep: #0A0B0C; --hero-deep-rgb: 10, 11, 12;
-  --hero-2: #131416;
-  --hero-top: #1E2023;
-  --glow2-rgb: 38, 40, 44;
-  --glow3-rgb: 30, 32, 35;
-  --hero-ink: #EEEFF0; --hero-ink-rgb: 238, 239, 240;
-  --hero-ink-2: #AEB2B6;
-  --decor-ink: var(--decor);
-  --link: var(--hl); --link-rgb: var(--hl-rgb);
-  --action-bg: var(--hl);
-  --action-hover: var(--hl-hover);
-  --action-ink: var(--on-hl);
-  --glass-light: rgba(22, 23, 26, 0.62);
-  --glass-light-solid: rgba(22, 23, 26, 0.95);
-  --glass-light-panel: rgba(22, 23, 26, 0.9);
-  --glass-light-hi: rgba(255, 255, 255, 0.06);
-  color-scheme: dark;
-}
-
-/* Type, space, shape, motion */
-:root {
-  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
-  --step--1: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
-  --step-0: clamp(1rem, 0.97rem + 0.15vw, 1.0625rem);
-  --step-1: clamp(1.125rem, 1.06rem + 0.35vw, 1.3125rem);
-  --step-2: clamp(1.375rem, 1.22rem + 0.75vw, 1.75rem);
-  --step-3: clamp(1.875rem, 1.5rem + 1.8vw, 3rem);
-  --step-4: clamp(2.625rem, 1.75rem + 4.2vw, 5.25rem);
-  --gutter: clamp(16px, 4.5vw, 44px);
-  --maxw: 1240px;
-  --section: clamp(4.5rem, 3rem + 6vw, 8.5rem);
-  --header-h: 64px;
-  --r-s: 12px;
-  --r: 18px;
-  --r-l: 26px;
-  --capsule: 999px;
-  --shadow-1: 0 1px 2px rgba(var(--hero-rgb), 0.05), 0 4px 14px -6px rgba(var(--hero-rgb), 0.1);
-  --shadow-2: 0 18px 40px -22px rgba(var(--hero-rgb), 0.35);
-  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
-  --dur: 180ms;
-}
-html[data-theme="dark"] {
-  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 14px -6px rgba(0, 0, 0, 0.4);
-  --shadow-2: 0 18px 40px -22px rgba(0, 0, 0, 0.7);
-}
-
-/* Legacy tokens for the shared chat widget (assistant-widget.css) and the
-   accent switcher, with the same values styles.css gives them on every other
-   page, so both look and behave exactly as before. --primary-color,
-   --secondary-color and the --accent-*-rgb channels come from accent-theme.css. */
-:root {
-  --text-primary: #1f2937;
-  --text-secondary: #6b7280;
-  --text-light: #9ca3af;
-  --bg-primary: #ffffff;
-  --bg-secondary: #f9fafb;
-  --bg-dark: #111827;
-  --border-color: #e5e7eb;
-  --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-large: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --font-primary: 'Product Sans', 'Inter', sans-serif;
-  --font-secondary: 'Inter', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-  --border-radius: 0.75rem;
-  --transition-fast: 0.2s ease;
-  --transition-medium: 0.3s ease;
-  --transition-slow: 0.5s ease;
-}
-[data-theme="dark"] {
-  --text-primary: #f8fafc;
-  --text-secondary: #e2e8f0;
-  --text-light: #cbd5e1;
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-dark: #020617;
-  --border-color: #475569;
-  --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
-  --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-  --shadow-large: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
-}
+/* ---- 1. Tokens: see tokens.css (shared with the other pages) ------------- */
 
 /* ---- 2. Base ------------------------------------------------------------ */
 *, *::before, *::after { box-sizing: border-box; }
@@ -267,7 +34,7 @@ html {
 
 body {
   margin: 0;
-  background: var(--page);
+  background: transparent; /* html paints --page; the 3D field (bg-field.js) sits between */
   color: var(--ink);
   font-family: var(--font);
   font-size: var(--step-0);
@@ -1630,3 +1397,30 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.18e
     var(--card-tint);
 }
 .awards__viz { height: clamp(220px, 22vw, 300px); }
+
+
+/* ---- 24. Chapter wipes + heading focus reveal (home.js) ---------------------------- */
+.section { position: relative; }
+.wipe {
+  position: absolute; left: 0; right: 0; top: 0;
+  height: clamp(90px, 16vh, 170px);
+  display: grid; grid-template-columns: repeat(9, 1fr);
+  pointer-events: none; z-index: 0; overflow: hidden;
+}
+.wipe span {
+  display: block; height: 100%;
+  background: linear-gradient(180deg, rgba(var(--hl-rgb), 0.16), rgba(var(--hl-rgb), 0.02) 70%, transparent);
+  border-top: 1.5px solid rgba(var(--hl-rgb), 0.55);
+  transform: scaleY(0); transform-origin: 50% 0;
+  will-change: transform;
+}
+.section > .wrap { position: relative; z-index: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .section-head h2.is-split .word {
+    display: inline-block; opacity: 0; filter: blur(10px); transform: translateY(0.25em);
+    transition: opacity 0.7s var(--ease), filter 0.7s var(--ease), transform 0.7s var(--ease);
+    transition-delay: calc(var(--w, 0) * 70ms);
+  }
+  .section-head h2.is-split.is-in .word { opacity: 1; filter: blur(0); transform: none; }
+}
+@media (prefers-reduced-motion: reduce), (forced-colors: active) { .wipe { display: none; } }

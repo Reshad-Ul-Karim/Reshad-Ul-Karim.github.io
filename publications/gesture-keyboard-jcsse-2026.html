@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-v2 data-accent-default="teal">
 <head>
-    <script>(function(){try{var t=localStorage.getItem('theme'),a=localStorage.getItem('accent');if(t)document.documentElement.setAttribute('data-theme',t);if(a)document.documentElement.setAttribute('data-accent',a);}catch(e){}})();</script>
+    <script>(function(){try{var t=localStorage.getItem('theme'),a=localStorage.getItem('accent');document.documentElement.setAttribute('data-theme',t||'dark');document.documentElement.setAttribute('data-accent',a||'teal');}catch(e){}})();</script>
     <style>section[id]{scroll-margin-top:5rem}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -39,6 +39,11 @@
     <link rel="stylesheet" href="../modern-ui.css?v=1.0.0">
     <link rel="stylesheet" href="../multipage.css?v=1.0.0">
     <link rel="stylesheet" href="../assistant-widget.css?v=1.0.0">
+    <link rel="stylesheet" href="../tokens.css?v=1.0.0">
+    <link rel="stylesheet" href="../pages.css?v=1.0.0">
+    <link rel="stylesheet" href="../liquid-glass.css?v=1.0.0">
+    <script src="../liquid-glass.js?v=1.0.0" defer></script>
+    <script src="../bg-field.js?v=1.0.0" defer></script>
     <script src="../reveal-motion.js?v=1.1.0" defer></script>
     <script src="../morph-motion.js?v=1.0.0" defer></script>
     <script src="../accent-theme.js?v=1.0.0" defer></script>

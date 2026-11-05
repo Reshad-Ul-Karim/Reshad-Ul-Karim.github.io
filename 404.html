@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-v2 data-accent-default="teal">
 <head>
     <!-- PRE-PAINT theme+accent bootstrap — MUST be the first element in <head>, before any CSS,
          so the saved dark/light theme and accent are applied before first paint (no flash). -->
     <script>
     (function(){try{
       var t=localStorage.getItem('theme'), a=localStorage.getItem('accent');
-      if(t)document.documentElement.setAttribute('data-theme',t);
-      if(a)document.documentElement.setAttribute('data-accent',a);
+      document.documentElement.setAttribute('data-theme',t||'dark');
+      document.documentElement.setAttribute('data-accent',a||'teal');
     }catch(e){}})();
     </script>
 
@@ -45,6 +45,11 @@
     <link rel="stylesheet" href="projects-motion.css?v=1.0.0">
     <link rel="stylesheet" href="fixes.css?v=1.0.0">
     <link rel="stylesheet" href="modern-ui.css?v=1.0.0">
+    <link rel="stylesheet" href="tokens.css?v=1.0.0">
+    <link rel="stylesheet" href="pages.css?v=1.0.0">
+    <link rel="stylesheet" href="liquid-glass.css?v=1.0.0">
+    <script src="liquid-glass.js?v=1.0.0" defer></script>
+    <script src="bg-field.js?v=1.0.0" defer></script>
 
     <!-- Self-initializing motion modules (deferred). Dropped on subpages per plan §6:
          three-scene.js, section-three.js, scholar-citations.js, projects-motion.js (no grid), render.js. -->

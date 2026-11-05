@@ -1,0 +1,105 @@
+/* =========================================================================
+   liquid-glass.css: surfaces for elements tagged .lg by liquid-glass.js.
+   Translucent tint + rim light + cursor highlight everywhere; real edge
+   refraction with colour dispersion where the browser supports SVG filters
+   in backdrop-filter (Chromium). Text stays real DOM above the effect.
+   ========================================================================= */
+:root {
+  --lg-tint: rgba(255, 255, 255, 0.5);
+  --lg-tint-strong: rgba(255, 255, 255, 0.72);
+  --lg-rim: rgba(255, 255, 255, 0.85);
+  --lg-rim-soft: rgba(255, 255, 255, 0.25);
+  --lg-shadow: 0 12px 36px -16px rgba(16, 20, 24, 0.35);
+}
+html[data-theme="dark"] {
+  --lg-tint: rgba(28, 30, 34, 0.46);
+  --lg-tint-strong: rgba(24, 26, 30, 0.7);
+  --lg-rim: rgba(255, 255, 255, 0.42);
+  --lg-rim-soft: rgba(255, 255, 255, 0.08);
+  --lg-shadow: 0 16px 40px -18px rgba(0, 0, 0, 0.75);
+}
+
+.lg {
+  isolation: isolate;
+  background: var(--lg-tint) !important;
+  border-color: transparent !important;
+  box-shadow:
+    inset 0 1px 0 var(--lg-rim-soft),
+    inset 0 0 0 1px var(--lg-rim-soft),
+    var(--lg-shadow) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(170%);
+  backdrop-filter: blur(14px) saturate(170%);
+  transform-origin: 50% 50%;
+}
+/* Reading surfaces (cards with paragraphs) keep a stronger tint for contrast. */
+.lg:is(.tile, .cap, .tl__body, .project, .form, .culture__item, .xp-panel, .project-card, .publication-item, .detail-metric, .honor) { background: var(--lg-tint-strong) !important; }
+/* Refraction where supported: the filter bends + splits the backdrop at the rim. */
+html.lg-refract .lg.lg--refract {
+  -webkit-backdrop-filter: var(--lg-filter) saturate(165%) brightness(1.05);
+  backdrop-filter: var(--lg-filter) saturate(165%) brightness(1.05);
+}
+/* Rim light (gradient border) and a highlight that follows the cursor. */
+.lg > .lg-sheen {
+  position: absolute !important;
+  inset: 0;
+  z-index: 0 !important;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at var(--lx, 28%) var(--ly, 0%), rgba(255, 255, 255, 0.2), transparent 46%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 38%);
+  -webkit-mask: linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0);
+}
+.lg > .lg-sheen::after {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, var(--lg-rim), transparent 35%, transparent 65%, var(--lg-rim-soft));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+.lg > :where(:not(.lg-sheen)) { position: relative; z-index: 1; }
+/* Filled actions stay filled: glass rim on top of the accent fill. */
+.lg:is(.btn:not(.btn--ghost), .nav__cta, .btn-primary, .action-btn.primary, .xp-seg button[aria-pressed="true"]) { background: var(--btn-bg, var(--action-bg)) !important; }
+.site-header:not([data-surface="light"]) .lg.nav { background: rgba(var(--hero-rgb), 0.38) !important; }
+
+/* Glitch on press: a short RGB split with slice jitter. */
+@keyframes lg-glitch {
+  0% { filter: none; clip-path: inset(0); transform: translate(0); }
+  20% { filter: drop-shadow(2px 0 rgba(255, 40, 90, 0.75)) drop-shadow(-2px 0 rgba(0, 240, 220, 0.75)); clip-path: inset(12% 0 58% 0); transform: translate(-2px, 0); }
+  40% { clip-path: inset(56% 0 8% 0); transform: translate(2px, 0); }
+  60% { filter: drop-shadow(-1px 0 rgba(255, 40, 90, 0.6)) drop-shadow(1px 0 rgba(0, 240, 220, 0.6)); clip-path: inset(30% 0 36% 0); transform: translate(-1px, 0); }
+  100% { filter: none; clip-path: inset(0); transform: translate(0); }
+}
+.lg.lg-glitch { animation: lg-glitch 240ms steps(5, end) 1; }
+
+/* Hero name: a brief glitch on hover (decorative; the text stays selectable). */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .hero__title:hover .hero__title-accent { animation: name-glitch 420ms steps(6, end) 1; }
+}
+@keyframes name-glitch {
+  0%, 100% { text-shadow: none; transform: none; }
+  20% { text-shadow: 2px 0 rgba(255, 40, 90, 0.7), -2px 0 rgba(0, 240, 220, 0.7); transform: translateX(-1px); }
+  40% { text-shadow: -3px 0 rgba(255, 40, 90, 0.6), 3px 0 rgba(0, 240, 220, 0.6); transform: translateX(2px) skewX(-4deg); }
+  60% { text-shadow: 1px 0 rgba(255, 40, 90, 0.7), -1px 0 rgba(0, 240, 220, 0.7); transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lg.lg-glitch { animation: none; }
+}
+/* Reduced transparency / forced colours: solid surfaces, no refraction. */
+@media (prefers-reduced-transparency: reduce) {
+  .lg { background: var(--card, #16171a) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  .lg > .lg-sheen { display: none; }
+}
+@media (forced-colors: active) {
+  .lg { background: Canvas !important; border: 1px solid CanvasText !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; box-shadow: none !important; }
+  .lg > .lg-sheen { display: none; }
+}
+
+/* Lightweight 3D background field (bg-field.js) sits behind everything. */
+.bg-field { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; opacity: 0; transition: opacity 600ms ease; }
+.bg-field.is-on { opacity: 1; }

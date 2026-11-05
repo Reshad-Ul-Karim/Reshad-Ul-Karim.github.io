@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-v2 data-accent-default="teal">
 <head>
-    <script>(function(){try{var t=localStorage.getItem('theme'),a=localStorage.getItem('accent');if(t)document.documentElement.setAttribute('data-theme',t);if(a)document.documentElement.setAttribute('data-accent',a);}catch(e){}})();</script>
+    <script>(function(){try{var t=localStorage.getItem('theme'),a=localStorage.getItem('accent');document.documentElement.setAttribute('data-theme',t||'dark');document.documentElement.setAttribute('data-accent',a||'teal');}catch(e){}})();</script>
     <style>section[id]{scroll-margin-top:5rem}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -39,10 +39,17 @@
     <link rel="stylesheet" href="../modern-ui.css?v=1.0.0">
     <link rel="stylesheet" href="../multipage.css?v=1.0.0">
     <link rel="stylesheet" href="../assistant-widget.css?v=1.0.0">
+    <link rel="stylesheet" href="../demo-pane.css?v=1.0.0">
+    <link rel="stylesheet" href="../tokens.css?v=1.0.0">
+    <link rel="stylesheet" href="../pages.css?v=1.0.0">
+    <link rel="stylesheet" href="../liquid-glass.css?v=1.0.0">
+    <script src="../liquid-glass.js?v=1.0.0" defer></script>
+    <script src="../bg-field.js?v=1.0.0" defer></script>
     <script src="../reveal-motion.js?v=1.1.0" defer></script>
     <script src="../morph-motion.js?v=1.0.0" defer></script>
     <script src="../accent-theme.js?v=1.0.0" defer></script>
     <script src="../assistant-widget.js?v=1.0.0" defer></script>
+    <script type="module" src="../demo-pane.js?v=1.0.0"></script>
 </head><body>
     <div id="shell-chrome"></div>
     <script src="../site-shell.js?v=1.1.0"></script>
@@ -56,7 +63,22 @@
           <p class="detail-lead">A Vision Transformer framework with multimodal fusion of facial and behavioral signals for early, interpretable Autism Spectrum Disorder screening in toddlers.</p>
 
         </header>
-        <img class="detail-cover" src="../assets/images/project-cards/autism-card.png" alt="Vision Transformer-based autism spectrum disorder screening from facial and behavioral signals" loading="lazy" decoding="async">
+        <section class="xp" id="interactive-demo" data-demo="trace" aria-labelledby="xp-title">
+          <div class="xp-head">
+            <h2 class="xp-title" id="xp-title">Two signals, one screening</h2>
+            <span class="xp-kind">Research explainer</span>
+          </div>
+          <div class="xp-body">
+            <div class="xp-stage" data-xp-stage>
+              <img class="xp-poster" src="../assets/images/project-cards/autism-card.png" alt="Vision Transformer-based autism spectrum disorder screening from facial and behavioral signals" loading="lazy" decoding="async">
+              <button class="xp-start" type="button" data-xp-start>Explore demo</button>
+            </div>
+            <div class="xp-panel" data-xp-panel hidden></div>
+          </div>
+          <p class="xp-status" data-xp-status role="status" aria-live="polite"></p>
+          <p class="xp-note">Authored walk-through of the documented pipeline. It shows how the system works, not recorded results.</p>
+          <script type="application/json">{"scenarios": [{"label": "Fusion", "result": "A schematic of the screening framework.", "steps": [{"label": "Facial signals", "detail": "Facial cues from video.", "state": "ok"}, {"label": "Behavioural signals", "detail": "Behavioural cues alongside them.", "state": "ok"}, {"label": "Vision Transformer", "detail": "A ViT encodes the inputs.", "state": "ok"}, {"label": "Fusion", "detail": "The signals are fused for one screening estimate.", "state": "ok"}]}]}</script>
+        </section>
         <div class="detail-body">
           <section class="detail-section"><h2 class="detail-section-title">The idea</h2><div class="detail-prose"><p>Autism Spectrum Disorder screening today mostly depends on clinician-administered behavioral assessments, which are slow to access and unevenly available. This project builds a Vision Transformer (ViT) framework that fuses facial imaging with behavioral signal data into a single multimodal model, aiming at scalable, low-cost early screening for ASD in toddlers that could run outside a clinical setting.</p></div></section><section class="detail-section"><h2 class="detail-section-title">Status</h2><div class="detail-prose"><p>The goal is an interpretable, low-friction screening tool rather than a diagnostic replacement &mdash; explainability matters here because a false negative or an opaque prediction in a pediatric health context has real consequences. The work is ongoing and has been submitted for journal publication; method and result details are held back until the review process concludes.</p></div></section><section class="detail-section"><h2 class="detail-section-title">Tech stack &amp; key skills</h2><p class="detail-prose">Core tools, methods and skills demonstrated in this project:</p><div class="detail-tags"><span class="tech-tag">Vision Transformer (ViT)</span><span class="tech-tag">Multimodal fusion</span><span class="tech-tag">Facial imaging analysis</span><span class="tech-tag">Behavioral signal modeling</span><span class="tech-tag">Explainable / interpretable AI</span><span class="tech-tag">Early screening / healthcare AI</span></div></section><div class="detail-related"><a class="detail-back" href="index.html"><i class="fas fa-arrow-left"></i> Back to all projects</a></div>
         </div>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-v2 data-accent-default="teal">
 <head>
-    <script>(function(){try{var t=localStorage.getItem('theme'),a=localStorage.getItem('accent');if(t)document.documentElement.setAttribute('data-theme',t);if(a)document.documentElement.setAttribute('data-accent',a);}catch(e){}})();</script>
+    <script>(function(){try{var t=localStorage.getItem('theme'),a=localStorage.getItem('accent');document.documentElement.setAttribute('data-theme',t||'dark');document.documentElement.setAttribute('data-accent',a||'teal');}catch(e){}})();</script>
     <style>section[id]{scroll-margin-top:5rem}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -39,10 +39,17 @@
     <link rel="stylesheet" href="../modern-ui.css?v=1.0.0">
     <link rel="stylesheet" href="../multipage.css?v=1.0.0">
     <link rel="stylesheet" href="../assistant-widget.css?v=1.0.0">
+    <link rel="stylesheet" href="../demo-pane.css?v=1.0.0">
+    <link rel="stylesheet" href="../tokens.css?v=1.0.0">
+    <link rel="stylesheet" href="../pages.css?v=1.0.0">
+    <link rel="stylesheet" href="../liquid-glass.css?v=1.0.0">
+    <script src="../liquid-glass.js?v=1.0.0" defer></script>
+    <script src="../bg-field.js?v=1.0.0" defer></script>
     <script src="../reveal-motion.js?v=1.1.0" defer></script>
     <script src="../morph-motion.js?v=1.0.0" defer></script>
     <script src="../accent-theme.js?v=1.0.0" defer></script>
     <script src="../assistant-widget.js?v=1.0.0" defer></script>
+    <script type="module" src="../demo-pane.js?v=1.0.0"></script>
 </head><body>
     <div id="shell-chrome"></div>
     <script src="../site-shell.js?v=1.1.0"></script>
@@ -56,7 +63,22 @@
           <p class="detail-lead">An assistive vision-language agent for blind and low-vision users that runs on-device first, uses the cloud only when needed, and says so when it cannot tell.</p>
           
         </header>
-        <img class="detail-cover" src="../assets/images/project-cards/lumenaa.jpg" alt="Edge-native assistive vision agent" loading="lazy" decoding="async">
+        <section class="xp" id="interactive-demo" data-demo="trace" aria-labelledby="xp-title">
+          <div class="xp-head">
+            <h2 class="xp-title" id="xp-title">When should it speak?</h2>
+            <span class="xp-kind">Illustrative example</span>
+          </div>
+          <div class="xp-body">
+            <div class="xp-stage" data-xp-stage>
+              <img class="xp-poster" src="../assets/images/project-cards/lumenaa.jpg" alt="Edge-native assistive vision agent" loading="lazy" decoding="async">
+              <button class="xp-start" type="button" data-xp-start>Explore demo</button>
+            </div>
+            <div class="xp-panel" data-xp-panel hidden></div>
+          </div>
+          <p class="xp-status" data-xp-status role="status" aria-live="polite"></p>
+          <p class="xp-note">Authored walk-through of the documented pipeline. It shows how the system works, not recorded results.</p>
+          <script type="application/json">{"scenarios": [{"label": "Read a clear label", "result": "It answers on the device; the cloud model is not needed.", "steps": [{"label": "Safety rules", "detail": "Fixed safety rules run first and cannot be traded away.", "state": "ok"}, {"label": "Cheapest capable tool", "detail": "An on-device tool reads the text on the label.", "state": "ok"}, {"label": "Evidence check", "detail": "The tool is likely to be right on this photo, so the answer can be spoken.", "state": "ok"}, {"label": "Response", "detail": "It reads the label out.", "state": "ok"}]}, {"label": "Blocked view", "result": "It asks for a better view instead of guessing.", "steps": [{"label": "Safety rules", "detail": "Safety rules run first.", "state": "ok"}, {"label": "Cheapest capable tool", "detail": "On-device tools try the photo but cannot settle the question.", "state": "ok"}, {"label": "Evidence check", "detail": "The evidence is too weak for a confident answer.", "state": "ok"}, {"label": "Ask for a better photo", "detail": "Rather than guess, it asks the user to adjust the camera.", "state": "stop"}]}, {"label": "Where was it last seen?", "result": "It says where the item was last seen, or says plainly that it cannot tell.", "steps": [{"label": "Safety rules", "detail": "Safety rules run first.", "state": "ok"}, {"label": "Earlier sightings", "detail": "It checks where the item appeared in earlier photos.", "state": "ok"}, {"label": "Evidence check", "detail": "It only answers if that memory is reliable enough.", "state": "ok"}, {"label": "Response", "detail": "It reports the last place it saw the item.", "state": "ok"}]}]}</script>
+        </section>
         <div class="detail-body">
           <section class="detail-section"><h2 class="detail-section-title">Overview</h2><div class="detail-prose"><p>This is an assistive AI agent for blind and low-vision users. It describes what is in view, reads labels and text, and answers where things were last seen, and it says so plainly when it cannot tell — the kind of help that bears on independence and safety, not just convenience.</p></div></section><section class="detail-section"><h2 class="detail-section-title">The challenge</h2><div class="detail-prose"><p>Vision-language models make this possible, but two things block dependable real-world use. Running everything in the cloud is expensive, slow, and useless offline while a person is on the move. And these models sometimes state things confidently that aren't true — a wrong distance, a misnamed person — which a blind user has no easy way to catch.</p></div></section><section class="detail-section"><h2 class="detail-section-title">Approach</h2><div class="detail-prose"><p>The system is built around one idea: only say what the evidence supports. Before an answer is spoken, it estimates how likely each tool is to be right on this particular photo. Fixed safety rules run first and cannot be traded for cost, and the cheapest capable tool is tried first. An answer is released only when that estimate clears a threshold for the question's risk level; otherwise the assistant hedges, asks for a better view, or declines. Images are cropped and masked on the device before any cloud call, and people's names are replaced by aliases.</p></div></section><section class="detail-section"><h2 class="detail-section-title">Results</h2><div class="detail-prose"><p>On a benchmark of 3,000 questions from blind users' photos (with a sealed test split held back for the final analysis), reading what earlier tools said raised the cloud model's reliability estimate by 10.1 AUROC points, and the system predicts which questions cannot be answered at 0.80 AUROC. The honest finding is that on blind users' photos none of the tools is accurate enough for a formal error guarantee, so the assistant hedges or declines there; on street frames it certifies at a 10% error limit on 95 of 100 splits. It is a research prototype and has not yet been tested with blind users.</p></div></section><section class="detail-section"><h2 class="detail-section-title">By the numbers</h2><div class="detail-metrics"><div class="detail-metric"><span class="detail-metric-num">3000</span><span class="detail-metric-label">Blind-user questions in the benchmark</span></div><div class="detail-metric"><span class="detail-metric-num">1358</span><span class="detail-metric-label">Automated tests passing</span></div><div class="detail-metric"><span class="detail-metric-num">5 tools</span><span class="detail-metric-label">Tools compared on every question</span></div></div></section><section class="detail-section"><h2 class="detail-section-title">Tech stack &amp; key skills</h2><p class="detail-prose">Core tools, methods and skills demonstrated in this project:</p><div class="detail-tags"><span class="tech-tag">Agentic AI</span><span class="tech-tag">Vision-Language Models</span><span class="tech-tag">On-device / edge inference</span><span class="tech-tag">Calibrated risk control (Learn-then-Test)</span><span class="tech-tag">Cloud VLM / OCR integration (Mistral)</span><span class="tech-tag">Reproducible benchmark</span><span class="tech-tag">Anti-fabrication guardrails</span><span class="tech-tag">Python</span></div></section><div class="detail-related"><a class="detail-back" href="index.html"><i class="fas fa-arrow-left"></i> Back to all projects</a></div>
         </div>

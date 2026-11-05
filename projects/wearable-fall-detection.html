@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-v2 data-accent-default="teal">
 <head>
-    <script>(function(){try{var t=localStorage.getItem('theme'),a=localStorage.getItem('accent');if(t)document.documentElement.setAttribute('data-theme',t);if(a)document.documentElement.setAttribute('data-accent',a);}catch(e){}})();</script>
+    <script>(function(){try{var t=localStorage.getItem('theme'),a=localStorage.getItem('accent');document.documentElement.setAttribute('data-theme',t||'dark');document.documentElement.setAttribute('data-accent',a||'teal');}catch(e){}})();</script>
     <style>section[id]{scroll-margin-top:5rem}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -39,10 +39,17 @@
     <link rel="stylesheet" href="../modern-ui.css?v=1.0.0">
     <link rel="stylesheet" href="../multipage.css?v=1.0.0">
     <link rel="stylesheet" href="../assistant-widget.css?v=1.0.0">
+    <link rel="stylesheet" href="../demo-pane.css?v=1.0.0">
+    <link rel="stylesheet" href="../tokens.css?v=1.0.0">
+    <link rel="stylesheet" href="../pages.css?v=1.0.0">
+    <link rel="stylesheet" href="../liquid-glass.css?v=1.0.0">
+    <script src="../liquid-glass.js?v=1.0.0" defer></script>
+    <script src="../bg-field.js?v=1.0.0" defer></script>
     <script src="../reveal-motion.js?v=1.1.0" defer></script>
     <script src="../morph-motion.js?v=1.0.0" defer></script>
     <script src="../accent-theme.js?v=1.0.0" defer></script>
     <script src="../assistant-widget.js?v=1.0.0" defer></script>
+    <script type="module" src="../demo-pane.js?v=1.0.0"></script>
 </head><body>
     <div id="shell-chrome"></div>
     <script src="../site-shell.js?v=1.1.0"></script>
@@ -56,7 +63,22 @@
           <p class="detail-lead">A wearable that fuses vital-sign monitoring (temp, HR, SpO2, stress) with MPU6050 fall detection, GPS, and SMS/Wi-Fi alerts — 90% fall-detection accuracy.</p>
           <div class="detail-links"><button type="button" class="detail-link pdf-viewer-btn" data-pdf="../assets/papers/G6_S10 (1).pdf" data-title="Wearable Health Monitoring &amp; Fall Detection System"><i class="fas fa-file-pdf"></i> Slides / PDF</button></div>
         </header>
-        <img class="detail-cover" src="../assets/images/project-cards/wearable-fall-detect-elderly.jpg" alt="Arduino-based circuit schematic of the wearable health-monitoring and fall-detection device (sensors, GSM, GPS, power)" loading="lazy" decoding="async">
+        <section class="xp" id="interactive-demo" data-demo="trace" aria-labelledby="xp-title">
+          <div class="xp-head">
+            <h2 class="xp-title" id="xp-title">Fall or vital-sign alert</h2>
+            <span class="xp-kind">Illustrative example</span>
+          </div>
+          <div class="xp-body">
+            <div class="xp-stage" data-xp-stage>
+              <img class="xp-poster" src="../assets/images/project-cards/wearable-fall-detect-elderly.jpg" alt="Arduino-based circuit schematic of the wearable health-monitoring and fall-detection device (sensors, GSM, GPS, power)" loading="lazy" decoding="async">
+              <button class="xp-start" type="button" data-xp-start>Explore demo</button>
+            </div>
+            <div class="xp-panel" data-xp-panel hidden></div>
+          </div>
+          <p class="xp-status" data-xp-status role="status" aria-live="polite"></p>
+          <p class="xp-note">Authored walk-through of the documented pipeline. It shows how the system works, not recorded results.</p>
+          <script type="application/json">{"scenarios": [{"label": "Fall", "result": "An alert with location goes out without the wearer pressing anything.", "steps": [{"label": "Monitoring", "detail": "The wearable tracks movement with an MPU6050 motion sensor.", "state": "ok"}, {"label": "Fall pattern", "detail": "A sudden movement and impact match a fall.", "state": "ok"}, {"label": "Locate", "detail": "GPS adds the wearer's position.", "state": "ok"}, {"label": "Alert", "detail": "An emergency alert goes out by SMS and Wi-Fi.", "state": "ok"}]}, {"label": "Vital signs", "result": "Abnormal readings raise an alert in real time.", "steps": [{"label": "Monitoring", "detail": "Temperature, heart rate, SpO2 and stress are tracked continuously.", "state": "ok"}, {"label": "Out of range", "detail": "A reading crosses its safe threshold.", "state": "ok"}, {"label": "Alert", "detail": "Caregivers are notified in real time.", "state": "ok"}]}]}</script>
+        </section>
         <div class="detail-body">
           <section class="detail-section"><h2 class="detail-section-title">Overview</h2><div class="detail-prose"><p>About one in four adults over 65 falls each year, and most falls go unreported to a healthcare provider. Existing monitors are either fixed in place or need the user to press a button, which fails exactly when someone is incapacitated &mdash; and prolonged immobility after a fall ('long lies') is independently linked to hypothermia and higher mortality. This CSE360 team project (Reshad Ul Karim, Syeda Maliha Tabassum, Sammam Mahdi, Abrar Samin) builds a single wearable that continuously tracks vital signs and detects falls, then alerts both locally and remotely with no manual step required.</p></div></section><section class="detail-section"><h2 class="detail-section-title">Approach</h2><div class="detail-prose"><p>A dual-Arduino master&ndash;slave split (Nano as master, Uno as slave) was the fix for a real constraint discovered during the build &mdash; a single Nano ran out of memory once sensors, GPS, GSM and a display were all wired in, so the Uno was carved off to own the OLED over I&sup2;C while the Nano handles sensing and communication. Four sensors feed it: LM35 (temperature), MAX30102 (heart rate/SpO2), a GSR sensor (skin-conductance stress), and an MPU6050 accelerometer/gyroscope for motion. Fall detection runs as a small state machine &mdash; IDLE &rarr; DESCENT &rarr; IMPACT &rarr; POST_IMPACT &mdash; that only confirms a fall after a sharp downward velocity, a high-g impact spike, and a period of post-impact stillness, which is what keeps a fast sit-down or a jump from tripping a false alarm. Confirmed falls and vital-sign anomalies trigger a buzzer/LED locally and an SMS with live GPS coordinates via a SIM800L module remotely, alongside a Wi-Fi JSON feed to a local server.</p></div></section><section class="detail-section"><h2 class="detail-section-title">Results &amp; engineering</h2><div class="detail-prose"><p>In simulated trials the system caught 45 of 50 falls (90% accuracy), with sensor error within clinically acceptable margins &mdash; temperature &plusmn;0.5&deg;C, SpO2 &plusmn;2%, heart rate &plusmn;3 bpm. SMS alerts landed within 5&ndash;7 seconds of trigger, and GPS acquired a satellite lock in 35&ndash;60 seconds outdoors, accurate to 3&ndash;5 m (indoor lock was unreliable, a known limit of low-cost GPS receivers). Getting there meant solving real integration problems along the way: GSM and GPS sharing one supply caused voltage instability until a buck converter regulated it, the Nano's single hardware UART couldn't serve GPS and GSM at once until SoftwareSerial/AltSoftSerial split the load, and I&sup2;C address clashes were resolved by giving the OLED its own dedicated slave MCU. Built for about 5,800 BDT in components.</p></div></section><section class="detail-section"><h2 class="detail-section-title">By the numbers</h2><div class="detail-metrics"><div class="detail-metric"><span class="detail-metric-num">90%</span><span class="detail-metric-label">Fall Detection Accuracy</span></div></div></section><section class="detail-section"><h2 class="detail-section-title">Highlights</h2><ul class="detail-prose"><li>Elderly Care</li><li>Real-time Alerts</li><li>Multi-sensor Fusion</li></ul></section><section class="detail-section"><h2 class="detail-section-title">Tech stack &amp; key skills</h2><p class="detail-prose">Core tools, methods and skills demonstrated in this project:</p><div class="detail-tags"><span class="tech-tag">Arduino / Embedded C</span><span class="tech-tag">IoT sensors (MPU6050)</span><span class="tech-tag">GPS / GSM</span><span class="tech-tag">Sensor fusion</span><span class="tech-tag">Fall detection</span><span class="tech-tag">Real-time SMS/Wi-Fi alerts</span></div></section><div class="detail-related"><a class="detail-back" href="index.html"><i class="fas fa-arrow-left"></i> Back to all projects</a></div>
         </div>

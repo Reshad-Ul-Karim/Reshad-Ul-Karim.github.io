@@ -324,6 +324,61 @@
   var year = doc.querySelector('[data-year]');
   if (year) year.textContent = String(new Date().getFullYear());
 
+  /* ---- 10b. Sharp chapter transitions (Trionn-style stripe wipes) -------
+         A band of stripes at the top of each chapter grows and retracts with
+         scroll progress, staggered, so the boundary reads as a crisp wipe.
+         Driven by one scroll value per band, so it reverses on the way up. */
+  if (!reduceMQ.matches && 'IntersectionObserver' in window) {
+    var wipes = [];
+    ['about', 'experience', 'projects', 'awards', 'contact'].forEach(function (id) {
+      var sec = doc.getElementById(id);
+      if (!sec) return;
+      var w = doc.createElement('div');
+      w.className = 'wipe'; w.setAttribute('aria-hidden', 'true');
+      for (var i = 0; i < 9; i++) { var st = doc.createElement('span'); st.style.setProperty('--i', String(i)); w.appendChild(st); }
+      sec.insertBefore(w, sec.firstChild);
+      wipes.push({ el: w, bars: w.children, on: false });
+    });
+    var wipeIO = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { wipes.forEach(function (w) { if (w.el === e.target) w.on = e.isIntersecting; }); });
+      paintWipes();
+    });
+    wipes.forEach(function (w) { wipeIO.observe(w.el); });
+    var wipeTick = false;
+    var paintWipes = function () {
+      wipeTick = false;
+      var vh = window.innerHeight;
+      wipes.forEach(function (w) {
+        if (!w.on) return;
+        var r = w.el.getBoundingClientRect();
+        var p = Math.min(1, Math.max(0, (vh - r.top) / (vh + r.height)));
+        for (var i = 0; i < w.bars.length; i++) {
+          var local = Math.min(1, Math.max(0, (p - 0.08 - i * 0.032) / 0.42));
+          w.bars[i].style.transform = 'scaleY(' + Math.sin(Math.PI * local).toFixed(3) + ')';
+          w.bars[i].style.transformOrigin = local < 0.5 ? '50% 0' : '50% 100%';
+        }
+      });
+    };
+    window.addEventListener('scroll', function () { if (!wipeTick) { wipeTick = true; requestAnimationFrame(paintWipes); } }, { passive: true });
+    paintWipes();
+
+    /* Section headings come into focus word by word as they enter. */
+    var heads = doc.querySelectorAll('.section-head h2');
+    Array.prototype.forEach.call(heads, function (h) {
+      var words = h.textContent.trim().split(/\s+/);
+      h.textContent = '';
+      words.forEach(function (wd, i) {
+        var s = doc.createElement('span'); s.className = 'word'; s.style.setProperty('--w', String(i));
+        s.textContent = wd; h.appendChild(s); if (i < words.length - 1) h.appendChild(doc.createTextNode(' '));
+      });
+      h.classList.add('is-split');
+    });
+    var headIO = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('is-in'); headIO.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -12% 0px' });
+    Array.prototype.forEach.call(heads, function (h) { headIO.observe(h); });
+  }
+
   /* ---- 11. Theme toggle: same control and key as script.js on the other
          pages (localStorage 'theme' -> html[data-theme]). This page defaults
          to dark grey when nothing is saved; the pre-paint script in <head>

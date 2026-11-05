@@ -97,11 +97,11 @@
         '        <div class="nav-menu" id="nav-menu">',
         '            ' + navLinksHtml,
         '        </div>',
-        '        <div class="hamburger" id="hamburger">',
+        '        <button class="hamburger" id="hamburger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav-menu">',
         '            <span></span>',
         '            <span></span>',
         '            <span></span>',
-        '        </div>',
+        '        </button>',
         '    </div>',
         '</nav>'
     ].join('\n');
@@ -241,4 +241,17 @@
             fill('shell-footer', FOOTER_HTML);
         });
     }
+
+    // Accessible menu state for the hamburger button (script.js toggles .active).
+    (function () {
+        var btn = document.getElementById('hamburger');
+        var menu = document.getElementById('nav-menu');
+        if (!btn || !menu || !window.MutationObserver) return;
+        var sync = function () { btn.setAttribute('aria-expanded', menu.classList.contains('active') ? 'true' : 'false'); };
+        new MutationObserver(sync).observe(menu, { attributes: true, attributeFilter: ['class'] });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && menu.classList.contains('active')) { btn.click(); btn.focus(); }
+        });
+        sync();
+    })();
 })();

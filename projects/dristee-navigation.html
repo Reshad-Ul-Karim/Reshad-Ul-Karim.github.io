@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-v2 data-accent-default="teal">
 <head>
-    <script>(function(){try{var t=localStorage.getItem('theme'),a=localStorage.getItem('accent');if(t)document.documentElement.setAttribute('data-theme',t);if(a)document.documentElement.setAttribute('data-accent',a);}catch(e){}})();</script>
+    <script>(function(){try{var t=localStorage.getItem('theme'),a=localStorage.getItem('accent');document.documentElement.setAttribute('data-theme',t||'dark');document.documentElement.setAttribute('data-accent',a||'teal');}catch(e){}})();</script>
     <style>section[id]{scroll-margin-top:5rem}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -39,10 +39,17 @@
     <link rel="stylesheet" href="../modern-ui.css?v=1.0.0">
     <link rel="stylesheet" href="../multipage.css?v=1.0.0">
     <link rel="stylesheet" href="../assistant-widget.css?v=1.0.0">
+    <link rel="stylesheet" href="../demo-pane.css?v=1.0.0">
+    <link rel="stylesheet" href="../tokens.css?v=1.0.0">
+    <link rel="stylesheet" href="../pages.css?v=1.0.0">
+    <link rel="stylesheet" href="../liquid-glass.css?v=1.0.0">
+    <script src="../liquid-glass.js?v=1.0.0" defer></script>
+    <script src="../bg-field.js?v=1.0.0" defer></script>
     <script src="../reveal-motion.js?v=1.1.0" defer></script>
     <script src="../morph-motion.js?v=1.0.0" defer></script>
     <script src="../accent-theme.js?v=1.0.0" defer></script>
     <script src="../assistant-widget.js?v=1.0.0" defer></script>
+    <script type="module" src="../demo-pane.js?v=1.0.0"></script>
 </head><body>
     <div id="shell-chrome"></div>
     <script src="../site-shell.js?v=1.1.0"></script>
@@ -56,7 +63,22 @@
           <p class="detail-lead">DRISTEE: a real-time cloud-based navigation assistant for visually impaired users combining depth-aware mapping, object/face detection, and voice-command NLP.</p>
 
         </header>
-        <img class="detail-cover" src="../assets/images/project-cards/dristee-navigation.jpg" alt="DRISTEE — navigation assistant for the visually impaired" loading="lazy" decoding="async">
+        <section class="xp" id="interactive-demo" data-demo="trace" aria-labelledby="xp-title">
+          <div class="xp-head">
+            <h2 class="xp-title" id="xp-title">What is ahead?</h2>
+            <span class="xp-kind">Illustrative example</span>
+          </div>
+          <div class="xp-body">
+            <div class="xp-stage" data-xp-stage>
+              <img class="xp-poster" src="../assets/images/project-cards/dristee-navigation.jpg" alt="DRISTEE — navigation assistant for the visually impaired" loading="lazy" decoding="async">
+              <button class="xp-start" type="button" data-xp-start>Explore demo</button>
+            </div>
+            <div class="xp-panel" data-xp-panel hidden></div>
+          </div>
+          <p class="xp-status" data-xp-status role="status" aria-live="polite"></p>
+          <p class="xp-note">Authored walk-through of the documented pipeline. It shows how the system works, not recorded results.</p>
+          <script type="application/json">{"scenarios": [{"label": "Obstacle ahead", "result": "The user hears what is ahead and how far away it is.", "steps": [{"label": "Capture", "detail": "The camera frame is sent for cloud processing.", "state": "ok"}, {"label": "Object detection", "detail": "Objects in view are detected.", "state": "ok"}, {"label": "Depth-aware mapping", "detail": "Depth gives the distance and direction of each object.", "state": "ok"}, {"label": "Voice guidance", "detail": "The result is spoken back to the user.", "state": "ok"}]}, {"label": "Familiar face", "result": "The user is told who is nearby.", "steps": [{"label": "Capture", "detail": "A frame is captured.", "state": "ok"}, {"label": "Face recognition", "detail": "A known contact is recognised.", "state": "ok"}, {"label": "Voice guidance", "detail": "The name is spoken to the user.", "state": "ok"}]}, {"label": "Voice command", "result": "The spoken request is answered by the right module.", "steps": [{"label": "Listen", "detail": "The user asks a question out loud.", "state": "ok"}, {"label": "Voice-command NLP", "detail": "The request is understood and routed to the right module.", "state": "ok"}, {"label": "Answer", "detail": "The answer is spoken back.", "state": "ok"}]}]}</script>
+        </section>
         <div class="detail-body">
           <section class="detail-section"><h2 class="detail-section-title">The idea</h2><div class="detail-prose"><p>DRISTEE (Depth-aware Recognition and Intelligent Scene Translation for Enhanced Engagement) is a real-time, cloud-assisted navigation assistant for visually impaired users, built under BRAC University's Research Seed Grant Initiative 2025. It fuses depth-aware scene mapping, object detection and facial recognition with voice-command NLP in a modular architecture, aiming to give a user personalized, low-latency spatial awareness &mdash; what's ahead, how far, and who's nearby &mdash; through natural spoken interaction rather than a screen.</p></div></section><section class="detail-section"><h2 class="detail-section-title">Status</h2><div class="detail-prose"><p>The project is ongoing, spanning model integration, implementation, and academic writing, and the research has now been submitted for journal publication. Method and evaluation details are held back until the review process concludes.</p></div></section><section class="detail-section"><h2 class="detail-section-title">Tech stack &amp; key skills</h2><p class="detail-prose">Core tools, methods and skills demonstrated in this project:</p><div class="detail-tags"><span class="tech-tag">Computer vision</span><span class="tech-tag">Depth-aware scene mapping</span><span class="tech-tag">Facial recognition</span><span class="tech-tag">Voice-command NLP</span><span class="tech-tag">Cloud-assisted processing</span><span class="tech-tag">Modular system architecture</span></div></section><div class="detail-related"><a class="detail-back" href="index.html"><i class="fas fa-arrow-left"></i> Back to all projects</a></div>
         </div>

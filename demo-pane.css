@@ -99,3 +99,16 @@ html[data-accent="mono"][data-theme="dark"] .xp-seg button[aria-pressed="true"] 
 @media (forced-colors: active) {
   .xp-start, .xp-seg button[aria-pressed="true"] { border: 1px solid ButtonText; forced-color-adjust: auto; }
 }
+
+/* Step rail for demos/trace.js (the readable version of the 3D stage). */
+.xp-steps { margin: 0; padding: 0 0 0 1.6em; display: grid; gap: 6px; counter-reset: none; }
+.xp-steps li { padding: 8px 10px; border-radius: 12px; color: var(--text-secondary); line-height: 1.35; transition: background-color 0.18s ease, color 0.18s ease; }
+.xp-steps li::marker { font-weight: 700; color: var(--text-secondary); }
+.xp-steps li.is-done { color: var(--text-primary); }
+.xp-steps li.is-active { color: var(--text-primary); background: rgba(var(--accent-primary-rgb, 11, 93, 86), 0.14); font-weight: 600; }
+.xp-steps li.is-stop { color: var(--text-primary); background: rgba(216, 185, 139, 0.22); font-weight: 600; }
+.xp-steps li.is-active::marker, .xp-steps li.is-stop::marker { color: var(--primary-color); }
+html[data-v2] .xp-steps li { color: var(--ink-2); }
+html[data-v2] .xp-steps li:is(.is-done, .is-active, .is-stop) { color: var(--ink); }
+html[data-v2] .xp-steps li.is-active { background: rgba(var(--link-rgb), 0.16); }
+html[data-v2] .xp-steps li.is-stop { background: rgba(var(--decor-rgb), 0.22); }

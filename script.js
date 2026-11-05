@@ -635,7 +635,8 @@ function initThemeToggle() {
     // Check for saved theme preference or system preference
     const savedTheme = localStorage.getItem('theme');
     const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+    // A page can set its default before paint (html[data-theme]); dark grey is the site default.
+    const initialTheme = savedTheme || document.documentElement.getAttribute('data-theme') || (systemPrefersDark ? 'dark' : 'light');
     
     document.documentElement.setAttribute('data-theme', initialTheme);
     updateThemeIcon(themeToggle, initialTheme);

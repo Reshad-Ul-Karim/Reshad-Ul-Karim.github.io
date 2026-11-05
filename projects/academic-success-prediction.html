@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-v2 data-accent-default="teal">
 <head>
-    <script>(function(){try{var t=localStorage.getItem('theme'),a=localStorage.getItem('accent');if(t)document.documentElement.setAttribute('data-theme',t);if(a)document.documentElement.setAttribute('data-accent',a);}catch(e){}})();</script>
+    <script>(function(){try{var t=localStorage.getItem('theme'),a=localStorage.getItem('accent');document.documentElement.setAttribute('data-theme',t||'dark');document.documentElement.setAttribute('data-accent',a||'teal');}catch(e){}})();</script>
     <style>section[id]{scroll-margin-top:5rem}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -39,10 +39,17 @@
     <link rel="stylesheet" href="../modern-ui.css?v=1.0.0">
     <link rel="stylesheet" href="../multipage.css?v=1.0.0">
     <link rel="stylesheet" href="../assistant-widget.css?v=1.0.0">
+    <link rel="stylesheet" href="../demo-pane.css?v=1.0.0">
+    <link rel="stylesheet" href="../tokens.css?v=1.0.0">
+    <link rel="stylesheet" href="../pages.css?v=1.0.0">
+    <link rel="stylesheet" href="../liquid-glass.css?v=1.0.0">
+    <script src="../liquid-glass.js?v=1.0.0" defer></script>
+    <script src="../bg-field.js?v=1.0.0" defer></script>
     <script src="../reveal-motion.js?v=1.1.0" defer></script>
     <script src="../morph-motion.js?v=1.0.0" defer></script>
     <script src="../accent-theme.js?v=1.0.0" defer></script>
     <script src="../assistant-widget.js?v=1.0.0" defer></script>
+    <script type="module" src="../demo-pane.js?v=1.0.0"></script>
 </head><body>
     <div id="shell-chrome"></div>
     <script src="../site-shell.js?v=1.1.0"></script>
@@ -56,7 +63,22 @@
           <p class="detail-lead">Academic-success prediction (Graduate/Dropout/Enrolled) from 24 student features, comparing 6 ML models (RF/XGBoost best, ~63%) — CSE422 AI project.</p>
           <div class="detail-links"><button type="button" class="detail-link pdf-viewer-btn" data-pdf="../assets/papers/Group19-CSE422.pdf" data-title="Academic Success Prediction Model"><i class="fas fa-file-pdf"></i> Slides / PDF</button></div>
         </header>
-        <img class="detail-cover" src="../assets/images/project-cards/academic-success-prediction.jpg" alt="Academic success prediction — student outcome dashboard" loading="lazy" decoding="async">
+        <section class="xp" id="interactive-demo" data-demo="trace" aria-labelledby="xp-title">
+          <div class="xp-head">
+            <h2 class="xp-title" id="xp-title">Who might need support?</h2>
+            <span class="xp-kind">Research explainer</span>
+          </div>
+          <div class="xp-body">
+            <div class="xp-stage" data-xp-stage>
+              <img class="xp-poster" src="../assets/images/project-cards/academic-success-prediction.jpg" alt="Academic success prediction — student outcome dashboard" loading="lazy" decoding="async">
+              <button class="xp-start" type="button" data-xp-start>Explore demo</button>
+            </div>
+            <div class="xp-panel" data-xp-panel hidden></div>
+          </div>
+          <p class="xp-status" data-xp-status role="status" aria-live="polite"></p>
+          <p class="xp-note">Authored walk-through of the documented pipeline. It shows how the system works, not recorded results.</p>
+          <script type="application/json">{"scenarios": [{"label": "Predict an outcome", "result": "Graduate, Dropout or Enrolled, predicted early enough to help.", "steps": [{"label": "24 features", "detail": "Socio-economic, demographic and academic data for 4,424 students.", "state": "ok"}, {"label": "Prepare", "detail": "Clean, encode and scale the features.", "state": "ok"}, {"label": "Compare models", "detail": "Six classifiers, including a Keras neural network and Random Forest, are trained head to head.", "state": "ok"}, {"label": "Predict", "detail": "Each student is classed as Graduate, Dropout or Enrolled.", "state": "ok"}]}]}</script>
+        </section>
         <div class="detail-body">
           <section class="detail-section"><h2 class="detail-section-title">Overview</h2><div class="detail-prose"><p>A machine-learning study that predicts student academic outcomes — Graduate, Dropout, or Enrolled — from 24 socio-economic, demographic and academic features, so institutions can spot at-risk students early and target support. Built for CSE422 (Artificial Intelligence) on a 4,424-student dataset.</p></div></section><section class="detail-section"><h2 class="detail-section-title">Approach</h2><div class="detail-prose"><p>After cleaning, encoding and scaling the features (with EDA on correlations, outliers and class balance), six classifiers are trained and compared head-to-head — a Keras neural network, Random Forest, XGBoost, K-Nearest Neighbours, Decision Tree and Logistic Regression — each evaluated with accuracy, precision/recall/F1, confusion matrices and ROC/AUC.</p></div></section><section class="detail-section"><h2 class="detail-section-title">Results</h2><div class="detail-prose"><p>The ensemble methods came out on top — Random Forest and XGBoost at ~63% accuracy, with the neural network close behind (~62%) — on a genuinely hard three-class problem with class imbalance. The head-to-head comparison highlights where feature engineering and ensembling help most, and where minority-class prediction still struggles.</p></div></section><section class="detail-section"><h2 class="detail-section-title">By the numbers</h2><div class="detail-metrics"><div class="detail-metric"><span class="detail-metric-num">63%</span><span class="detail-metric-label">Best accuracy (RF / XGBoost)</span></div><div class="detail-metric"><span class="detail-metric-num">6</span><span class="detail-metric-label">Models compared</span></div><div class="detail-metric"><span class="detail-metric-num">24</span><span class="detail-metric-label">Features · 4,424 students</span></div></div></section><section class="detail-section"><h2 class="detail-section-title">Tech stack &amp; key skills</h2><p class="detail-prose">Core tools, methods and skills demonstrated in this project:</p><div class="detail-tags"><span class="tech-tag">Python</span><span class="tech-tag">scikit-learn</span><span class="tech-tag">XGBoost</span><span class="tech-tag">TensorFlow / Keras</span><span class="tech-tag">Random Forest</span><span class="tech-tag">Feature engineering</span><span class="tech-tag">ROC / AUC evaluation</span><span class="tech-tag">pandas · seaborn</span></div></section><div class="detail-related"><a class="detail-back" href="index.html"><i class="fas fa-arrow-left"></i> Back to all projects</a></div>
         </div>

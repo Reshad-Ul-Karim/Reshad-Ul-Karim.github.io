@@ -36,7 +36,9 @@ function init(section) {
         import(ROOT + 'assets/vendor/three-home.min.js'),
         import(ROOT + 'demos/' + encodeURIComponent(name) + '.js')
       ]);
-      instance = mod.mount({ T, stage, panel, say, reducedMQ });
+      const cfgEl = section.querySelector('script[type="application/json"]');
+      const config = cfgEl ? JSON.parse(cfgEl.textContent) : null;
+      instance = mod.mount({ T, stage, panel, say, reducedMQ, section, config });
       section.dataset.state = 'ready';
       panel.hidden = false;
       const first = panel.querySelector('button, select, input');

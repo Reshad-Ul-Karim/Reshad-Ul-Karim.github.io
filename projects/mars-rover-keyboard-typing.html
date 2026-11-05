@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-v2 data-accent-default="teal">
 <head>
-    <script>(function(){try{var t=localStorage.getItem('theme'),a=localStorage.getItem('accent');if(t)document.documentElement.setAttribute('data-theme',t);if(a)document.documentElement.setAttribute('data-accent',a);}catch(e){}})();</script>
+    <script>(function(){try{var t=localStorage.getItem('theme'),a=localStorage.getItem('accent');document.documentElement.setAttribute('data-theme',t||'dark');document.documentElement.setAttribute('data-accent',a||'teal');}catch(e){}})();</script>
     <style>section[id]{scroll-margin-top:5rem}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -39,10 +39,17 @@
     <link rel="stylesheet" href="../modern-ui.css?v=1.0.0">
     <link rel="stylesheet" href="../multipage.css?v=1.0.0">
     <link rel="stylesheet" href="../assistant-widget.css?v=1.0.0">
+    <link rel="stylesheet" href="../demo-pane.css?v=1.0.0">
+    <link rel="stylesheet" href="../tokens.css?v=1.0.0">
+    <link rel="stylesheet" href="../pages.css?v=1.0.0">
+    <link rel="stylesheet" href="../liquid-glass.css?v=1.0.0">
+    <script src="../liquid-glass.js?v=1.0.0" defer></script>
+    <script src="../bg-field.js?v=1.0.0" defer></script>
     <script src="../reveal-motion.js?v=1.1.0" defer></script>
     <script src="../morph-motion.js?v=1.0.0" defer></script>
     <script src="../accent-theme.js?v=1.0.0" defer></script>
     <script src="../assistant-widget.js?v=1.0.0" defer></script>
+    <script type="module" src="../demo-pane.js?v=1.0.0"></script>
 </head><body>
     <div id="shell-chrome"></div>
     <script src="../site-shell.js?v=1.1.0"></script>
@@ -56,6 +63,22 @@
           <p class="detail-lead">Vision-guided autonomous keyboard typing for Mars Rover missions: YOLOv8 detection with PaddleOCR key recognition, up to 30% faster on-rover inference.</p>
           <div class="detail-links"><a class="detail-link" href="https://github.com/Reshad-Ul-Karim/Autonomous-Keyboard-typing-test" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> Source code</a><button type="button" class="detail-link youtube-modal-btn" data-video-id="vdP5qrJQqGc"><i class="fab fa-youtube"></i> Watch demo</button></div>
         </header>
+        <section class="xp" id="interactive-demo" data-demo="trace" aria-labelledby="xp-title">
+          <div class="xp-head">
+            <h2 class="xp-title" id="xp-title">From camera to keypress</h2>
+            <span class="xp-kind">Illustrative example</span>
+          </div>
+          <div class="xp-body">
+            <div class="xp-stage" data-xp-stage>
+              
+              <button class="xp-start" type="button" data-xp-start>Explore demo</button>
+            </div>
+            <div class="xp-panel" data-xp-panel hidden></div>
+          </div>
+          <p class="xp-status" data-xp-status role="status" aria-live="polite"></p>
+          <p class="xp-note">Authored walk-through of the documented pipeline. It shows how the system works, not recorded results.</p>
+          <script type="application/json">{"scenarios": [{"label": "Type one key", "result": "The rover's arm presses the right key without a human aiming the camera.", "steps": [{"label": "Camera frame", "detail": "The rover's onboard camera sees the keyboard.", "state": "ok"}, {"label": "Keyboard detection", "detail": "A YOLOv8 model finds the keyboard in real time.", "state": "ok"}, {"label": "Key recognition", "detail": "PaddleOCR reads the key labels.", "state": "ok"}, {"label": "Angle mapping", "detail": "The chosen key is mapped to arm angles.", "state": "ok"}, {"label": "Keypress", "detail": "The arm presses the key.", "state": "ok"}]}, {"label": "Unreadable key", "result": "With no confident read, no keypress is sent.", "steps": [{"label": "Camera frame", "detail": "Glare hides part of the keyboard.", "state": "ok"}, {"label": "Keyboard detection", "detail": "The keyboard is still found.", "state": "ok"}, {"label": "Key recognition", "detail": "The target key cannot be read reliably, so the sequence stops here.", "state": "stop"}]}]}</script>
+        </section>
         
         <div class="detail-body">
           <section class="detail-section"><h2 class="detail-section-title">Overview</h2><div class="detail-prose"><p>Part of the BRACU Mongol-Tori Mars Rover team's vision-guided autonomy work, this prototype lets the rover's onboard vision system find and read a physical keyboard so commands can be entered without a human aiming a camera by hand &mdash; a small piece of the same object-detection and autonomous-vision pipeline that improved the rover's on-board inference performance by up to 30% for the University Rover Challenge.</p></div></section><section class="detail-section"><h2 class="detail-section-title">Approach</h2><div class="detail-prose"><p>A YOLOv8 model handles real-time keyboard detection in the camera frame, and PaddleOCR reads the individual keys once the keyboard region is localized, so the system knows both where a key is and what it says. Detected key positions are angle-mapped to the rover arm's reference frame so a keypress can be executed as a physical motion rather than just a bounding box.</p></div></section><section class="detail-section"><h2 class="detail-section-title">By the numbers</h2><div class="detail-metrics"><div class="detail-metric"><span class="detail-metric-num">30%</span><span class="detail-metric-label">Faster On-Rover Inference</span></div></div></section><section class="detail-section"><h2 class="detail-section-title">Highlights</h2><ul class="detail-prose"><li>Real-time Detection</li><li>Angle Mapping</li><li>Rover Integration</li></ul></section><section class="detail-section"><h2 class="detail-section-title">Tech stack &amp; key skills</h2><p class="detail-prose">Core tools, methods and skills demonstrated in this project:</p><div class="detail-tags"><span class="tech-tag">Python</span><span class="tech-tag">YOLOv8</span><span class="tech-tag">PaddleOCR</span><span class="tech-tag">Computer vision</span><span class="tech-tag">Real-time inference</span><span class="tech-tag">Vision-guided autonomy</span></div></section><div class="detail-related"><a class="detail-back" href="index.html"><i class="fas fa-arrow-left"></i> Back to all projects</a></div>

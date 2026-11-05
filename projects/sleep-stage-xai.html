@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-v2 data-accent-default="teal">
 <head>
-    <script>(function(){try{var t=localStorage.getItem('theme'),a=localStorage.getItem('accent');if(t)document.documentElement.setAttribute('data-theme',t);if(a)document.documentElement.setAttribute('data-accent',a);}catch(e){}})();</script>
+    <script>(function(){try{var t=localStorage.getItem('theme'),a=localStorage.getItem('accent');document.documentElement.setAttribute('data-theme',t||'dark');document.documentElement.setAttribute('data-accent',a||'teal');}catch(e){}})();</script>
     <style>section[id]{scroll-margin-top:5rem}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -39,10 +39,17 @@
     <link rel="stylesheet" href="../modern-ui.css?v=1.0.0">
     <link rel="stylesheet" href="../multipage.css?v=1.0.0">
     <link rel="stylesheet" href="../assistant-widget.css?v=1.0.0">
+    <link rel="stylesheet" href="../demo-pane.css?v=1.0.0">
+    <link rel="stylesheet" href="../tokens.css?v=1.0.0">
+    <link rel="stylesheet" href="../pages.css?v=1.0.0">
+    <link rel="stylesheet" href="../liquid-glass.css?v=1.0.0">
+    <script src="../liquid-glass.js?v=1.0.0" defer></script>
+    <script src="../bg-field.js?v=1.0.0" defer></script>
     <script src="../reveal-motion.js?v=1.1.0" defer></script>
     <script src="../morph-motion.js?v=1.0.0" defer></script>
     <script src="../accent-theme.js?v=1.0.0" defer></script>
     <script src="../assistant-widget.js?v=1.0.0" defer></script>
+    <script type="module" src="../demo-pane.js?v=1.0.0"></script>
 </head><body>
     <div id="shell-chrome"></div>
     <script src="../site-shell.js?v=1.1.0"></script>
@@ -56,7 +63,22 @@
           <p class="detail-lead">Explainable AI for PPG-based four-stage sleep classification, with SHAP/LIME interpretability and ensemble methods. IEEE-published.</p>
           <div class="detail-links"><a class="detail-link" href="https://github.com/Reshad-Ul-Karim/Sleep-Detection/tree/main/Code" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> Source code</a><a class="detail-link" href="https://ieeexplore.ieee.org/document/10898858/" target="_blank" rel="noopener noreferrer"><i class="fas fa-file-alt"></i> Paper</a></div>
         </header>
-        <img class="detail-cover" src="../assets/images/project-cards/sleep-card.webp" alt="Explainable AI sleep stage classification from photoplethysmography signals" loading="lazy" decoding="async">
+        <section class="xp" id="interactive-demo" data-demo="trace" aria-labelledby="xp-title">
+          <div class="xp-head">
+            <h2 class="xp-title" id="xp-title">One sensor, four stages</h2>
+            <span class="xp-kind">Research explainer</span>
+          </div>
+          <div class="xp-body">
+            <div class="xp-stage" data-xp-stage>
+              <img class="xp-poster" src="../assets/images/project-cards/sleep-card.webp" alt="Explainable AI sleep stage classification from photoplethysmography signals" loading="lazy" decoding="async">
+              <button class="xp-start" type="button" data-xp-start>Explore demo</button>
+            </div>
+            <div class="xp-panel" data-xp-panel hidden></div>
+          </div>
+          <p class="xp-status" data-xp-status role="status" aria-live="polite"></p>
+          <p class="xp-note">Authored walk-through of the documented pipeline. It shows how the system works, not recorded results.</p>
+          <script type="application/json">{"scenarios": [{"label": "Stage one epoch", "result": "A low-cost PPG sensor separates Wake, Light, Deep and REM sleep, with reasons.", "steps": [{"label": "PPG signal", "detail": "A single photoplethysmography sensor, like the one in a fitness wearable.", "state": "ok"}, {"label": "Features", "detail": "Signal features are extracted from each epoch.", "state": "ok"}, {"label": "Explainable model", "detail": "Explainable AI shows which features matter.", "state": "ok"}, {"label": "Sleep stage", "detail": "The epoch is classified as Wake, Light, Deep or REM.", "state": "ok"}]}]}</script>
+        </section>
         <div class="detail-body">
           <section class="detail-section"><h2 class="detail-section-title">Overview</h2><div class="detail-prose"><p>Full sleep staging normally means an overnight polysomnography (PSG) test &mdash; EEG, EOG, EMG, heart rate and breathing all recorded in a lab, accurate but expensive, single-night-only, and impractical to repeat (roughly 93.6% of sleep centers had to shift to telemedicine during COVID). This IEEE ICEACE 2024 work &mdash; published as two papers, a baseline study and this explainable-AI follow-up &mdash; tests whether a single low-cost photoplethysmography (PPG) sensor, the kind already in a fitness wearable, can classify sleep into four stages (Wake, Light, Deep, REM) well enough to be a practical at-home alternative.</p></div></section><section class="detail-section"><h2 class="detail-section-title">Approach</h2><div class="detail-prose"><p>Using PPG and polysomnography recordings from 10 patients with sleep-disordered breathing (Charit&eacute; Hospital, Berlin), the pipeline segments overnight signal into 9,428 thirty-second epochs, engineers 84 PPG-derived features and statistically prunes them to 72, then trains four classifiers &mdash; SVM, Random Forest, XGBoost and CatBoost. Explainable AI is applied not just for interpretability but as a feature-selection step: built-in feature importance for the tree ensembles and permutation importance for SVM rank every feature, and each model is retrained on only its own top-ranked subset.</p></div></section><section class="detail-section"><h2 class="detail-section-title">Results</h2><div class="detail-prose"><p>The XAI-pruned models beat their full-feature counterparts on every metric while using far fewer features: CatBoost reached 75.54% accuracy (F1 0.75, Cohen's &kappa; 0.59) with only 42 of the original 72 features, and XGBoost reached the best overall accuracy at 75.93% with 56 features. Both beat the best prior single-sensor PPG baseline evaluated on the same 10-subject dataset (Motin et al., 2023, ~70&ndash;72%). The finding: cutting model complexity nearly in half didn't cost accuracy &mdash; it improved it, because the XAI-selected features were carrying the real signal.</p></div></section><section class="detail-section"><h2 class="detail-section-title">Highlights</h2><ul class="detail-prose"><li>IEEE Published</li><li>Explainable AI</li><li>Healthcare</li></ul></section><section class="detail-section"><h2 class="detail-section-title">Tech stack &amp; key skills</h2><p class="detail-prose">Core tools, methods and skills demonstrated in this project:</p><div class="detail-tags"><span class="tech-tag">Python</span><span class="tech-tag">scikit-learn</span><span class="tech-tag">SHAP / LIME</span><span class="tech-tag">Explainable AI</span><span class="tech-tag">PPG signal processing</span><span class="tech-tag">Feature engineering</span><span class="tech-tag">Multi-class classification</span></div></section><div class="detail-related"><a class="detail-back" href="index.html"><i class="fas fa-arrow-left"></i> Back to all projects</a></div>
         </div>
