@@ -238,12 +238,20 @@
     var cls = strong ? 'lg-glitch' : 'lg-ripple';
     el.classList.remove('lg-glitch', 'lg-ripple'); void el.offsetWidth; el.classList.add(cls);
     var f = el.__lgFilter;
-    if (f && strong) {
-      var maps = f.el.querySelectorAll('feDisplacementMap');
-      Array.prototype.forEach.call(maps, function (m, i) { m.setAttribute('scale', String(f.strength * (1.7 - i * 0.2))); });
-      setTimeout(function () { Array.prototype.forEach.call(maps, function (m, i) { m.setAttribute('scale', String(f.strength * (1 - i * 0.12))); }); }, 320);
-    }
+    if (f && strong) lensPulse(f);
     setTimeout(function () { el.classList.remove(cls); }, strong ? 520 : 720);
+  }
+  // Press: the lens bends harder, then eases back (120 ms rise, 520 ms settle).
+  function lensPulse(f) {
+    var maps = f.el.querySelectorAll('feDisplacementMap');
+    var t0 = performance.now(); f.pulse = t0;
+    (function step(now) {
+      if (f.pulse !== t0) return; // a newer press took over
+      var t = now - t0;
+      var a = t < 120 ? 0.7 * (t / 120) : 0.7 * Math.pow(Math.max(0, 1 - (t - 120) / 520), 3);
+      Array.prototype.forEach.call(maps, function (m, i) { m.setAttribute('scale', (f.strength * (1 - i * 0.12) * (1 + a)).toFixed(2)); });
+      if (t < 640) requestAnimationFrame(step);
+    })(t0);
   }
   function settle(el) { el.style.removeProperty('--lx'); el.style.removeProperty('--ly'); }
   var lastHover = null;
@@ -304,18 +312,6 @@
       else afterReveal();
       title.addEventListener('pointerdown', function () { play(title, 'lg-name-glitch', 560); }, { passive: true });
     }
-  }
-
-  /* While the page scrolls, refracting glass falls back to plain blur: the SVG
-     displacement filter is re-run for every frame the backdrop moves, which
-     halves the frame rate. Refraction returns as soon as scrolling settles. */
-  if (canRefract) {
-    var scrollT = 0;
-    window.addEventListener('scroll', function () {
-      if (!scrollT) root.classList.add('lg-scrolling');
-      clearTimeout(scrollT);
-      scrollT = setTimeout(function () { scrollT = 0; root.classList.remove('lg-scrolling'); }, 160);
-    }, { passive: true });
   }
 
   function start() {

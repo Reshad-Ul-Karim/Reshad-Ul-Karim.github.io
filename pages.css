@@ -25,8 +25,11 @@ html[data-v2] :is(.grain-overlay, .grain-svg, .custom-cursor, .cursor-dot, #part
 html[data-v2] body, html[data-v2] body * { cursor: auto; }
 html[data-v2] :is(a, button, [role="button"], summary, label[for]) { cursor: pointer !important; }
 
-/* ---- Navigation: floating glass capsule (site-shell.js markup) ---------- */
-html[data-v2] .navbar {
+/* ---- Navigation: floating glass capsule (site-shell.js markup) ----------
+   .scrolled is listed so the legacy dark scrolled bar (styles.css) never
+   paints behind the capsule: the glass must keep the page behind it. */
+html[data-v2] .navbar,
+html[data-v2] .navbar.scrolled {
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
