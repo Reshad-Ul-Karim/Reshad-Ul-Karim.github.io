@@ -810,5 +810,93 @@
     });
   };
 
+  /* Identifiability: one image, three worlds; a chosen motion separates them,
+     or the system abstains. Parallax: real depth shifts, a mirror shifts the
+     other way, a flat screen does not shift at all. */
+  S['scene-identifiability'] = function (k) {
+    var split = k.b(1); var move = k.b(2); var settle = k.only(3); var abst = k.b(4);
+    var names = ['real corridor', 'mirror', 'photo on a screen'];
+    var sway = Math.sin(k.t * 1.6) * move;
+    function corridor(x, y, w, h, shift, frame) {
+      k.glass(x, y, w, h, 20, { glow: frame, glowA: frame ? 0.6 : 0 });
+      var ix = x + w * 0.36 + shift; var iy = y + h * 0.34; var iw = w * 0.28; var ih = h * 0.32;
+      k.line([[ix, iy], [ix + iw, iy], [ix + iw, iy + ih], [ix, iy + ih]], { color: k.ink2, width: 1.5, close: true, alpha: 0.8 });
+      [[x + 12, y + 12, ix, iy], [x + w - 12, y + 12, ix + iw, iy], [x + 12, y + h - 12, ix, iy + ih], [x + w - 12, y + h - 12, ix + iw, iy + ih]].forEach(function (q) {
+        k.line([[q[0], q[1]], [q[2], q[3]]], { color: k.ink2, width: 1.2, alpha: 0.55 });
+      });
+      for (var i = 1; i < 4; i++) { var u = i / 4; k.line([[k.lerp(x + 12, ix, u), k.lerp(y + h - 12, iy + ih, u)], [k.lerp(x + w - 12, ix + iw, u), k.lerp(y + h - 12, iy + ih, u)]], { color: k.ink2, width: 1, alpha: 0.3 }); }
+    }
+    // one shared image first, then three explanations of it
+    for (var i = 0; i < 3; i++) {
+      var w = k.lerp(330, 250, split); var h = k.lerp(250, 190, split);
+      var x = k.lerp(335, 70 + i * 300, split); var y = k.lerp(120, 150, split);
+      var shift = i === 0 ? sway * 18 : i === 1 ? -sway * 18 : 0;
+      var keep = i === 0 ? 1 : 1 - settle * 0.7;
+      var tied = abst * (i === 0 ? 0.55 : 1);
+      k.alpha((i === 0 ? 1 : split) * keep, function () {
+        corridor(x, y, w, h, shift, i === 0 && settle > 0.5 ? k.hl : (i > 0 && tied > 0.5 ? k.warn : null));
+        if (i === 2) k.line([[x + 6, y + 6], [x + w - 6, y + 6], [x + w - 6, y + h - 6], [x + 6, y + h - 6]], { color: k.ink, width: 3, close: true, alpha: split * 0.5 });
+        if (i === 1) k.line([[x + w / 2, y + 8], [x + w / 2, y + h - 8]], { color: k.cool, width: 1.5, dash: [4, 6], alpha: split * 0.6 });
+        k.text(names[i], x + w / 2, y + h + 26, { size: 14, weight: 600, color: k.ink2, align: 'center', alpha: split });
+      });
+    }
+    // candidate motions; the chosen one lights up
+    k.alpha(move * (1 - abst), function () {
+      var cx = 500; var cy = 470;
+      [-0.9, -0.3, 0.3, 0.9].forEach(function (a, j) {
+        var best = j === 2;
+        k.line([[cx, cy], [cx + Math.sin(a) * 120, cy + 40 - Math.cos(a) * 40]], { color: best ? k.hl : k.ink2, width: best ? 3 : 1.5, dash: best ? null : [5, 6], alpha: best ? 1 : 0.5 });
+      });
+      k.tile('camera', cx + sway * 30, cy, 54, { on: 0.6 + 0.4 * settle, label: 'chosen motion' });
+    });
+    k.alpha(settle, function () { k.tile('check', 195, 108, 44, { on: 1 }); });
+    k.bubble(640, 470, 300, 60, '“Can’t tell. Abstaining.”', { alpha: abst, color: k.warn });
+  };
+
+  /* Connectome reliability: connectivity -> models -> site-level validation ->
+     calibrated probabilities -> explanations that stay put across cohorts. */
+  S['connectome-autism-reliability'] = function (k) {
+    var models = k.b(1); var sites = k.b(2); var cal = k.b(3); var stab = k.b(4);
+    var cx = 210; var cy = 300; var R = 150; var n = 14; var r = k.rnd(7);
+    var pts = [];
+    for (var i = 0; i < n; i++) { var a = (i / n) * Math.PI * 2 - Math.PI / 2; pts.push([cx + Math.cos(a) * R, cy + Math.sin(a) * R * 0.82]); }
+    k.glass(40, 90, 340, 420, 30, {});
+    for (var e = 0; e < 30; e++) {
+      var p1 = pts[Math.floor(r() * n)]; var p2 = pts[Math.floor(r() * n)]; var wgt = r();
+      k.line([[p1[0], p1[1]], [(p1[0] + p2[0]) / 2 + (r() - 0.5) * 40, (p1[1] + p2[1]) / 2], [p2[0], p2[1]]], { color: wgt > 0.6 ? k.hl : k.ink2, width: 0.6 + wgt * 2.4, alpha: (0.15 + wgt * 0.45) * (0.75 + 0.25 * Math.sin(k.t * 1.3 + e)) });
+    }
+    pts.forEach(function (q, j) { k.dot(q[0], q[1], 6, j % 4 === 0 ? k.decor : k.hl, 1, 8); });
+    k.text('connectome', cx, 485, { size: 14, weight: 600, color: k.ink2, align: 'center' });
+    // two model families
+    k.flow(380, 300, 470, 230, { amount: models }); k.flow(380, 300, 470, 370, { amount: models, color: k.decor });
+    k.tile('chip', 510, 230, 58, { on: models, alpha: models, label: 'linear' });
+    k.tile('gear', 510, 370, 58, { on: models, alpha: models, label: 'tree-based', color: k.decor });
+    // cohort and site-level splits
+    ['Site A', 'Site B', 'Site C'].forEach(function (s, j) {
+      var y = 160 + j * 70; var a = sites * k.seg(1 + j * 0.15, 2 + j * 0.15);
+      k.glass(600, y, 120, 46, 14, { alpha: a, glow: j === 2 ? k.cool : null });
+      k.text(s, 660, y + 23, { size: 14, weight: 650, align: 'center', alpha: a });
+    });
+    k.text('held-out site', 660, 385, { size: 12, color: k.cool, align: 'center', alpha: sites });
+    // calibration: predicted vs observed, the curve settles onto the diagonal
+    k.alpha(cal * (1 - stab * 0.85), function () {
+      var gx = 760; var gy = 140; var gs = 200;
+      k.glass(gx - 20, gy - 20, gs + 40, gs + 60, 22, {});
+      k.line([[gx, gy + gs], [gx + gs, gy]], { color: k.ink2, width: 1.2, dash: [5, 6] });
+      var pts2 = []; for (var u = 0; u <= 1.001; u += 0.1) { var off = Math.sin(u * Math.PI) * 0.22 * (1 - cal); pts2.push([gx + u * gs, gy + gs - (u + off) * gs]); }
+      k.line(pts2, { color: k.hl, width: 3 });
+      k.text('calibrated', gx + gs / 2, gy + gs + 22, { size: 13, color: k.ink2, align: 'center' });
+    });
+    // explanation stability: the same top regions in every cohort
+    k.alpha(stab, function () {
+      k.glass(730, 120, 250, 300, 22, { glow: k.hl, glowA: 0.4 });
+      k.text('top regions per cohort', 855, 150, { size: 13, color: k.ink2, align: 'center' });
+      for (var c = 0; c < 3; c++) {
+        k.bars(760 + c * 72, 180, 56, 170, [0.9, 0.7, 0.45].map(function (v) { return v * (0.95 + 0.05 * Math.sin(k.t + c)); }), { gap: 6, grow: stab, colors: [k.hl, k.decor, k.cool] });
+        k.text(['A', 'B', 'C'][c], 788 + c * 72, 372, { size: 13, color: k.ink2, align: 'center' });
+      }
+    });
+  };
+
   window.StoryScenes = S;
 })();

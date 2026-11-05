@@ -1610,5 +1610,136 @@
       "pytest · import-linter · CI",
       "Render deployment"
     ]
+  },
+  {
+    "slug": "scene-identifiability",
+    "title": "Motion-Conditioned Identifiability and Abstention for Physical 3D Scene Geometry",
+    "shortTitle": "Scene identifiability",
+    "status": "ongoing",
+    "flagship": false,
+    "weight": 80,
+    "date": "2026-09",
+    "domains": [
+      "computer-vision"
+    ],
+    "description": "When can camera motion settle what a scene physically is? A real corridor, its mirror reflection and a photo of it on a screen can produce one image; this work picks the motion that separates them, or abstains.",
+    "techTags": [
+      "3D scene geometry",
+      "Identifiability",
+      "Active perception"
+    ],
+    "features": [
+      "Under review · ICLR 2027 submission"
+    ],
+    "media": {
+      "type": "icon",
+      "icon": "fas fa-cube",
+      "label": "Scene identifiability"
+    },
+    "metrics": [],
+    "links": {
+      "github": null,
+      "youtube": null,
+      "pdf": null,
+      "paper": null,
+      "poster": null,
+      "live": null
+    },
+    "relatedPublications": [],
+    "detailStatus": "ready",
+    "seo": {
+      "description": "When can camera motion settle what a scene physically is? A real corridor, its mirror reflection and a photo of it on a screen can produce one image; this work picks the motion that separates them, or abstains.",
+      "ogImage": null
+    },
+    "badge": "Under review",
+    "sections": [
+      {
+        "title": "Overview",
+        "body": "Single images are ambiguous about the physical world behind them. A real corridor, its reflection in a mirror and a photo of it shown on a screen can produce one and the same image, and a model that reads 3D geometry from that image has no way to tell which world it is looking at.This work asks a sharper question than “what is the depth here?”: can moving the camera settle the scene’s physical explanation at all, and if so, which motion does it?"
+      },
+      {
+        "title": "Approach",
+        "body": "The rival explanations of a scene are kept side by side. The system then chooses the camera motion that best separates the closest of them, because real depth, a reflection and a flat display respond to motion in different ways.Identification is treated as something to earn, not assume: when no available motion can tell the rivals apart, the system abstains instead of reporting a confident geometry that the evidence does not support."
+      },
+      {
+        "title": "Status",
+        "body": "Submitted to ICLR 2027 and under double-blind review. The paper, code and results will be posted here once the review period ends."
+      }
+    ],
+    "skills": [
+      "3D scene geometry",
+      "Identifiability",
+      "Active perception",
+      "Camera motion selection",
+      "Abstention",
+      "Multi-view geometry",
+      "PyTorch"
+    ]
+  },
+  {
+    "slug": "connectome-autism-reliability",
+    "title": "Reliable Connectome-Based Autism Classification: Calibration and Explanation Stability",
+    "shortTitle": "Connectome reliability",
+    "status": "ongoing",
+    "flagship": false,
+    "weight": 80,
+    "date": "2026-08",
+    "domains": [
+      "healthcare-ai",
+      "xai"
+    ],
+    "description": "How far can brain-connectivity classifiers for autism be trusted? This study looks past accuracy to calibrated probabilities and explanations that stay stable across cohorts and sites.",
+    "techTags": [
+      "Connectome features",
+      "Linear & tree-based models",
+      "Probability calibration"
+    ],
+    "features": [
+      "Under review · Computers in Biology and Medicine"
+    ],
+    "media": {
+      "type": "icon",
+      "icon": "fas fa-brain",
+      "label": "Connectome reliability"
+    },
+    "metrics": [],
+    "links": {
+      "github": null,
+      "youtube": null,
+      "pdf": null,
+      "paper": null,
+      "poster": null,
+      "live": null
+    },
+    "relatedPublications": [],
+    "detailStatus": "ready",
+    "seo": {
+      "description": "How far can brain-connectivity classifiers for autism be trusted? This study looks past accuracy to calibrated probabilities and explanations that stay stable across cohorts and sites.",
+      "ogImage": null
+    },
+    "badge": "Under review",
+    "sections": [
+      {
+        "title": "Overview",
+        "body": "Autism classifiers built on brain-connectivity data are often reported by accuracy alone. For anything close to clinical use that is not enough: a model also has to say how sure it is, honestly, and point to the same evidence when the patients or the scanner change."
+      },
+      {
+        "title": "Approach",
+        "body": "The study compares linear and tree-based models on connectome features under controlled cohort and site-level validation, so results reflect generalisation to new sites rather than memorised site effects.Each model is judged on three things together: how well it classifies, how well its probabilities are calibrated, and how stable its explanations stay across cohorts."
+      },
+      {
+        "title": "Status",
+        "body": "Under review at Computers in Biology and Medicine. The paper and results will be posted here after the decision."
+      }
+    ],
+    "skills": [
+      "Connectome features",
+      "Linear & tree-based models",
+      "Probability calibration",
+      "Explanation stability",
+      "Site-level validation",
+      "Scikit-learn",
+      "Python"
+    ]
   }
 ]
