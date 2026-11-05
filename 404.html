@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-v2 data-accent-default="mono">
+<html lang="en" data-v2 data-accent-default="teal">
 <head>
     <!-- PRE-PAINT theme+accent bootstrap — MUST be the first element in <head>, before any CSS,
          so the saved dark/light theme and accent are applied before first paint (no flash). -->
@@ -7,7 +7,7 @@
     (function(){try{
       var t=localStorage.getItem('theme'), a=localStorage.getItem('accent');
       document.documentElement.setAttribute('data-theme',t||'dark');
-      document.documentElement.setAttribute('data-accent',a||'mono');
+      document.documentElement.setAttribute('data-accent',a||'teal');
     }catch(e){}})();
     </script>
 
@@ -56,7 +56,7 @@
          three-scene.js, section-three.js, scholar-citations.js, projects-motion.js (no grid), render.js. -->
     <script src="reveal-motion.js?v=1.1.0" defer></script>
     <script src="morph-motion.js?v=1.0.0" defer></script>
-    <script src="accent-theme.js?v=1.3.0" defer></script>
+    <script src="accent-theme.js?v=1.3.1" defer></script>
 
     <!-- No-JS fail-safe: never leave reveal content stuck at opacity:0. -->
     <noscript>

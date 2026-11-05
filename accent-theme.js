@@ -10,8 +10,8 @@
 (function () {
   'use strict';
 
-  /* Monochrome is the first-visit default on every page (data-accent-default). */
-  var COLOURS = ['mono', 'teal', 'blue', 'violet', 'sky', 'emerald', 'red', 'orange'];
+  /* Teal is the first-visit default on every page (data-accent-default). */
+  var COLOURS = ['teal', 'mono', 'blue', 'violet', 'sky', 'emerald', 'red', 'orange'];
   /* Neutral themes exist only in dark mode: picking one switches to dark, and
      choosing light while one is active falls back to the last colour accent. */
   var NEUTRALS = ['onyx', 'graphite', 'slate', 'midnight', 'plum', 'stone', 'sand', 'sage'];
@@ -28,12 +28,12 @@
 
   /* ---- 1. Apply persisted accent ASAP (minimise flash) ----
      With nothing saved, a page can name its own default on <html
-     data-accent-default="...">; every page uses mono (monochrome, dark). */
+     data-accent-default="...">; every page uses teal. */
   function readAccent() {
     var saved;
     try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) { saved = null; }
     var fallback = document.documentElement.getAttribute('data-accent-default');
-    if (ACCENTS.indexOf(fallback) === -1) fallback = 'mono';
+    if (ACCENTS.indexOf(fallback) === -1) fallback = 'teal';
     return ACCENTS.indexOf(saved) !== -1 ? saved : fallback;
   }
 
@@ -194,7 +194,7 @@
         var back;
         try { back = localStorage.getItem(COLOUR_KEY); } catch (e) { back = null; }
         if (COLOURS.indexOf(back) === -1) back = document.documentElement.getAttribute('data-accent-default');
-        if (COLOURS.indexOf(back) === -1) back = 'mono';
+        if (COLOURS.indexOf(back) === -1) back = 'teal';
         applyAccent(back);
       }
     }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
