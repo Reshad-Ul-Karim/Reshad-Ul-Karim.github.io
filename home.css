@@ -34,7 +34,7 @@ html {
 
 body {
   margin: 0;
-  background: transparent; /* html paints --page; the 3D field (bg-field.js) sits between */
+  background: transparent; /* html paints --page */
   color: var(--ink);
   font-family: var(--font);
   font-size: var(--step-0);

@@ -7,7 +7,7 @@
 
 html[data-v2] { background: var(--page); color-scheme: light dark; }
 html[data-v2] body {
-  background: transparent !important; /* html paints --page; bg-field.js sits between */
+  background: transparent !important; /* html paints --page */
   color: var(--ink);
   font-family: var(--font) !important;
   -webkit-font-smoothing: antialiased;

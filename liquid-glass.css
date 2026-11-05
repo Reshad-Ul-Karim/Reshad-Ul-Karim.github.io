@@ -223,6 +223,3 @@ html.lg-refract .lg.lg--refract {
   .lg > .lg-sheen { display: none; }
 }
 
-/* Lightweight 3D background field (bg-field.js) sits behind everything. */
-.bg-field { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; opacity: 0; transition: opacity 600ms ease; }
-.bg-field.is-on { opacity: 1; }

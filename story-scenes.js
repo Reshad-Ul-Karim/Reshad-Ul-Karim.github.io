@@ -528,13 +528,13 @@
     k.alpha(face, function () {
       k.glass(300, 170, 120, 170, 50, { tint: k.decor });
       k.glyph('person', 360, 250, 90, { color: k.ink });
-      k.bbox(290, 160, 140, 190, { label: 'Ayesha' });
+      k.bbox(290, 160, 140, 190, { label: 'Maliha' });
     });
     // voice guidance
     var v = k.b(3);
     k.tile('speaker', 740, 300, 64, { on: v });
     for (var w = 0; w < 3; w++) { var rr = 40 + ((k.t * 40 + w * 25) % 75); k.ring(740, 300, rr, 0.999, { width: 1.5, color: k.hl, alpha: v * (1 - (rr - 40) / 75), track: 'transparent' }); }
-    k.bubble(700, 130, 260, 64, face > 0.5 ? '“Ayesha is in front.”' : '“Chair ahead, two metres.”', { alpha: Math.max(v, face) * (1 - cmd) });
+    k.bubble(700, 130, 260, 64, face > 0.5 ? '“Maliha is in front.”' : '“Chair ahead, two metres.”', { alpha: Math.max(v, face) * (1 - cmd) });
     k.bubble(700, 130, 260, 64, '“What is ahead of me?”', { alpha: cmd, color: k.cool });
     k.tile('mic', 740, 470, 48, { on: 0.2 + 0.8 * cmd, alpha: 0.7 + 0.3 * cmd, label: 'voice commands', color: cmd > 0.5 ? k.cool : k.hl });
   };
