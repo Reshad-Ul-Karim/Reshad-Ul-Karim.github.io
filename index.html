@@ -88,8 +88,10 @@
          GSAP, Lenis, vanilla-tilt, the old Three.js layers) is still used by the
          project, publication and 404 pages, but not here. -->
     <link rel="stylesheet" href="tokens.css?v=1.0.0">
-    <link rel="stylesheet" href="home.css?v=2.0.0">
-    <link rel="stylesheet" href="liquid-glass.css?v=1.0.0">
+    <link rel="stylesheet" href="home.css?v=2.3.1">
+    <link rel="stylesheet" href="liquid-glass.css?v=1.2.0">
+    <link rel="stylesheet" href="chapter-scroll.css?v=1.0.0">
+    <link rel="stylesheet" href="glyphs.css?v=1.0.4">
     <!-- Shared with every page: the accent switcher (palette button) and the chat
          widget keep their original look and behaviour. -->
     <link rel="stylesheet" href="accent-theme.css?v=1.1.0">
@@ -105,8 +107,9 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap">
     </noscript>
 
-    <script src="home.js?v=2.0.0" defer></script>
-    <script src="liquid-glass.js?v=1.0.0" defer></script>
+    <script src="home.js?v=2.3.0" defer></script>
+    <script src="liquid-glass.js?v=1.2.0" defer></script>
+    <script src="chapter-scroll.js?v=1.0.0" defer></script>
     <script src="bg-field.js?v=1.0.0" defer></script>
     <script src="accent-theme.js?v=1.1.0" defer></script>
     <script src="assistant-widget.js?v=1.0.0" defer></script>
@@ -167,8 +170,8 @@
         <section id="home" class="masthead" data-hero data-surface="dark" aria-labelledby="hero-title">
             <div class="hero__inner wrap">
                 <div class="hero__copy">
-                    <p class="hero__status"><span class="hero__status-dot" aria-hidden="true"></span>Open to AI/ML engineering roles and research</p>
-                    <p class="hero__role">AI/ML Engineer &middot; IEEE-published researcher</p>
+                    <p class="hero__status hero__status--phd"><span class="hero__status-dot" aria-hidden="true"></span><strong>Seeking PhD opportunities</strong><span class="hero__status-sep" aria-hidden="true"></span><span class="hero__status-sub">3D vision, navigation &amp; language models</span></p>
+                    <p class="hero__role">PhD applicant &middot; AI/ML Engineer &middot; IEEE-published researcher</p>
                     <h1 class="hero__title" id="hero-title">
                         <span>Reshad</span>
                         <span class="hero__title-accent">Ul Karim</span>
@@ -246,18 +249,13 @@
                     </div>
 
                     <ul class="about__tiles bare">
-                        <li class="tile tile--wide tile--accent">
-                            <span class="tile__label">Now</span>
+                        <li class="tile tile--accent">
+                            <span class="tile__label"><svg class="gi icon--stroke" aria-hidden="true"><use href="#i-calendar"/></svg>Now</span>
                             <span class="tile__value">Undergraduate Research Assistant, BRAC University Research Seed Grant</span>
                             <span class="tile__meta">Since Nov 2025 &middot; DRISTEE, an AI navigation assistant for visually impaired users</span>
                         </li>
                         <li class="tile">
-                            <span class="tile__label">Education</span>
-                            <span class="tile__value">BSc Computer Science &amp; Engineering, BRAC University</span>
-                            <span class="tile__meta">CGPA 3.89 / 4.00 &middot; 5&times; Vice Chancellor&rsquo;s List</span>
-                        </li>
-                        <li class="tile">
-                            <span class="tile__label">Research</span>
+                            <span class="tile__label"><svg class="gi icon--stroke" aria-hidden="true"><use href="#i-nodes"/></svg>Research</span>
                             <span class="tile__num"><span data-citations>38</span></span>
                             <span class="tile__meta">Google Scholar citations across 4 peer-reviewed papers</span>
                             <span class="tile__links">
@@ -266,8 +264,13 @@
                                 <a class="text-link" href="https://www.researchgate.net/profile/Reshad-Karim-2" target="_blank" rel="noopener noreferrer"><span>ResearchGate</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a>
                             </span>
                         </li>
-                        <li class="tile tile--wide">
-                            <span class="tile__label">CV</span>
+                        <li class="tile">
+                            <span class="tile__label"><svg class="gi" aria-hidden="true"><use href="#i-scholar"/></svg>Education</span>
+                            <span class="tile__value">BSc Computer Science &amp; Engineering, BRAC University</span>
+                            <span class="tile__meta">CGPA 3.89 / 4.00 &middot; 5&times; Vice Chancellor&rsquo;s List</span>
+                        </li>
+                        <li class="tile">
+                            <span class="tile__label"><svg class="gi icon--stroke" aria-hidden="true"><use href="#i-doc"/></svg>CV</span>
                             <span class="tile__value">Roles, papers, projects and awards on two pages.</span>
                             <span class="tile__links">
                                 <a class="text-link" href="assets/papers/Reshad_Ul_Karim_Resume.pdf" target="_blank" rel="noopener"><span>View CV (PDF)</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a>
@@ -437,6 +440,8 @@
                     <p class="lede">Research prototypes and shipped systems. The full index has twenty, grouped by research area.</p>
                     <div class="section-head__aside">
                         <a class="btn btn--ghost btn--small pressable" href="projects/"><span>Browse all projects</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+                        <button class="icon-btn carousel-btn carousel-btn--prev" type="button" data-carousel="prev" aria-controls="projects-track" aria-label="Previous projects"><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+                        <button class="icon-btn carousel-btn" type="button" data-carousel="next" aria-controls="projects-track" aria-label="Next projects"><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
                     </div>
                 </header>
 
@@ -457,9 +462,13 @@
                     </div>
                 </article>
 
-                <ul class="projects">
+                <!-- Wide screens: chapter-scroll.js pins this block and the page scroll
+                     drives the carousel. Elsewhere it is a native swipe carousel. -->
+                <div class="projects-pin" data-pin>
+                <div class="projects-pin__sticky">
+                <ul class="projects" id="projects-track" tabindex="0" aria-label="Selected projects, scroll sideways">
                     <li class="project">
-                        <div class="project__media gl-window" data-gl="media"><img class="gl-fallback" src="assets/images/project-cards/document-assistant.png" alt="The Document Assistant answering a policy question with a cited source" width="1431" height="827" loading="lazy" decoding="async"></div>
+                        <div class="project__media"><img class="gl-fallback" src="assets/images/project-cards/document-assistant.png" alt="The Document Assistant answering a policy question with a cited source" width="1431" height="827" loading="lazy" decoding="async"></div>
                         <div class="project__body">
                             <p class="project__meta"><span>2026</span><span class="sep" aria-hidden="true"></span><span>LLM &middot; RAG</span></p>
                             <h3><a href="projects/enterprise-ai-document-assistant.html">Enterprise AI Document Assistant</a></h3>
@@ -471,7 +480,7 @@
                         </div>
                     </li>
                     <li class="project">
-                        <div class="project__media gl-window" data-gl="media">
+                        <div class="project__media">
                             <img class="gl-fallback" src="https://img.youtube.com/vi/vdP5qrJQqGc/maxresdefault.jpg" alt="The Mars rover arm typing on a keyboard" width="1280" height="720" loading="lazy" decoding="async">
                         </div>
                         <div class="project__body">
@@ -485,7 +494,7 @@
                         </div>
                     </li>
                     <li class="project">
-                        <div class="project__media gl-window" data-gl="media"><img class="gl-fallback" src="assets/images/project-cards/vision-based-hand-gesture.png" alt="The gesture keyboard-mouse interface tracking a hand" width="493" height="278" loading="lazy" decoding="async"></div>
+                        <div class="project__media"><img class="gl-fallback" src="assets/images/project-cards/vision-based-hand-gesture.png" alt="The gesture keyboard-mouse interface tracking a hand" width="493" height="278" loading="lazy" decoding="async"></div>
                         <div class="project__body">
                             <p class="project__meta"><span>2026</span><span class="sep" aria-hidden="true"></span><span>HCI &middot; IEEE JCSSE 2026</span></p>
                             <h3><a href="projects/gesture-keyboard-mouse.html">Hand-Gesture Virtual Keyboard &amp; Mouse</a></h3>
@@ -497,7 +506,7 @@
                         </div>
                     </li>
                     <li class="project">
-                        <div class="project__media gl-window" data-gl="media"><img class="gl-fallback" src="assets/images/project-cards/pedestrian-conflict.png" alt="A Bangladeshi road scene annotated with detected pedestrians and vehicles" width="1280" height="720" loading="lazy" decoding="async"></div>
+                        <div class="project__media"><img class="gl-fallback" src="assets/images/project-cards/pedestrian-conflict.png" alt="A Bangladeshi road scene annotated with detected pedestrians and vehicles" width="1280" height="720" loading="lazy" decoding="async"></div>
                         <div class="project__body">
                             <p class="project__meta"><span>2025</span><span class="sep" aria-hidden="true"></span><span>Computer vision &middot; XAI</span></p>
                             <h3><a href="projects/pedestrian-vehicle-conflict-risk.html">Explainable Pedestrian&ndash;Vehicle Conflict Risk</a></h3>
@@ -508,7 +517,7 @@
                         </div>
                     </li>
                     <li class="project">
-                        <div class="project__media gl-window" data-gl="media">
+                        <div class="project__media">
                             <img class="gl-fallback" src="https://img.youtube.com/vi/WJUcASlT_to/maxresdefault.jpg" alt="The autonomous service robot carrying equipment" width="1280" height="720" loading="lazy" decoding="async">
                         </div>
                         <div class="project__body">
@@ -522,7 +531,7 @@
                         </div>
                     </li>
                     <li class="project">
-                        <div class="project__media gl-window" data-gl="media"><img class="gl-fallback" src="assets/images/project-cards/weheal-card.png" alt="The WeHeal patient dashboard" width="1905" height="825" loading="lazy" decoding="async"></div>
+                        <div class="project__media"><img class="gl-fallback" src="assets/images/project-cards/weheal-card.png" alt="The WeHeal patient dashboard" width="1905" height="825" loading="lazy" decoding="async"></div>
                         <div class="project__body">
                             <p class="project__meta"><span>2025</span><span class="sep" aria-hidden="true"></span><span>Full-stack &middot; Healthcare</span></p>
                             <h3><a href="projects/weheal.html">WeHeal Telemedicine Platform</a></h3>
@@ -533,6 +542,9 @@
                         </div>
                     </li>
                 </ul>
+                <div class="projects-pin__bar" aria-hidden="true"><span></span></div>
+                </div>
+                </div>
                 <div class="projects__more">
                     <a class="btn btn--ghost pressable" href="projects/"><span>See all 20 projects</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
                 </div>

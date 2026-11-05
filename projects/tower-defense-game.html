@@ -23,7 +23,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -39,48 +38,55 @@
     <link rel="stylesheet" href="../modern-ui.css?v=1.0.0">
     <link rel="stylesheet" href="../multipage.css?v=1.0.0">
     <link rel="stylesheet" href="../assistant-widget.css?v=1.0.0">
-    <link rel="stylesheet" href="../demo-pane.css?v=1.0.0">
     <link rel="stylesheet" href="../tokens.css?v=1.0.0">
     <link rel="stylesheet" href="../pages.css?v=1.0.0">
-    <link rel="stylesheet" href="../liquid-glass.css?v=1.0.0">
-    <script src="../liquid-glass.js?v=1.0.0" defer></script>
+    <link rel="stylesheet" href="../liquid-glass.css?v=1.2.0">
+    <link rel="stylesheet" href="../glyphs.css?v=1.0.4">
+    <link rel="stylesheet" href="../project-page.css?v=1.0.3">
+    <script src="../liquid-glass.js?v=1.2.0" defer></script>
     <script src="../bg-field.js?v=1.0.0" defer></script>
     <script src="../reveal-motion.js?v=1.1.0" defer></script>
     <script src="../morph-motion.js?v=1.0.0" defer></script>
     <script src="../accent-theme.js?v=1.0.0" defer></script>
     <script src="../assistant-widget.js?v=1.0.0" defer></script>
-    <script type="module" src="../demo-pane.js?v=1.0.0"></script>
+    <script src="../story-scenes.js?v=1.0.1" defer></script>
+    <script src="../story.js?v=1.0.1" defer></script>
 </head><body>
     <div id="shell-chrome"></div>
     <script src="../site-shell.js?v=1.1.0"></script>
-    <main class="detail-page">
+    <main class="detail-page ph-page">
       <article class="detail-article">
-        <a class="detail-back" href="index.html"><i class="fas fa-arrow-left"></i> All projects</a>
-        <header class="detail-hero">
-          <div class="detail-domain-tags"><span class="detail-domain-tag is-primary">Software Systems &amp; Full-Stack</span></div>
-          <h1 class="detail-title">Rakkhosh Must Die — Tower Defense Game</h1>
-          <div class="detail-status"><span class="detail-status-dot"></span> Completed</div>
-          <p class="detail-lead">A from-scratch 3D tower-defense game in OpenGL/GLUT: seven escalating waves, weapons, traps, auto-turrets, timed power-ups and a boss fight, with hand-built physics, animation and HUD.</p>
-          
+        <div class="ph-topbar"><a class="ph-back" href="index.html"><svg class="gi gi--clear" aria-hidden="true"><use href="../assets/glyphs.svg#g-arrow-left"/></svg><span>All projects</span></a><a class="phd-pill" href="../assets/papers/Reshad_Ul_Karim_Resume.pdf" download="Reshad_Ul_Karim_Resume.pdf"><span class="hero__status-dot" aria-hidden="true"></span><strong>Seeking PhD opportunities</strong><span class="hero__status-sep" aria-hidden="true"></span>Download CV</a></div>
+        <header class="ph-hero has-cover">
+          <div class="ph-hero__card">
+            <div class="ph-hero__meta"><span class="ph-status ph-status--done"><span class="ph-status__dot" aria-hidden="true"></span>Completed</span><span class="ph-chip is-primary">Software Systems &amp; Full-Stack</span></div>
+            <h1 class="ph-title">Rakkhosh Must Die — Tower Defense Game</h1>
+            <p class="ph-lead">A from-scratch 3D tower-defense game in OpenGL/GLUT: seven escalating waves, weapons, traps, auto-turrets, timed power-ups and a boss fight, with hand-built physics, animation and HUD.</p>
+            <div class="ph-actions"><a class="ph-btn" href="#story"><svg class="gi gi--clear" aria-hidden="true"><use href="../assets/glyphs.svg#g-film"/></svg><span>Watch the story</span></a></div>
+          </div>
+          <figure class="ph-hero__cover"><img src="../assets/images/project-cards/rakkhosh-must-die.png" alt="Rakkhosh Must Die 3D OpenGL tower defense game scene" decoding="async" fetchpriority="high"></figure>
         </header>
-        <section class="xp" id="interactive-demo" data-demo="trace" aria-labelledby="xp-title">
-          <div class="xp-head">
-            <h2 class="xp-title" id="xp-title">Defend the core</h2>
-            <span class="xp-kind">Game loop explainer</span>
+        <section class="story" id="story" data-story="tower-defense-game" aria-labelledby="story-title">
+          <header class="ph-head">
+            <span class="ph-kicker"><svg class="gi" aria-hidden="true"><use href="../assets/glyphs.svg#g-film"/></svg>Visual story</span>
+            <h2 class="ph-h2" id="story-title">Defend the core</h2>
+            <p class="ph-sub">Scroll to watch it unfold. Each beat is one documented step of the project.</p>
+          </header>
+          <div class="story__grid">
+            <div class="story__stage"><img class="story__poster" src="../assets/images/project-cards/rakkhosh-must-die.png" alt="" loading="lazy" decoding="async"><canvas class="story__canvas" aria-hidden="true"></canvas><div class="story__dots" aria-hidden="true"></div></div>
+            <ol class="story__beats">
+              <li class="story__beat"><span class="story__num">01</span><h3>Build</h3><p>Place traps and auto-targeting turrets along the enemy path.</p></li>
+              <li class="story__beat"><span class="story__num">02</span><h3>Wave</h3><p>Enemies march toward the central core.</p></li>
+              <li class="story__beat"><span class="story__num">03</span><h3>Defend</h3><p>Weapons, traps and turrets wear them down.</p></li>
+              <li class="story__beat"><span class="story__num">04</span><h3>Power-ups</h3><p>Collectible power-ups give a short advantage.</p></li>
+              <li class="story__beat"><span class="story__num">05</span><h3>Core holds</h3><p>Hold the core and the next, harder wave begins.</p></li>
+              <li class="story__beat"><span class="story__num">06</span><h3>Outcome</h3><p>Survive seven escalating waves and the final boss to win.</p></li>
+            </ol>
           </div>
-          <div class="xp-body">
-            <div class="xp-stage" data-xp-stage>
-              <img class="xp-poster" src="../assets/images/project-cards/rakkhosh-must-die.png" alt="Rakkhosh Must Die 3D OpenGL tower defense game scene" loading="lazy" decoding="async">
-              <button class="xp-start" type="button" data-xp-start>Explore demo</button>
-            </div>
-            <div class="xp-panel" data-xp-panel hidden></div>
-          </div>
-          <p class="xp-status" data-xp-status role="status" aria-live="polite"></p>
-          <p class="xp-note">Authored walk-through of the documented pipeline. It shows how the system works, not recorded results.</p>
-          <script type="application/json">{"scenarios": [{"label": "One wave", "result": "Survive seven escalating waves and the final boss to win.", "steps": [{"label": "Build", "detail": "Place traps and auto-targeting turrets along the enemy path.", "state": "ok"}, {"label": "Wave", "detail": "Enemies march toward the central core.", "state": "ok"}, {"label": "Defend", "detail": "Weapons, traps and turrets wear them down.", "state": "ok"}, {"label": "Power-ups", "detail": "Collectible power-ups give a short advantage.", "state": "ok"}, {"label": "Core holds", "detail": "Hold the core and the next, harder wave begins.", "state": "ok"}]}]}</script>
+          <p class="story__note"><svg class="gi gi--clear" aria-hidden="true"><use href="../assets/glyphs.svg#g-spark"/></svg>An illustration of how the system works, drawn from the write-up below. It is not recorded output.</p>
         </section>
         <div class="detail-body">
-          <section class="detail-section"><h2 class="detail-section-title">Overview</h2><div class="detail-prose"><p>A complete 3D tower-defense game written from scratch in OpenGL/GLUT — no game engine. You defend a central core from seven escalating waves of enemies using a mix of weapons, placeable traps, auto-targeting turrets and collectible power-ups, building up to a final boss fight.</p></div></section><section class="detail-section"><h2 class="detail-section-title">Gameplay</h2><div class="detail-prose"><p>Three weapons (a fast pistol, a piercing crossbow and a spread-fire shotgun) pair with slow/damage traps and turrets that upgrade as the waves progress. Three timed power-ups — a speed boost, a super-jump and a 'roundhouse' auto-fire spin — spawn on the map to collect and trigger. Four enemy types, from fast fodder to a 20-HP boss, each pathfind toward the core but switch to attacking the player when you get close, and speed up wave by wave.</p></div></section><section class="detail-section"><h2 class="detail-section-title">How it&#x27;s built</h2><div class="detail-prose"><p>Every object — player, enemies, turrets, arena and HUD — is assembled from raw OpenGL primitives (spheres, cylinders, cubes, quads). Under the hood are custom systems for bullet physics and collision, sine-driven walk/idle/float animations, a timer-based wave spawner with difficulty scaling, switchable first-/third-/global-person cameras, and a 2D orthographic HUD drawn over the 3D scene — all driven by hand-written trigonometry and vector maths for movement, aiming and hit detection.</p></div></section><section class="detail-section"><h2 class="detail-section-title">Scope</h2><div class="detail-prose"><p>Seven waves, four enemy types plus a boss, three weapons, three power-ups, and full trap/turret/HUD systems — a complete game loop with proper win and lose conditions.</p></div></section><section class="detail-section"><h2 class="detail-section-title">By the numbers</h2><div class="detail-metrics"><div class="detail-metric"><span class="detail-metric-num">7 waves</span><span class="detail-metric-label">Escalating difficulty</span></div><div class="detail-metric"><span class="detail-metric-num">4+1</span><span class="detail-metric-label">Enemy types + boss</span></div><div class="detail-metric"><span class="detail-metric-num">0</span><span class="detail-metric-label">Game engines — built from scratch</span></div></div></section><section class="detail-section"><h2 class="detail-section-title">Tech stack &amp; key skills</h2><p class="detail-prose">Core tools, methods and skills demonstrated in this project:</p><div class="detail-tags"><span class="tech-tag">Python</span><span class="tech-tag">PyOpenGL / GLUT</span><span class="tech-tag">3D graphics from scratch</span><span class="tech-tag">Game physics</span><span class="tech-tag">Collision detection</span><span class="tech-tag">Real-time animation</span><span class="tech-tag">State machines</span></div></section><div class="detail-related"><a class="detail-back" href="index.html"><i class="fas fa-arrow-left"></i> Back to all projects</a></div>
+          <section class="ph-section"><h2 class="ph-h2"><svg class="gi" aria-hidden="true"><use href="../assets/glyphs.svg#g-eye"/></svg><span>Overview</span></h2><div class="detail-prose"><p>A complete 3D tower-defense game written from scratch in OpenGL/GLUT — no game engine. You defend a central core from seven escalating waves of enemies using a mix of weapons, placeable traps, auto-targeting turrets and collectible power-ups, building up to a final boss fight.</p></div></section><section class="ph-section"><h2 class="ph-h2"><svg class="gi" aria-hidden="true"><use href="../assets/glyphs.svg#g-play"/></svg><span>Gameplay</span></h2><div class="detail-prose"><p>Three weapons (a fast pistol, a piercing crossbow and a spread-fire shotgun) pair with slow/damage traps and turrets that upgrade as the waves progress. Three timed power-ups — a speed boost, a super-jump and a 'roundhouse' auto-fire spin — spawn on the map to collect and trigger. Four enemy types, from fast fodder to a 20-HP boss, each pathfind toward the core but switch to attacking the player when you get close, and speed up wave by wave.</p></div></section><section class="ph-section"><h2 class="ph-h2"><svg class="gi" aria-hidden="true"><use href="../assets/glyphs.svg#g-nodes"/></svg><span>How it&#x27;s built</span></h2><div class="detail-prose"><p>Every object — player, enemies, turrets, arena and HUD — is assembled from raw OpenGL primitives (spheres, cylinders, cubes, quads). Under the hood are custom systems for bullet physics and collision, sine-driven walk/idle/float animations, a timer-based wave spawner with difficulty scaling, switchable first-/third-/global-person cameras, and a 2D orthographic HUD drawn over the 3D scene — all driven by hand-written trigonometry and vector maths for movement, aiming and hit detection.</p></div></section><section class="ph-section"><h2 class="ph-h2"><svg class="gi" aria-hidden="true"><use href="../assets/glyphs.svg#g-target"/></svg><span>Scope</span></h2><div class="detail-prose"><p>Seven waves, four enemy types plus a boss, three weapons, three power-ups, and full trap/turret/HUD systems — a complete game loop with proper win and lose conditions.</p></div></section><section class="ph-section"><h2 class="ph-h2"><svg class="gi" aria-hidden="true"><use href="../assets/glyphs.svg#g-chart"/></svg><span>By the numbers</span></h2><div class="detail-metrics"><div class="detail-metric"><span class="detail-metric-num">7 waves</span><span class="detail-metric-label">Escalating difficulty</span></div><div class="detail-metric"><span class="detail-metric-num">4+1</span><span class="detail-metric-label">Enemy types + boss</span></div><div class="detail-metric"><span class="detail-metric-num">0</span><span class="detail-metric-label">Game engines — built from scratch</span></div></div></section><section class="ph-section"><h2 class="ph-h2"><svg class="gi" aria-hidden="true"><use href="../assets/glyphs.svg#g-chip"/></svg><span>Tech stack &amp; key skills</span></h2><p class="detail-prose">Core tools, methods and skills demonstrated in this project:</p><div class="detail-tags"><span class="tech-tag">Python</span><span class="tech-tag">PyOpenGL / GLUT</span><span class="tech-tag">3D graphics from scratch</span><span class="tech-tag">Game physics</span><span class="tech-tag">Collision detection</span><span class="tech-tag">Real-time animation</span><span class="tech-tag">State machines</span></div></section><div class="ph-related"><a class="ph-back" href="index.html"><svg class="gi gi--clear" aria-hidden="true"><use href="../assets/glyphs.svg#g-arrow-left"/></svg><span>Back to all projects</span></a></div>
         </div>
       </article>
     </main>

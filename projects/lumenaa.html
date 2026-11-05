@@ -23,7 +23,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -39,48 +38,56 @@
     <link rel="stylesheet" href="../modern-ui.css?v=1.0.0">
     <link rel="stylesheet" href="../multipage.css?v=1.0.0">
     <link rel="stylesheet" href="../assistant-widget.css?v=1.0.0">
-    <link rel="stylesheet" href="../demo-pane.css?v=1.0.0">
     <link rel="stylesheet" href="../tokens.css?v=1.0.0">
     <link rel="stylesheet" href="../pages.css?v=1.0.0">
-    <link rel="stylesheet" href="../liquid-glass.css?v=1.0.0">
-    <script src="../liquid-glass.js?v=1.0.0" defer></script>
+    <link rel="stylesheet" href="../liquid-glass.css?v=1.2.0">
+    <link rel="stylesheet" href="../glyphs.css?v=1.0.4">
+    <link rel="stylesheet" href="../project-page.css?v=1.0.3">
+    <script src="../liquid-glass.js?v=1.2.0" defer></script>
     <script src="../bg-field.js?v=1.0.0" defer></script>
     <script src="../reveal-motion.js?v=1.1.0" defer></script>
     <script src="../morph-motion.js?v=1.0.0" defer></script>
     <script src="../accent-theme.js?v=1.0.0" defer></script>
     <script src="../assistant-widget.js?v=1.0.0" defer></script>
-    <script type="module" src="../demo-pane.js?v=1.0.0"></script>
+    <script src="../story-scenes.js?v=1.0.1" defer></script>
+    <script src="../story.js?v=1.0.1" defer></script>
 </head><body>
     <div id="shell-chrome"></div>
     <script src="../site-shell.js?v=1.1.0"></script>
-    <main class="detail-page">
+    <main class="detail-page ph-page">
       <article class="detail-article">
-        <a class="detail-back" href="index.html"><i class="fas fa-arrow-left"></i> All projects</a>
-        <header class="detail-hero">
-          <div class="detail-domain-tags"><span class="detail-domain-tag is-primary">Agentic &amp; Multimodal AI</span><span class="detail-domain-tag">Healthcare &amp; Medical AI</span><span class="detail-domain-tag">Robotics &amp; Edge / Embedded</span></div>
-          <h1 class="detail-title">Edge-Native Assistive Vision Agent</h1>
-          <div class="detail-status"><span class="detail-status-dot"></span> Ongoing</div>
-          <p class="detail-lead">An assistive vision-language agent for blind and low-vision users that runs on-device first, uses the cloud only when needed, and says so when it cannot tell.</p>
-          
+        <div class="ph-topbar"><a class="ph-back" href="index.html"><svg class="gi gi--clear" aria-hidden="true"><use href="../assets/glyphs.svg#g-arrow-left"/></svg><span>All projects</span></a><a class="phd-pill" href="../assets/papers/Reshad_Ul_Karim_Resume.pdf" download="Reshad_Ul_Karim_Resume.pdf"><span class="hero__status-dot" aria-hidden="true"></span><strong>Seeking PhD opportunities</strong><span class="hero__status-sep" aria-hidden="true"></span>Download CV</a></div>
+        <header class="ph-hero has-cover">
+          <div class="ph-hero__card">
+            <div class="ph-hero__meta"><span class="ph-status ph-status--ongoing"><span class="ph-status__dot" aria-hidden="true"></span>Ongoing</span><span class="ph-chip is-primary">Agentic &amp; Multimodal AI</span><span class="ph-chip">Healthcare &amp; Medical AI</span><span class="ph-chip">Robotics &amp; Edge / Embedded</span></div>
+            <h1 class="ph-title">Edge-Native Assistive Vision Agent</h1>
+            <p class="ph-lead">An assistive vision-language agent for blind and low-vision users that runs on-device first, uses the cloud only when needed, and says so when it cannot tell.</p>
+            <div class="ph-actions"><a class="ph-btn" href="#story"><svg class="gi gi--clear" aria-hidden="true"><use href="../assets/glyphs.svg#g-film"/></svg><span>Watch the story</span></a></div>
+          </div>
+          <figure class="ph-hero__cover"><img src="../assets/images/project-cards/lumenaa.jpg" alt="Edge-native assistive vision agent" decoding="async" fetchpriority="high"></figure>
         </header>
-        <section class="xp" id="interactive-demo" data-demo="trace" aria-labelledby="xp-title">
-          <div class="xp-head">
-            <h2 class="xp-title" id="xp-title">When should it speak?</h2>
-            <span class="xp-kind">Illustrative example</span>
+        <section class="story" id="story" data-story="lumenaa" aria-labelledby="story-title">
+          <header class="ph-head">
+            <span class="ph-kicker"><svg class="gi" aria-hidden="true"><use href="../assets/glyphs.svg#g-film"/></svg>Visual story</span>
+            <h2 class="ph-h2" id="story-title">When should it speak?</h2>
+            <p class="ph-sub">Scroll to watch it unfold. Each beat is one documented step of the project.</p>
+          </header>
+          <div class="story__grid">
+            <div class="story__stage"><img class="story__poster" src="../assets/images/project-cards/lumenaa.jpg" alt="" loading="lazy" decoding="async"><canvas class="story__canvas" aria-hidden="true"></canvas><div class="story__dots" aria-hidden="true"></div></div>
+            <ol class="story__beats">
+              <li class="story__beat"><span class="story__num">01</span><h3>Safety rules</h3><p>Fixed safety rules run first and cannot be traded away.</p></li>
+              <li class="story__beat"><span class="story__num">02</span><h3>Cheapest capable tool</h3><p>An on-device tool reads the text on the label.</p></li>
+              <li class="story__beat"><span class="story__num">03</span><h3>Evidence check</h3><p>The tool is likely to be right on this photo, so the answer can be spoken.</p></li>
+              <li class="story__beat"><span class="story__num">04</span><h3>Response</h3><p>It reads the label out.</p></li>
+              <li class="story__beat"><span class="story__num">05</span><h3>Outcome</h3><p>It answers on the device; the cloud model is not needed.</p></li>
+              <li class="story__beat" data-tone="stop"><span class="story__num">06</span><h3>Blocked view</h3><p>It asks for a better view instead of guessing.</p></li>
+              <li class="story__beat" data-tone="alt"><span class="story__num">07</span><h3>Where was it last seen?</h3><p>It says where the item was last seen, or says plainly that it cannot tell.</p></li>
+            </ol>
           </div>
-          <div class="xp-body">
-            <div class="xp-stage" data-xp-stage>
-              <img class="xp-poster" src="../assets/images/project-cards/lumenaa.jpg" alt="Edge-native assistive vision agent" loading="lazy" decoding="async">
-              <button class="xp-start" type="button" data-xp-start>Explore demo</button>
-            </div>
-            <div class="xp-panel" data-xp-panel hidden></div>
-          </div>
-          <p class="xp-status" data-xp-status role="status" aria-live="polite"></p>
-          <p class="xp-note">Authored walk-through of the documented pipeline. It shows how the system works, not recorded results.</p>
-          <script type="application/json">{"scenarios": [{"label": "Read a clear label", "result": "It answers on the device; the cloud model is not needed.", "steps": [{"label": "Safety rules", "detail": "Fixed safety rules run first and cannot be traded away.", "state": "ok"}, {"label": "Cheapest capable tool", "detail": "An on-device tool reads the text on the label.", "state": "ok"}, {"label": "Evidence check", "detail": "The tool is likely to be right on this photo, so the answer can be spoken.", "state": "ok"}, {"label": "Response", "detail": "It reads the label out.", "state": "ok"}]}, {"label": "Blocked view", "result": "It asks for a better view instead of guessing.", "steps": [{"label": "Safety rules", "detail": "Safety rules run first.", "state": "ok"}, {"label": "Cheapest capable tool", "detail": "On-device tools try the photo but cannot settle the question.", "state": "ok"}, {"label": "Evidence check", "detail": "The evidence is too weak for a confident answer.", "state": "ok"}, {"label": "Ask for a better photo", "detail": "Rather than guess, it asks the user to adjust the camera.", "state": "stop"}]}, {"label": "Where was it last seen?", "result": "It says where the item was last seen, or says plainly that it cannot tell.", "steps": [{"label": "Safety rules", "detail": "Safety rules run first.", "state": "ok"}, {"label": "Earlier sightings", "detail": "It checks where the item appeared in earlier photos.", "state": "ok"}, {"label": "Evidence check", "detail": "It only answers if that memory is reliable enough.", "state": "ok"}, {"label": "Response", "detail": "It reports the last place it saw the item.", "state": "ok"}]}]}</script>
+          <p class="story__note"><svg class="gi gi--clear" aria-hidden="true"><use href="../assets/glyphs.svg#g-spark"/></svg>An illustration of how the system works, drawn from the write-up below. It is not recorded output.</p>
         </section>
         <div class="detail-body">
-          <section class="detail-section"><h2 class="detail-section-title">Overview</h2><div class="detail-prose"><p>This is an assistive AI agent for blind and low-vision users. It describes what is in view, reads labels and text, and answers where things were last seen, and it says so plainly when it cannot tell — the kind of help that bears on independence and safety, not just convenience.</p></div></section><section class="detail-section"><h2 class="detail-section-title">The challenge</h2><div class="detail-prose"><p>Vision-language models make this possible, but two things block dependable real-world use. Running everything in the cloud is expensive, slow, and useless offline while a person is on the move. And these models sometimes state things confidently that aren't true — a wrong distance, a misnamed person — which a blind user has no easy way to catch.</p></div></section><section class="detail-section"><h2 class="detail-section-title">Approach</h2><div class="detail-prose"><p>The system is built around one idea: only say what the evidence supports. Before an answer is spoken, it estimates how likely each tool is to be right on this particular photo. Fixed safety rules run first and cannot be traded for cost, and the cheapest capable tool is tried first. An answer is released only when that estimate clears a threshold for the question's risk level; otherwise the assistant hedges, asks for a better view, or declines. Images are cropped and masked on the device before any cloud call, and people's names are replaced by aliases.</p></div></section><section class="detail-section"><h2 class="detail-section-title">Results</h2><div class="detail-prose"><p>On a benchmark of 3,000 questions from blind users' photos (with a sealed test split held back for the final analysis), reading what earlier tools said raised the cloud model's reliability estimate by 10.1 AUROC points, and the system predicts which questions cannot be answered at 0.80 AUROC. The honest finding is that on blind users' photos none of the tools is accurate enough for a formal error guarantee, so the assistant hedges or declines there; on street frames it certifies at a 10% error limit on 95 of 100 splits. It is a research prototype and has not yet been tested with blind users.</p></div></section><section class="detail-section"><h2 class="detail-section-title">By the numbers</h2><div class="detail-metrics"><div class="detail-metric"><span class="detail-metric-num">3000</span><span class="detail-metric-label">Blind-user questions in the benchmark</span></div><div class="detail-metric"><span class="detail-metric-num">1358</span><span class="detail-metric-label">Automated tests passing</span></div><div class="detail-metric"><span class="detail-metric-num">5 tools</span><span class="detail-metric-label">Tools compared on every question</span></div></div></section><section class="detail-section"><h2 class="detail-section-title">Tech stack &amp; key skills</h2><p class="detail-prose">Core tools, methods and skills demonstrated in this project:</p><div class="detail-tags"><span class="tech-tag">Agentic AI</span><span class="tech-tag">Vision-Language Models</span><span class="tech-tag">On-device / edge inference</span><span class="tech-tag">Calibrated risk control (Learn-then-Test)</span><span class="tech-tag">Cloud VLM / OCR integration (Mistral)</span><span class="tech-tag">Reproducible benchmark</span><span class="tech-tag">Anti-fabrication guardrails</span><span class="tech-tag">Python</span></div></section><div class="detail-related"><a class="detail-back" href="index.html"><i class="fas fa-arrow-left"></i> Back to all projects</a></div>
+          <section class="ph-section"><h2 class="ph-h2"><svg class="gi" aria-hidden="true"><use href="../assets/glyphs.svg#g-eye"/></svg><span>Overview</span></h2><div class="detail-prose"><p>This is an assistive AI agent for blind and low-vision users. It describes what is in view, reads labels and text, and answers where things were last seen, and it says so plainly when it cannot tell — the kind of help that bears on independence and safety, not just convenience.</p></div></section><section class="ph-section"><h2 class="ph-h2"><svg class="gi" aria-hidden="true"><use href="../assets/glyphs.svg#g-target"/></svg><span>The challenge</span></h2><div class="detail-prose"><p>Vision-language models make this possible, but two things block dependable real-world use. Running everything in the cloud is expensive, slow, and useless offline while a person is on the move. And these models sometimes state things confidently that aren't true — a wrong distance, a misnamed person — which a blind user has no easy way to catch.</p></div></section><section class="ph-section"><h2 class="ph-h2"><svg class="gi" aria-hidden="true"><use href="../assets/glyphs.svg#g-nodes"/></svg><span>Approach</span></h2><div class="detail-prose"><p>The system is built around one idea: only say what the evidence supports. Before an answer is spoken, it estimates how likely each tool is to be right on this particular photo. Fixed safety rules run first and cannot be traded for cost, and the cheapest capable tool is tried first. An answer is released only when that estimate clears a threshold for the question's risk level; otherwise the assistant hedges, asks for a better view, or declines. Images are cropped and masked on the device before any cloud call, and people's names are replaced by aliases.</p></div></section><section class="ph-section"><h2 class="ph-h2"><svg class="gi" aria-hidden="true"><use href="../assets/glyphs.svg#g-chart"/></svg><span>Results</span></h2><div class="detail-prose"><p>On a benchmark of 3,000 questions from blind users' photos (with a sealed test split held back for the final analysis), reading what earlier tools said raised the cloud model's reliability estimate by 10.1 AUROC points, and the system predicts which questions cannot be answered at 0.80 AUROC. The honest finding is that on blind users' photos none of the tools is accurate enough for a formal error guarantee, so the assistant hedges or declines there; on street frames it certifies at a 10% error limit on 95 of 100 splits. It is a research prototype and has not yet been tested with blind users.</p></div></section><section class="ph-section"><h2 class="ph-h2"><svg class="gi" aria-hidden="true"><use href="../assets/glyphs.svg#g-chart"/></svg><span>By the numbers</span></h2><div class="detail-metrics"><div class="detail-metric"><span class="detail-metric-num">3000</span><span class="detail-metric-label">Blind-user questions in the benchmark</span></div><div class="detail-metric"><span class="detail-metric-num">1358</span><span class="detail-metric-label">Automated tests passing</span></div><div class="detail-metric"><span class="detail-metric-num">5 tools</span><span class="detail-metric-label">Tools compared on every question</span></div></div></section><section class="ph-section"><h2 class="ph-h2"><svg class="gi" aria-hidden="true"><use href="../assets/glyphs.svg#g-chip"/></svg><span>Tech stack &amp; key skills</span></h2><p class="detail-prose">Core tools, methods and skills demonstrated in this project:</p><div class="detail-tags"><span class="tech-tag">Agentic AI</span><span class="tech-tag">Vision-Language Models</span><span class="tech-tag">On-device / edge inference</span><span class="tech-tag">Calibrated risk control (Learn-then-Test)</span><span class="tech-tag">Cloud VLM / OCR integration (Mistral)</span><span class="tech-tag">Reproducible benchmark</span><span class="tech-tag">Anti-fabrication guardrails</span><span class="tech-tag">Python</span></div></section><div class="ph-related"><a class="ph-back" href="index.html"><svg class="gi gi--clear" aria-hidden="true"><use href="../assets/glyphs.svg#g-arrow-left"/></svg><span>Back to all projects</span></a></div>
         </div>
       </article>
     </main>

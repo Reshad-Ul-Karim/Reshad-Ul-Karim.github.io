@@ -8,8 +8,9 @@
    so the rainbow split appears only where the "glass" curves.
 
    Chromium applies it through backdrop-filter: url(#...). Other browsers get
-   frosted blur + saturation + the same rim and cursor highlight. A light
-   wobble plays on hover and press, and a brief glitch on press. Reduced
+   frosted blur + saturation + the same rim and cursor highlight. Controls
+   get a slow jelly wobble with a soft blur on hover and a mild glitch on
+   press; reading cards never move. Reduced
    motion turns the wobble and glitch off; reduced transparency and forced
    colours make every surface solid (CSS).
    ========================================================================= */
@@ -28,6 +29,8 @@
     // other pages
     '.navbar .nav-container', '.project-card', '.publication-item', '.detail-metric',
     '.btn-primary', '.btn-secondary', '.action-btn', '.detail-link', '.detail-back',
+    // chapter rail (chapter-scroll.js)
+    '.chapters', '.chapters__drop',
     // theme widgets
     '.theme-toggle', '#accent-switcher .accent-trigger', '#accent-switcher .accent-tray'
   ].join(',');
@@ -139,42 +142,52 @@
     el.style.setProperty('--ly', ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%');
   }, { passive: true });
 
-  /* Liquid wobble (hover + press) and a brief glitch on press */
+  /* Liquid wobble, mild glitch and blur. Only small controls react with motion:
+     reading cards stay still so their links are easy to hit. */
+  var CONTROL = 'a, button, .btn, .icon-btn, .tilt-toggle, .theme-toggle, .accent-trigger, .action-btn, .btn-primary, .btn-secondary, .detail-link, .detail-back';
+  var STILL = '.project, .project-card, .publication-item, .tile, .cap, .tl__body, .form, .culture__item, .xp-panel, .detail-metric, .honor';
+  function moves(el) { return !reduceMQ.matches && el.matches(CONTROL) && !el.matches(STILL); }
   function wobble(el, strong) {
-    if (reduceMQ.matches || !el.animate) return;
+    if (!moves(el) || !el.animate) return;
     var r = el.getBoundingClientRect();
-    var a = Math.min(0.045, 9 / Math.max(40, Math.min(r.width, r.height) * 2.2)) * (strong ? 1.4 : 1);
+    var a = Math.min(0.03, 6 / Math.max(40, Math.min(r.width, r.height) * 2.2)) * (strong ? 1.3 : 1);
+    var s = function (k) { return 'scale(' + (1 + a * k).toFixed(4) + ',' + (1 - a * k).toFixed(4) + ')'; };
     el.animate([
-      { transform: 'scale(1, 1)' },
-      { transform: 'scale(' + (1 + a) + ',' + (1 - a) + ')' },
-      { transform: 'scale(' + (1 - a * 0.55) + ',' + (1 + a * 0.55) + ')' },
-      { transform: 'scale(' + (1 + a * 0.22) + ',' + (1 - a * 0.22) + ')' },
-      { transform: 'scale(1, 1)' }
-    ], { duration: strong ? 560 : 480, easing: 'cubic-bezier(0.2, 0.7, 0.2, 1)' });
+      { transform: 'scale(1, 1)', offset: 0 },
+      { transform: s(1), offset: 0.2 },
+      { transform: s(-0.6), offset: 0.42 },
+      { transform: s(0.3), offset: 0.64 },
+      { transform: s(-0.12), offset: 0.84 },
+      { transform: 'scale(1, 1)', offset: 1 }
+    ], { duration: strong ? 1200 : 1000, easing: 'ease-in-out', composite: 'add' });
   }
-  function glitch(el) {
-    if (reduceMQ.matches) return;
-    el.classList.remove('lg-glitch'); void el.offsetWidth; el.classList.add('lg-glitch');
+  function glitch(el, strong) {
+    if (!moves(el)) return;
+    var cls = strong ? 'lg-glitch' : 'lg-ripple';
+    el.classList.remove('lg-glitch', 'lg-ripple'); void el.offsetWidth; el.classList.add(cls);
     var f = el.__lgFilter;
-    if (f) {
+    if (f && strong) {
       var maps = f.el.querySelectorAll('feDisplacementMap');
-      Array.prototype.forEach.call(maps, function (m, i) { m.setAttribute('scale', String(f.strength * (2.6 - i * 0.35))); });
-      setTimeout(function () { Array.prototype.forEach.call(maps, function (m, i) { m.setAttribute('scale', String(f.strength * (1 - i * 0.12))); }); }, 180);
+      Array.prototype.forEach.call(maps, function (m, i) { m.setAttribute('scale', String(f.strength * (1.7 - i * 0.2))); });
+      setTimeout(function () { Array.prototype.forEach.call(maps, function (m, i) { m.setAttribute('scale', String(f.strength * (1 - i * 0.12))); }); }, 320);
     }
-    setTimeout(function () { el.classList.remove('lg-glitch'); }, 260);
+    setTimeout(function () { el.classList.remove(cls); }, strong ? 520 : 720);
   }
+  function settle(el) { el.style.removeProperty('--lx'); el.style.removeProperty('--ly'); }
   var lastHover = null;
   doc.addEventListener('pointerover', function (e) {
     if (!fineMQ.matches) return;
     var el = e.target.closest && e.target.closest('.lg');
-    if (el && el !== lastHover && !el.contains(e.relatedTarget)) wobble(el, false);
+    if (lastHover && lastHover !== el && !lastHover.contains(e.target)) settle(lastHover);
+    if (el && el !== lastHover && !el.contains(e.relatedTarget)) { wobble(el, false); glitch(el, false); }
     lastHover = el;
   }, { passive: true });
+  doc.documentElement.addEventListener('pointerleave', function () { if (lastHover) settle(lastHover); lastHover = null; });
   doc.addEventListener('pointerdown', function (e) {
     var el = e.target.closest && e.target.closest('.lg');
     if (!el) return;
     wobble(el, true);
-    if (el.matches('a, button, .btn, .icon-btn, .tilt-toggle, .theme-toggle, .accent-trigger, .action-btn, .btn-primary, .btn-secondary')) glitch(el);
+    glitch(el, true);
   }, { passive: true });
 
   function start() {

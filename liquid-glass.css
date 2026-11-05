@@ -19,13 +19,21 @@ html[data-theme="dark"] {
   --lg-shadow: 0 16px 40px -18px rgba(0, 0, 0, 0.75);
 }
 
+/* Registered so the highlight can glide; it drifts back to its resting spot
+   (top-left) when the pointer leaves. */
+@property --lx { syntax: '<percentage>'; inherits: true; initial-value: 28%; }
+@property --ly { syntax: '<percentage>'; inherits: true; initial-value: 0%; }
+
 .lg {
   isolation: isolate;
   background: var(--lg-tint) !important;
   border-color: transparent !important;
+  /* Thick-glass edge: bright top lip, darker bottom lip, inner glow, lift shadow. */
   box-shadow:
-    inset 0 1px 0 var(--lg-rim-soft),
+    inset 0 1px 0.5px rgba(255, 255, 255, 0.32),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.22),
     inset 0 0 0 1px var(--lg-rim-soft),
+    inset 0 10px 22px -14px rgba(255, 255, 255, 0.22),
     var(--lg-shadow) !important;
   -webkit-backdrop-filter: blur(14px) saturate(170%);
   backdrop-filter: blur(14px) saturate(170%);
@@ -46,17 +54,36 @@ html.lg-refract .lg.lg--refract {
   border-radius: inherit;
   pointer-events: none;
   background:
-    radial-gradient(circle at var(--lx, 28%) var(--ly, 0%), rgba(255, 255, 255, 0.2), transparent 46%),
+    radial-gradient(circle at var(--lx, 28%) calc(var(--ly, 0%) - var(--scroll-v, 0) * 40%), rgba(255, 255, 255, 0.22), transparent 46%),
+    radial-gradient(120% 60% at 50% -10%, rgba(255, 255, 255, 0.12), transparent 60%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 38%);
   -webkit-mask: linear-gradient(#000 0 0);
   mask: linear-gradient(#000 0 0);
+  overflow: hidden;
+  transition: --lx 900ms cubic-bezier(0.22, 1, 0.36, 1), --ly 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* Watery shine: a soft specular band glides across once on hover. */
+.lg > .lg-sheen::before {
+  content: "";
+  position: absolute; inset: -20% -60%;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.16) 47%, rgba(255, 255, 255, 0.05) 53%, transparent 62%);
+  transform: translateX(-60%);
+  opacity: 0;
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .lg:hover > .lg-sheen::before { animation: lg-shine 1600ms cubic-bezier(0.33, 0, 0.2, 1) 1 both; }
+}
+@keyframes lg-shine {
+  0% { transform: translateX(-60%); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateX(60%); opacity: 0; }
 }
 .lg > .lg-sheen::after {
   content: "";
   position: absolute; inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(135deg, var(--lg-rim), transparent 35%, transparent 65%, var(--lg-rim-soft));
+  background: linear-gradient(calc(135deg + var(--scroll-v, 0) * 30deg), var(--lg-rim), transparent 35%, transparent 65%, var(--lg-rim-soft));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
@@ -66,15 +93,20 @@ html.lg-refract .lg.lg--refract {
 .lg:is(.btn:not(.btn--ghost), .nav__cta, .btn-primary, .action-btn.primary, .xp-seg button[aria-pressed="true"]) { background: var(--btn-bg, var(--action-bg)) !important; }
 .site-header:not([data-surface="light"]) .lg.nav { background: rgba(var(--hero-rgb), 0.38) !important; }
 
-/* Glitch on press: a short RGB split with slice jitter. */
+/* Press: a mild RGB split with a soft blur. Hover: a gentler blur ripple. */
 @keyframes lg-glitch {
-  0% { filter: none; clip-path: inset(0); transform: translate(0); }
-  20% { filter: drop-shadow(2px 0 rgba(255, 40, 90, 0.75)) drop-shadow(-2px 0 rgba(0, 240, 220, 0.75)); clip-path: inset(12% 0 58% 0); transform: translate(-2px, 0); }
-  40% { clip-path: inset(56% 0 8% 0); transform: translate(2px, 0); }
-  60% { filter: drop-shadow(-1px 0 rgba(255, 40, 90, 0.6)) drop-shadow(1px 0 rgba(0, 240, 220, 0.6)); clip-path: inset(30% 0 36% 0); transform: translate(-1px, 0); }
-  100% { filter: none; clip-path: inset(0); transform: translate(0); }
+  0%, 100% { filter: none; }
+  18% { filter: blur(0.8px) drop-shadow(1.5px 0 rgba(255, 40, 90, 0.5)) drop-shadow(-1.5px 0 rgba(0, 240, 220, 0.5)); }
+  36% { filter: blur(0.4px) drop-shadow(-1px 0 rgba(255, 40, 90, 0.4)) drop-shadow(1px 0 rgba(0, 240, 220, 0.4)); }
+  60% { filter: blur(0.2px); }
 }
-.lg.lg-glitch { animation: lg-glitch 240ms steps(5, end) 1; }
+@keyframes lg-ripple {
+  0%, 100% { filter: none; }
+  30% { filter: blur(0.6px) drop-shadow(0.8px 0 rgba(255, 40, 90, 0.3)) drop-shadow(-0.8px 0 rgba(0, 240, 220, 0.3)); }
+  65% { filter: blur(0.2px); }
+}
+.lg.lg-glitch { animation: lg-glitch 500ms ease-out 1; }
+.lg.lg-ripple { animation: lg-ripple 700ms ease-out 1; }
 
 /* Hero name: a brief glitch on hover (decorative; the text stays selectable). */
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
@@ -88,7 +120,8 @@ html.lg-refract .lg.lg--refract {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lg.lg-glitch { animation: none; }
+  .lg.lg-glitch, .lg.lg-ripple { animation: none; }
+  .lg > .lg-sheen { transition: none; }
 }
 /* Reduced transparency / forced colours: solid surfaces, no refraction. */
 @media (prefers-reduced-transparency: reduce) {

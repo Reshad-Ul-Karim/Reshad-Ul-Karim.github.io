@@ -324,43 +324,48 @@
   var year = doc.querySelector('[data-year]');
   if (year) year.textContent = String(new Date().getFullYear());
 
-  /* ---- 10b. Sharp chapter transitions (Trionn-style stripe wipes) -------
-         A band of stripes at the top of each chapter grows and retracts with
-         scroll progress, staggered, so the boundary reads as a crisp wipe.
-         Driven by one scroll value per band, so it reverses on the way up. */
+  /* ---- 10b. Block reveals ---------------------------------------------------
+         Chapter motion, the rail and the carousel live in chapter-scroll.js.
+         Blocks focus in from a soft blur, staggered, in both scroll directions:
+         scrolling down they rise from below; scrolling up they settle from
+         above, and blocks leaving the bottom blur back out. Reveal classes are
+         dropped once a block has settled, so hover styles and glass are
+         untouched while it is on screen. */
   if (!reduceMQ.matches && 'IntersectionObserver' in window) {
-    var wipes = [];
-    ['about', 'experience', 'projects', 'awards', 'contact'].forEach(function (id) {
-      var sec = doc.getElementById(id);
-      if (!sec) return;
-      var w = doc.createElement('div');
-      w.className = 'wipe'; w.setAttribute('aria-hidden', 'true');
-      for (var i = 0; i < 9; i++) { var st = doc.createElement('span'); st.style.setProperty('--i', String(i)); w.appendChild(st); }
-      sec.insertBefore(w, sec.firstChild);
-      wipes.push({ el: w, bars: w.children, on: false });
+    var revealSel = '.section > .wrap > :not(ul, ol, .timeline-wrap, .about__grid, .culture, .projects-pin), .section > .wrap > :is(ul, ol):not(.projects) > li, .timeline > li, .about__grid > *, .culture > *';
+    var revealEls = Array.prototype.slice.call(doc.querySelectorAll(revealSel)).filter(function (el) {
+      return !el.closest('.masthead');
     });
-    var wipeIO = new IntersectionObserver(function (es) {
-      es.forEach(function (e) { wipes.forEach(function (w) { if (w.el === e.target) w.on = e.isIntersecting; }); });
-      paintWipes();
+    revealEls.forEach(function (el) {
+      var sibs = Array.prototype.filter.call(el.parentElement.children, function (c) { return revealEls.indexOf(c) > -1; });
+      el.style.setProperty('--rv-i', String(Math.min(5, sibs.indexOf(el))));
+      var r = el.getBoundingClientRect();
+      if (r.top > window.innerHeight || r.bottom < 0) {
+        el.classList.add('rv');
+        el.classList.toggle('rv--up', r.bottom < 0);
+      } else {
+        el._rvIn = true; // on screen at load: no entrance
+      }
     });
-    wipes.forEach(function (w) { wipeIO.observe(w.el); });
-    var wipeTick = false;
-    var paintWipes = function () {
-      wipeTick = false;
-      var vh = window.innerHeight;
-      wipes.forEach(function (w) {
-        if (!w.on) return;
-        var r = w.el.getBoundingClientRect();
-        var p = Math.min(1, Math.max(0, (vh - r.top) / (vh + r.height)));
-        for (var i = 0; i < w.bars.length; i++) {
-          var local = Math.min(1, Math.max(0, (p - 0.08 - i * 0.032) / 0.42));
-          w.bars[i].style.transform = 'scaleY(' + Math.sin(Math.PI * local).toFixed(3) + ')';
-          w.bars[i].style.transformOrigin = local < 0.5 ? '50% 0' : '50% 100%';
+    var revealIO = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        var el = e.target;
+        if (e.isIntersecting) {
+          if (el._rvIn) return;
+          el._rvIn = true;
+          el.classList.add('is-in');
+          clearTimeout(el._rvT);
+          el._rvT = setTimeout(function () { if (el._rvIn) el.classList.remove('rv', 'rv--up', 'is-in'); }, 1500);
+        } else {
+          el._rvIn = false;
+          clearTimeout(el._rvT);
+          el.classList.remove('is-in');
+          el.classList.toggle('rv--up', e.boundingClientRect.top < 0);
+          el.classList.add('rv');
         }
       });
-    };
-    window.addEventListener('scroll', function () { if (!wipeTick) { wipeTick = true; requestAnimationFrame(paintWipes); } }, { passive: true });
-    paintWipes();
+    }, { rootMargin: '-4% 0px -8% 0px' });
+    revealEls.forEach(function (el) { revealIO.observe(el); });
 
     /* Section headings come into focus word by word as they enter. */
     var heads = doc.querySelectorAll('.section-head h2');
@@ -374,7 +379,7 @@
       h.classList.add('is-split');
     });
     var headIO = new IntersectionObserver(function (es) {
-      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('is-in'); headIO.unobserve(e.target); } });
+      es.forEach(function (e) { e.target.classList.toggle('is-in', e.isIntersecting); });
     }, { rootMargin: '0px 0px -12% 0px' });
     Array.prototype.forEach.call(heads, function (h) { headIO.observe(h); });
   }

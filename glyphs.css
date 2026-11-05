@@ -1,0 +1,161 @@
+/* =========================================================================
+   glyphs.css: liquid-glass glyph tiles (iOS app-icon style) for buttons,
+   bullets, eyebrows and section headers. Shared by the homepage and the
+   project pages. Glyphs come from assets/glyphs.svg (project pages) or the
+   homepage's inline sprite; any inline <svg> can be a tile.
+   ========================================================================= */
+:root {
+  --gi-glyph: var(--on-hl, #0b1514);
+  --gi-fill: linear-gradient(160deg, rgba(var(--hl-rgb), 1) 0%, rgba(var(--hl-rgb), 0.78) 48%, rgba(var(--hl-rgb), 0.55) 100%);
+  --gi-sheen: radial-gradient(130% 80% at 28% -6%, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 52%);
+  --gi-shadow:
+    inset 0 1px 0.5px rgba(255, 255, 255, 0.85),
+    inset 0 -1.5px 2px rgba(0, 0, 0, 0.22),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.25),
+    0 4px 10px -4px rgba(var(--hl-rgb), 0.55);
+  /* Data-URI glyphs for pseudo-element tiles (bullets, eyebrows). */
+  --g-spark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3c.5 4.8 3.2 7.5 8 8v.2c-4.8.5-7.5 3.2-8 8h-.2c-.5-4.8-3.2-7.5-8-8V11c4.8-.5 7.5-3.2 8-8z'/%3E%3C/svg%3E");
+  --g-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E");
+  --g-dot: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='5'/%3E%3C/svg%3E");
+}
+
+/* ---- Tile ---------------------------------------------------------------- */
+.gi {
+  --gi-size: 1.7em;
+  display: inline-block;
+  flex: none;
+  box-sizing: border-box;
+  width: var(--gi-size);
+  height: var(--gi-size);
+  padding: calc(var(--gi-size) * 0.2);
+  border-radius: 31%;
+  color: var(--gi-glyph);
+  background: var(--gi-sheen), var(--gi-fill);
+  box-shadow: var(--gi-shadow);
+  vertical-align: middle;
+  overflow: visible;
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 300ms ease;
+}
+/* Clear glass: for secondary actions on busy surfaces. */
+.gi--clear {
+  color: var(--ink);
+  background: var(--gi-sheen), linear-gradient(160deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04));
+  -webkit-backdrop-filter: blur(8px) saturate(170%);
+  backdrop-filter: blur(8px) saturate(170%);
+  box-shadow: inset 0 1px 0.5px rgba(255, 255, 255, 0.5), inset 0 -1px 1.5px rgba(0, 0, 0, 0.25), inset 0 0 0 0.5px rgba(255, 255, 255, 0.2), 0 4px 10px -6px rgba(0, 0, 0, 0.5);
+}
+:is(a, button):hover > .gi { transform: translateY(-1px) scale(1.06); }
+:is(a, button):active > .gi { transform: scale(0.94); }
+
+/* ---- Bullets ---------------------------------------------------------------- */
+.gl-list, .detail-prose ul, .tl__points { list-style: none !important; padding-left: 0 !important; }
+.gl-list > li, .detail-prose ul > li, .tl__points > li {
+  position: relative;
+  padding-left: 1.95em;
+  list-style: none !important;
+}
+.gl-list > li::before, .detail-prose ul > li::before, .tl__points > li::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0.18em;
+  width: 1.3em; height: 1.3em;
+  border-radius: 31%;
+  background: var(--gi-sheen), var(--gi-fill);
+  box-shadow: var(--gi-shadow);
+}
+.gl-list > li::after, .detail-prose ul > li::after, .tl__points > li::after {
+  content: "";
+  position: absolute;
+  left: 0.3em; top: 0.48em;
+  width: 0.7em; height: 0.7em;
+  background: var(--gi-glyph);
+  -webkit-mask: var(--g-check) center / contain no-repeat;
+  mask: var(--g-check) center / contain no-repeat;
+}
+.tl__points > li::marker, .detail-prose ul > li::marker { content: none; }
+.hero__facts li::before {
+  width: 18px !important; height: 18px !important; margin-right: 4px !important;
+  border-radius: 31% !important; opacity: 1 !important;
+  background: var(--g-spark) center / 10px no-repeat, var(--gi-sheen), var(--gi-fill) !important;
+  box-shadow: var(--gi-shadow);
+}
+
+/* ---- Eyebrow chip: glass capsule led by a glyph tile (no rule line) ---------- */
+.eyebrow {
+  width: fit-content;
+  justify-self: start;
+  padding: 4px 12px 4px 4px;
+  border-radius: 999px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  backdrop-filter: blur(10px) saturate(160%);
+}
+.eyebrow::before {
+  width: 20px !important; height: 20px !important;
+  border-radius: 31% !important;
+  background: var(--g-spark) center / 11px no-repeat, var(--gi-sheen), var(--gi-fill) !important;
+  box-shadow: var(--gi-shadow);
+}
+html[data-theme="light"] .eyebrow { background: rgba(var(--ink-rgb), 0.04); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 0 0 1px rgba(var(--ink-rgb), 0.08); }
+
+/* ---- Buttons and text links: their icons become glass tiles ----------------- */
+:is(.btn, .text-link, .nav__cta) > svg.icon {
+  box-sizing: content-box;
+  width: 13px; height: 13px;
+  padding: 4px;
+  border-radius: 31%;
+  color: var(--gi-glyph);
+  background: var(--gi-sheen), var(--gi-fill);
+  box-shadow: var(--gi-shadow);
+  stroke-width: 2.2;
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+:is(.btn, .text-link):hover > svg.icon { transform: translateY(-1px) scale(1.06); }
+.btn:not(.btn--ghost) > svg.icon { background: var(--gi-sheen), linear-gradient(160deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.08)); color: currentColor; }
+
+/* ---- PhD call-out pill (homepage hero, project heroes) ----------------------- */
+.hero__status--phd, .phd-pill {
+  display: inline-flex; align-items: center; gap: 10px;
+  flex-wrap: wrap;
+  padding: 5px 14px 5px 5px;
+  border-radius: 999px;
+  border: 0 !important;
+  background: linear-gradient(160deg, rgba(var(--hl-rgb), 0.2), rgba(var(--hl-rgb), 0.06)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 0 0 1px rgba(var(--hl-rgb), 0.35), 0 10px 26px -14px rgba(var(--hl-rgb), 0.7);
+  -webkit-backdrop-filter: blur(12px) saturate(170%);
+  backdrop-filter: blur(12px) saturate(170%);
+  color: var(--hero-ink-2, var(--ink-2));
+  font-size: var(--step--1, 0.85rem);
+  text-decoration: none;
+}
+.hero__status--phd strong { color: var(--hero-ink, var(--ink)); font-weight: 650; }
+.phd-pill { color: var(--ink-2) !important; min-height: 34px; }
+.phd-pill strong { color: var(--ink); font-weight: 650; }
+.phd-pill .hero__status-dot {
+  width: 24px; height: 24px; border-radius: 31%; flex: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230b1514' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 9 12 4.5 21.5 9 12 13.5z'/%3E%3Cpath d='M6.5 11v4.2c0 1.6 2.5 3.3 5.5 3.3s5.5-1.7 5.5-3.3V11'/%3E%3C/svg%3E") center / 15px no-repeat, var(--gi-sheen), var(--gi-fill);
+  box-shadow: var(--gi-shadow);
+  animation: phd-glow 2.8s ease-in-out infinite;
+}
+html[data-theme="light"] .phd-pill { background: linear-gradient(160deg, rgba(var(--ink-rgb), 0.06), rgba(var(--ink-rgb), 0.02)) !important; box-shadow: inset 0 1px 0 #fff, inset 0 0 0 1px rgba(var(--ink-rgb), 0.12), 0 10px 26px -16px rgba(var(--ink-rgb), 0.4); }
+.hero__status--phd .hero__status-dot {
+  width: 22px; height: 22px; border-radius: 31%;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230b1514' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 9 12 4.5 21.5 9 12 13.5z'/%3E%3Cpath d='M6.5 11v4.2c0 1.6 2.5 3.3 5.5 3.3s5.5-1.7 5.5-3.3V11'/%3E%3C/svg%3E") center / 14px no-repeat, var(--gi-sheen), var(--gi-fill);
+  box-shadow: var(--gi-shadow);
+  animation: phd-glow 2.8s ease-in-out infinite;
+}
+.hero__status-sep { width: 3px; height: 3px; border-radius: 50%; background: currentColor; opacity: 0.6; }
+@media (max-width: 600px) {
+  .hero__status--phd { border-radius: 20px; row-gap: 2px; padding-block: 6px; }
+  .hero__status--phd .hero__status-sep { display: none; }
+  .hero__status--phd .hero__status-sub { flex-basis: 100%; padding-left: 32px; }
+}
+@keyframes phd-glow { 50% { box-shadow: var(--gi-shadow), 0 0 0 5px rgba(var(--hl-rgb), 0.14); } }
+
+@media (prefers-reduced-motion: reduce) { .hero__status--phd .hero__status-dot { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .gi, :is(.btn, .text-link) > svg.icon { transition: none; } }
+@media (forced-colors: active) {
+  .gi, .eyebrow::before, :is(.btn, .text-link) > svg.icon { background: ButtonFace !important; color: ButtonText; box-shadow: none; border: 1px solid ButtonText; }
+  .gl-list > li::before, .detail-prose ul > li::before, .tl__points > li::before { background: CanvasText; }
+}

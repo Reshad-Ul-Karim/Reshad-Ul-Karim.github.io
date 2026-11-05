@@ -23,7 +23,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -39,48 +38,55 @@
     <link rel="stylesheet" href="../modern-ui.css?v=1.0.0">
     <link rel="stylesheet" href="../multipage.css?v=1.0.0">
     <link rel="stylesheet" href="../assistant-widget.css?v=1.0.0">
-    <link rel="stylesheet" href="../demo-pane.css?v=1.0.0">
     <link rel="stylesheet" href="../tokens.css?v=1.0.0">
     <link rel="stylesheet" href="../pages.css?v=1.0.0">
-    <link rel="stylesheet" href="../liquid-glass.css?v=1.0.0">
-    <script src="../liquid-glass.js?v=1.0.0" defer></script>
+    <link rel="stylesheet" href="../liquid-glass.css?v=1.2.0">
+    <link rel="stylesheet" href="../glyphs.css?v=1.0.4">
+    <link rel="stylesheet" href="../project-page.css?v=1.0.3">
+    <script src="../liquid-glass.js?v=1.2.0" defer></script>
     <script src="../bg-field.js?v=1.0.0" defer></script>
     <script src="../reveal-motion.js?v=1.1.0" defer></script>
     <script src="../morph-motion.js?v=1.0.0" defer></script>
     <script src="../accent-theme.js?v=1.0.0" defer></script>
     <script src="../assistant-widget.js?v=1.0.0" defer></script>
-    <script type="module" src="../demo-pane.js?v=1.0.0"></script>
+    <script src="../story-scenes.js?v=1.0.1" defer></script>
+    <script src="../story.js?v=1.0.1" defer></script>
 </head><body>
     <div id="shell-chrome"></div>
     <script src="../site-shell.js?v=1.1.0"></script>
-    <main class="detail-page">
+    <main class="detail-page ph-page">
       <article class="detail-article">
-        <a class="detail-back" href="index.html"><i class="fas fa-arrow-left"></i> All projects</a>
-        <header class="detail-hero">
-          <div class="detail-domain-tags"><span class="detail-domain-tag is-primary">Generative AI &amp; LLMs</span></div>
-          <h1 class="detail-title">Hierarchical Rotary Positional Encoding for Long Contexts</h1>
-          <div class="detail-status"><span class="detail-status-dot"></span> Ongoing</div>
-          <p class="detail-lead">An ongoing hierarchically-anchored rotary positional encoding for long-context transformers, validated by from-scratch pretraining of 160M/420M LLMs.</p>
-          
+        <div class="ph-topbar"><a class="ph-back" href="index.html"><svg class="gi gi--clear" aria-hidden="true"><use href="../assets/glyphs.svg#g-arrow-left"/></svg><span>All projects</span></a><a class="phd-pill" href="../assets/papers/Reshad_Ul_Karim_Resume.pdf" download="Reshad_Ul_Karim_Resume.pdf"><span class="hero__status-dot" aria-hidden="true"></span><strong>Seeking PhD opportunities</strong><span class="hero__status-sep" aria-hidden="true"></span>Download CV</a></div>
+        <header class="ph-hero has-cover">
+          <div class="ph-hero__card">
+            <div class="ph-hero__meta"><span class="ph-status ph-status--ongoing"><span class="ph-status__dot" aria-hidden="true"></span>Ongoing</span><span class="ph-chip is-primary">Generative AI &amp; LLMs</span></div>
+            <h1 class="ph-title">Hierarchical Rotary Positional Encoding for Long Contexts</h1>
+            <p class="ph-lead">An ongoing hierarchically-anchored rotary positional encoding for long-context transformers, validated by from-scratch pretraining of 160M/420M LLMs.</p>
+            <div class="ph-actions"><a class="ph-btn" href="#story"><svg class="gi gi--clear" aria-hidden="true"><use href="../assets/glyphs.svg#g-film"/></svg><span>Watch the story</span></a></div>
+          </div>
+          <figure class="ph-hero__cover"><img src="../assets/images/project-cards/harp-rope.jpg" alt="Hierarchical rotary positional encoding" decoding="async" fetchpriority="high"></figure>
         </header>
-        <section class="xp" id="interactive-demo" data-demo="trace" aria-labelledby="xp-title">
-          <div class="xp-head">
-            <h2 class="xp-title" id="xp-title">Where is this token?</h2>
-            <span class="xp-kind">Research explainer</span>
+        <section class="story" id="story" data-story="harp-rope" aria-labelledby="story-title">
+          <header class="ph-head">
+            <span class="ph-kicker"><svg class="gi" aria-hidden="true"><use href="../assets/glyphs.svg#g-film"/></svg>Visual story</span>
+            <h2 class="ph-h2" id="story-title">Where is this token?</h2>
+            <p class="ph-sub">Scroll to watch it unfold. Each beat is one documented step of the project.</p>
+          </header>
+          <div class="story__grid">
+            <div class="story__stage"><img class="story__poster" src="../assets/images/project-cards/harp-rope.jpg" alt="" loading="lazy" decoding="async"><canvas class="story__canvas" aria-hidden="true"></canvas><div class="story__dots" aria-hidden="true"></div></div>
+            <ol class="story__beats">
+              <li class="story__beat"><span class="story__num">01</span><h3>Global position</h3><p>Each token still has a position in the whole sequence.</p></li>
+              <li class="story__beat"><span class="story__num">02</span><h3>Chunk index</h3><p>Positions are grouped into anchored chunks.</p></li>
+              <li class="story__beat"><span class="story__num">03</span><h3>Offset in chunk</h3><p>Within a chunk, a local offset is kept.</p></li>
+              <li class="story__beat"><span class="story__num">04</span><h3>Rotation</h3><p>The rotary encoding combines these coordinates instead of one global phase schedule.</p></li>
+              <li class="story__beat"><span class="story__num">05</span><h3>Outcome</h3><p>A schematic of the idea; exact formulas stay in the research.</p></li>
+              <li class="story__beat" data-tone="alt"><span class="story__num">06</span><h3>Standard RoPE</h3><p>One phase schedule for every position, the baseline this work replaces.</p></li>
+            </ol>
           </div>
-          <div class="xp-body">
-            <div class="xp-stage" data-xp-stage>
-              <img class="xp-poster" src="../assets/images/project-cards/harp-rope.jpg" alt="Hierarchical rotary positional encoding" loading="lazy" decoding="async">
-              <button class="xp-start" type="button" data-xp-start>Explore demo</button>
-            </div>
-            <div class="xp-panel" data-xp-panel hidden></div>
-          </div>
-          <p class="xp-status" data-xp-status role="status" aria-live="polite"></p>
-          <p class="xp-note">Authored walk-through of the documented pipeline. It shows how the system works, not recorded results.</p>
-          <script type="application/json">{"scenarios": [{"label": "Hierarchical position", "result": "A schematic of the idea; exact formulas stay in the research.", "steps": [{"label": "Global position", "detail": "Each token still has a position in the whole sequence.", "state": "ok"}, {"label": "Chunk index", "detail": "Positions are grouped into anchored chunks.", "state": "ok"}, {"label": "Offset in chunk", "detail": "Within a chunk, a local offset is kept.", "state": "ok"}, {"label": "Rotation", "detail": "The rotary encoding combines these coordinates instead of one global phase schedule.", "state": "ok"}]}, {"label": "Standard RoPE", "result": "One phase schedule for every position, the baseline this work replaces.", "steps": [{"label": "Global position", "detail": "Only the absolute position is used.", "state": "ok"}, {"label": "Rotation", "detail": "A single global phase schedule rotates each token.", "state": "ok"}]}]}</script>
+          <p class="story__note"><svg class="gi gi--clear" aria-hidden="true"><use href="../assets/glyphs.svg#g-spark"/></svg>An illustration of how the system works, drawn from the write-up below. It is not recorded output.</p>
         </section>
         <div class="detail-body">
-          <section class="detail-section"><h2 class="detail-section-title">The idea</h2><div class="detail-prose"><p>Transformers rely on positional encodings to sense word order and distance. The popular RoPE scheme packs local order, long-range distance and structure into one fixed global schedule — which recent analyses link to long-context retrieval failures and numerical fragility. This is an ongoing project that instead factors a token's position into hierarchical coordinates — a coarse chunk index, a within-chunk offset and optional structure — each driving its own band of learnable phases, while leaving some channels unrotated as a content bypass.</p></div></section><section class="detail-section"><h2 class="detail-section-title">Why it&#x27;s promising</h2><div class="detail-prose"><p>The design is set up to contain RoPE exactly as a special case, so training only departs from that strong baseline when it actually helps — and it is meant to control the numerical error that plagues long-context models in BF16. It's being validated by pretraining 160M- and 420M-parameter models from scratch. (Full formulation is held back while the work is under submission.)</p></div></section><section class="detail-section"><h2 class="detail-section-title">Tech stack &amp; key skills</h2><p class="detail-prose">Core tools, methods and skills demonstrated in this project:</p><div class="detail-tags"><span class="tech-tag">LLM pretraining from scratch</span><span class="tech-tag">Positional encodings (RoPE)</span><span class="tech-tag">Transformer internals</span><span class="tech-tag">BF16 numerical stability</span><span class="tech-tag">PyTorch</span><span class="tech-tag">160M / 420M models</span></div></section><div class="detail-related"><a class="detail-back" href="index.html"><i class="fas fa-arrow-left"></i> Back to all projects</a></div>
+          <section class="ph-section"><h2 class="ph-h2"><svg class="gi" aria-hidden="true"><use href="../assets/glyphs.svg#g-spark"/></svg><span>The idea</span></h2><div class="detail-prose"><p>Transformers rely on positional encodings to sense word order and distance. The popular RoPE scheme packs local order, long-range distance and structure into one fixed global schedule — which recent analyses link to long-context retrieval failures and numerical fragility. This is an ongoing project that instead factors a token's position into hierarchical coordinates — a coarse chunk index, a within-chunk offset and optional structure — each driving its own band of learnable phases, while leaving some channels unrotated as a content bypass.</p></div></section><section class="ph-section"><h2 class="ph-h2"><svg class="gi" aria-hidden="true"><use href="../assets/glyphs.svg#g-spark"/></svg><span>Why it&#x27;s promising</span></h2><div class="detail-prose"><p>The design is set up to contain RoPE exactly as a special case, so training only departs from that strong baseline when it actually helps — and it is meant to control the numerical error that plagues long-context models in BF16. It's being validated by pretraining 160M- and 420M-parameter models from scratch. (Full formulation is held back while the work is under submission.)</p></div></section><section class="ph-section"><h2 class="ph-h2"><svg class="gi" aria-hidden="true"><use href="../assets/glyphs.svg#g-chip"/></svg><span>Tech stack &amp; key skills</span></h2><p class="detail-prose">Core tools, methods and skills demonstrated in this project:</p><div class="detail-tags"><span class="tech-tag">LLM pretraining from scratch</span><span class="tech-tag">Positional encodings (RoPE)</span><span class="tech-tag">Transformer internals</span><span class="tech-tag">BF16 numerical stability</span><span class="tech-tag">PyTorch</span><span class="tech-tag">160M / 420M models</span></div></section><div class="ph-related"><a class="ph-back" href="index.html"><svg class="gi gi--clear" aria-hidden="true"><use href="../assets/glyphs.svg#g-arrow-left"/></svg><span>Back to all projects</span></a></div>
         </div>
       </article>
     </main>

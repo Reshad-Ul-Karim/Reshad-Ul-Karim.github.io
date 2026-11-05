@@ -41,23 +41,26 @@
     <link rel="stylesheet" href="../assistant-widget.css?v=1.0.0">
     <link rel="stylesheet" href="../tokens.css?v=1.0.0">
     <link rel="stylesheet" href="../pages.css?v=1.0.0">
-    <link rel="stylesheet" href="../liquid-glass.css?v=1.0.0">
-    <script src="../liquid-glass.js?v=1.0.0" defer></script>
+    <link rel="stylesheet" href="../liquid-glass.css?v=1.2.0">
+    <link rel="stylesheet" href="../glyphs.css?v=1.0.4">
+    <link rel="stylesheet" href="../project-page.css?v=1.0.3">
+    <script src="../liquid-glass.js?v=1.2.0" defer></script>
     <script src="../bg-field.js?v=1.0.0" defer></script>
     <script src="../reveal-motion.js?v=1.1.0" defer></script>
     <script src="../morph-motion.js?v=1.0.0" defer></script>
     <script src="../accent-theme.js?v=1.0.0" defer></script>
     <script src="../assistant-widget.js?v=1.0.0" defer></script>
-    <script src="../render.js?v=1.1.0" defer></script>
+    <script src="../render.js?v=1.2.0" defer></script>
 </head><body>
     <div id="shell-chrome"></div>
     <script src="../site-shell.js?v=1.1.0"></script>
     <main class="detail-page mp-index">
       <div class="container">
-        <a class="detail-back" href="../index.html#projects"><i class="fas fa-arrow-left"></i> Back to home</a>
-        <header class="section-header" style="text-align:left;margin-bottom:1.5rem">
-          <h1 class="section-title">Projects</h1>
-          <p class="section-subtitle" style="margin-left:0">Grouped by research domain — 20 projects across CV, agentic/LLM systems, XAI, healthcare AI, robotics &amp; edge, and full-stack.</p>
+        <div class="ph-topbar"><a class="ph-back" href="../index.html#projects"><svg class="gi gi--clear" aria-hidden="true"><use href="../assets/glyphs.svg#g-arrow-left"/></svg><span>Back to home</span></a><a class="phd-pill" href="../assets/papers/Reshad_Ul_Karim_Resume.pdf" download="Reshad_Ul_Karim_Resume.pdf"><span class="hero__status-dot" aria-hidden="true"></span><strong>Seeking PhD opportunities</strong><span class="hero__status-sep" aria-hidden="true"></span>Download CV</a></div>
+        <header class="ph-head ph-index-head">
+          <span class="ph-kicker"><svg class="gi" aria-hidden="true"><use href="../assets/glyphs.svg#g-layers"/></svg>Selected work</span>
+          <h1 class="ph-title">Projects</h1>
+          <p class="ph-lead">Grouped by research domain — 20 projects across CV, agentic/LLM systems, XAI, healthcare AI, robotics &amp; edge, and full-stack. Each one opens with a short visual story of how it works.</p>
         </header>
         <div id="project-filters"></div>
         <div id="domain-groups" class="mp-grid" data-render="projects"></div>

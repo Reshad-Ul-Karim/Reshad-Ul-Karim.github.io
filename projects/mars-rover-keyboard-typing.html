@@ -23,7 +23,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -39,49 +38,56 @@
     <link rel="stylesheet" href="../modern-ui.css?v=1.0.0">
     <link rel="stylesheet" href="../multipage.css?v=1.0.0">
     <link rel="stylesheet" href="../assistant-widget.css?v=1.0.0">
-    <link rel="stylesheet" href="../demo-pane.css?v=1.0.0">
     <link rel="stylesheet" href="../tokens.css?v=1.0.0">
     <link rel="stylesheet" href="../pages.css?v=1.0.0">
-    <link rel="stylesheet" href="../liquid-glass.css?v=1.0.0">
-    <script src="../liquid-glass.js?v=1.0.0" defer></script>
+    <link rel="stylesheet" href="../liquid-glass.css?v=1.2.0">
+    <link rel="stylesheet" href="../glyphs.css?v=1.0.4">
+    <link rel="stylesheet" href="../project-page.css?v=1.0.3">
+    <script src="../liquid-glass.js?v=1.2.0" defer></script>
     <script src="../bg-field.js?v=1.0.0" defer></script>
     <script src="../reveal-motion.js?v=1.1.0" defer></script>
     <script src="../morph-motion.js?v=1.0.0" defer></script>
     <script src="../accent-theme.js?v=1.0.0" defer></script>
     <script src="../assistant-widget.js?v=1.0.0" defer></script>
-    <script type="module" src="../demo-pane.js?v=1.0.0"></script>
+    <script src="../story-scenes.js?v=1.0.1" defer></script>
+    <script src="../story.js?v=1.0.1" defer></script>
 </head><body>
     <div id="shell-chrome"></div>
     <script src="../site-shell.js?v=1.1.0"></script>
-    <main class="detail-page">
+    <main class="detail-page ph-page">
       <article class="detail-article">
-        <a class="detail-back" href="index.html"><i class="fas fa-arrow-left"></i> All projects</a>
-        <header class="detail-hero">
-          <div class="detail-domain-tags"><span class="detail-domain-tag is-primary">Computer Vision &amp; Perception</span><span class="detail-domain-tag">Robotics &amp; Edge / Embedded</span></div>
-          <h1 class="detail-title">Mars Rover Autonomous Keyboard Typing</h1>
-          <div class="detail-status"><span class="detail-status-dot"></span> Completed</div>
-          <p class="detail-lead">Vision-guided autonomous keyboard typing for Mars Rover missions: YOLOv8 detection with PaddleOCR key recognition, up to 30% faster on-rover inference.</p>
-          <div class="detail-links"><a class="detail-link" href="https://github.com/Reshad-Ul-Karim/Autonomous-Keyboard-typing-test" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> Source code</a><button type="button" class="detail-link youtube-modal-btn" data-video-id="vdP5qrJQqGc"><i class="fab fa-youtube"></i> Watch demo</button></div>
+        <div class="ph-topbar"><a class="ph-back" href="index.html"><svg class="gi gi--clear" aria-hidden="true"><use href="../assets/glyphs.svg#g-arrow-left"/></svg><span>All projects</span></a><a class="phd-pill" href="../assets/papers/Reshad_Ul_Karim_Resume.pdf" download="Reshad_Ul_Karim_Resume.pdf"><span class="hero__status-dot" aria-hidden="true"></span><strong>Seeking PhD opportunities</strong><span class="hero__status-sep" aria-hidden="true"></span>Download CV</a></div>
+        <header class="ph-hero">
+          <div class="ph-hero__card">
+            <div class="ph-hero__meta"><span class="ph-status ph-status--done"><span class="ph-status__dot" aria-hidden="true"></span>Completed</span><span class="ph-chip is-primary">Computer Vision &amp; Perception</span><span class="ph-chip">Robotics &amp; Edge / Embedded</span></div>
+            <h1 class="ph-title">Mars Rover Autonomous Keyboard Typing</h1>
+            <p class="ph-lead">Vision-guided autonomous keyboard typing for Mars Rover missions: YOLOv8 detection with PaddleOCR key recognition, up to 30% faster on-rover inference.</p>
+            <div class="ph-actions"><a class="ph-btn" href="https://github.com/Reshad-Ul-Karim/Autonomous-Keyboard-typing-test" target="_blank" rel="noopener noreferrer"><svg class="gi gi--clear" aria-hidden="true"><use href="../assets/glyphs.svg#g-github"/></svg><span>Source code</span></a><button type="button" class="ph-btn youtube-modal-btn" data-video-id="vdP5qrJQqGc"><svg class="gi gi--clear" aria-hidden="true"><use href="../assets/glyphs.svg#g-play"/></svg><span>Watch demo</span></button><a class="ph-btn" href="#story"><svg class="gi gi--clear" aria-hidden="true"><use href="../assets/glyphs.svg#g-film"/></svg><span>Watch the story</span></a></div>
+          </div>
         </header>
-        <section class="xp" id="interactive-demo" data-demo="trace" aria-labelledby="xp-title">
-          <div class="xp-head">
-            <h2 class="xp-title" id="xp-title">From camera to keypress</h2>
-            <span class="xp-kind">Illustrative example</span>
+        <section class="story" id="story" data-story="mars-rover-keyboard-typing" aria-labelledby="story-title">
+          <header class="ph-head">
+            <span class="ph-kicker"><svg class="gi" aria-hidden="true"><use href="../assets/glyphs.svg#g-film"/></svg>Visual story</span>
+            <h2 class="ph-h2" id="story-title">From camera to keypress</h2>
+            <p class="ph-sub">Scroll to watch it unfold. Each beat is one documented step of the project.</p>
+          </header>
+          <div class="story__grid">
+            <div class="story__stage"><canvas class="story__canvas" aria-hidden="true"></canvas><div class="story__dots" aria-hidden="true"></div></div>
+            <ol class="story__beats">
+              <li class="story__beat"><span class="story__num">01</span><h3>Camera frame</h3><p>The rover's onboard camera sees the keyboard.</p></li>
+              <li class="story__beat"><span class="story__num">02</span><h3>Keyboard detection</h3><p>A YOLOv8 model finds the keyboard in real time.</p></li>
+              <li class="story__beat"><span class="story__num">03</span><h3>Key recognition</h3><p>PaddleOCR reads the key labels.</p></li>
+              <li class="story__beat"><span class="story__num">04</span><h3>Angle mapping</h3><p>The chosen key is mapped to arm angles.</p></li>
+              <li class="story__beat"><span class="story__num">05</span><h3>Keypress</h3><p>The arm presses the key.</p></li>
+              <li class="story__beat"><span class="story__num">06</span><h3>Outcome</h3><p>The rover's arm presses the right key without a human aiming the camera.</p></li>
+              <li class="story__beat" data-tone="stop"><span class="story__num">07</span><h3>Unreadable key</h3><p>With no confident read, no keypress is sent.</p></li>
+            </ol>
           </div>
-          <div class="xp-body">
-            <div class="xp-stage" data-xp-stage>
-              
-              <button class="xp-start" type="button" data-xp-start>Explore demo</button>
-            </div>
-            <div class="xp-panel" data-xp-panel hidden></div>
-          </div>
-          <p class="xp-status" data-xp-status role="status" aria-live="polite"></p>
-          <p class="xp-note">Authored walk-through of the documented pipeline. It shows how the system works, not recorded results.</p>
-          <script type="application/json">{"scenarios": [{"label": "Type one key", "result": "The rover's arm presses the right key without a human aiming the camera.", "steps": [{"label": "Camera frame", "detail": "The rover's onboard camera sees the keyboard.", "state": "ok"}, {"label": "Keyboard detection", "detail": "A YOLOv8 model finds the keyboard in real time.", "state": "ok"}, {"label": "Key recognition", "detail": "PaddleOCR reads the key labels.", "state": "ok"}, {"label": "Angle mapping", "detail": "The chosen key is mapped to arm angles.", "state": "ok"}, {"label": "Keypress", "detail": "The arm presses the key.", "state": "ok"}]}, {"label": "Unreadable key", "result": "With no confident read, no keypress is sent.", "steps": [{"label": "Camera frame", "detail": "Glare hides part of the keyboard.", "state": "ok"}, {"label": "Keyboard detection", "detail": "The keyboard is still found.", "state": "ok"}, {"label": "Key recognition", "detail": "The target key cannot be read reliably, so the sequence stops here.", "state": "stop"}]}]}</script>
+          <p class="story__note"><svg class="gi gi--clear" aria-hidden="true"><use href="../assets/glyphs.svg#g-spark"/></svg>An illustration of how the system works, drawn from the write-up below. It is not recorded output.</p>
         </section>
         
         <div class="detail-body">
-          <section class="detail-section"><h2 class="detail-section-title">Overview</h2><div class="detail-prose"><p>Part of the BRACU Mongol-Tori Mars Rover team's vision-guided autonomy work, this prototype lets the rover's onboard vision system find and read a physical keyboard so commands can be entered without a human aiming a camera by hand &mdash; a small piece of the same object-detection and autonomous-vision pipeline that improved the rover's on-board inference performance by up to 30% for the University Rover Challenge.</p></div></section><section class="detail-section"><h2 class="detail-section-title">Approach</h2><div class="detail-prose"><p>A YOLOv8 model handles real-time keyboard detection in the camera frame, and PaddleOCR reads the individual keys once the keyboard region is localized, so the system knows both where a key is and what it says. Detected key positions are angle-mapped to the rover arm's reference frame so a keypress can be executed as a physical motion rather than just a bounding box.</p></div></section><section class="detail-section"><h2 class="detail-section-title">By the numbers</h2><div class="detail-metrics"><div class="detail-metric"><span class="detail-metric-num">30%</span><span class="detail-metric-label">Faster On-Rover Inference</span></div></div></section><section class="detail-section"><h2 class="detail-section-title">Highlights</h2><ul class="detail-prose"><li>Real-time Detection</li><li>Angle Mapping</li><li>Rover Integration</li></ul></section><section class="detail-section"><h2 class="detail-section-title">Tech stack &amp; key skills</h2><p class="detail-prose">Core tools, methods and skills demonstrated in this project:</p><div class="detail-tags"><span class="tech-tag">Python</span><span class="tech-tag">YOLOv8</span><span class="tech-tag">PaddleOCR</span><span class="tech-tag">Computer vision</span><span class="tech-tag">Real-time inference</span><span class="tech-tag">Vision-guided autonomy</span></div></section><div class="detail-related"><a class="detail-back" href="index.html"><i class="fas fa-arrow-left"></i> Back to all projects</a></div>
+          <section class="ph-section"><h2 class="ph-h2"><svg class="gi" aria-hidden="true"><use href="../assets/glyphs.svg#g-eye"/></svg><span>Overview</span></h2><div class="detail-prose"><p>Part of the BRACU Mongol-Tori Mars Rover team's vision-guided autonomy work, this prototype lets the rover's onboard vision system find and read a physical keyboard so commands can be entered without a human aiming a camera by hand &mdash; a small piece of the same object-detection and autonomous-vision pipeline that improved the rover's on-board inference performance by up to 30% for the University Rover Challenge.</p></div></section><section class="ph-section"><h2 class="ph-h2"><svg class="gi" aria-hidden="true"><use href="../assets/glyphs.svg#g-nodes"/></svg><span>Approach</span></h2><div class="detail-prose"><p>A YOLOv8 model handles real-time keyboard detection in the camera frame, and PaddleOCR reads the individual keys once the keyboard region is localized, so the system knows both where a key is and what it says. Detected key positions are angle-mapped to the rover arm's reference frame so a keypress can be executed as a physical motion rather than just a bounding box.</p></div></section><section class="ph-section"><h2 class="ph-h2"><svg class="gi" aria-hidden="true"><use href="../assets/glyphs.svg#g-chart"/></svg><span>By the numbers</span></h2><div class="detail-metrics"><div class="detail-metric"><span class="detail-metric-num">30%</span><span class="detail-metric-label">Faster On-Rover Inference</span></div></div></section><section class="ph-section"><h2 class="ph-h2"><svg class="gi" aria-hidden="true"><use href="../assets/glyphs.svg#g-spark"/></svg><span>Highlights</span></h2><ul class="detail-prose"><li>Real-time Detection</li><li>Angle Mapping</li><li>Rover Integration</li></ul></section><section class="ph-section"><h2 class="ph-h2"><svg class="gi" aria-hidden="true"><use href="../assets/glyphs.svg#g-chip"/></svg><span>Tech stack &amp; key skills</span></h2><p class="detail-prose">Core tools, methods and skills demonstrated in this project:</p><div class="detail-tags"><span class="tech-tag">Python</span><span class="tech-tag">YOLOv8</span><span class="tech-tag">PaddleOCR</span><span class="tech-tag">Computer vision</span><span class="tech-tag">Real-time inference</span><span class="tech-tag">Vision-guided autonomy</span></div></section><div class="ph-related"><a class="ph-back" href="index.html"><svg class="gi gi--clear" aria-hidden="true"><use href="../assets/glyphs.svg#g-arrow-left"/></svg><span>Back to all projects</span></a></div>
         </div>
       </article>
     </main>

@@ -154,14 +154,6 @@ html[data-v2] .detail-metric-label { color: var(--ink-2) !important; }
 /* ---- 404 ---------------------------------------------------------------------- */
 html[data-v2] .notfound__code { -webkit-text-fill-color: currentColor !important; background: none !important; color: var(--link) !important; }
 
-/* ---- Exhibit stage tracks the theme (demo-pane.css) ------------------------- */
-html[data-v2] .xp { --xp-stage: var(--hero); }
-html[data-v2] .xp-panel { background: var(--card) !important; border-color: var(--line) !important; color: var(--ink) !important; }
-html[data-v2] .xp-seg { background: var(--page) !important; border-color: var(--line) !important; }
-html[data-v2] .xp-seg button, html[data-v2] .xp-btn { color: var(--ink) !important; }
-html[data-v2] .xp-seg button[aria-pressed="true"] { background: var(--action-bg) !important; color: var(--action-ink) !important; }
-html[data-v2] :is(.xp-label, .xp-readout dt, .xp-explain, .xp-status, .xp-note) { color: var(--ink-2) !important; }
-
 @media (prefers-reduced-motion: reduce) {
   html[data-v2] * { transition-duration: 1ms !important; animation-duration: 1ms !important; }
 }
@@ -171,5 +163,4 @@ html[data-v2] :is(.xp-label, .xp-readout dt, .xp-explain, .xp-status, .xp-note) 
 
 /* Contrast: legacy accent text uses --primary-color, which is too dark on the
    dark grey theme; use the theme-aware link colour instead. */
-html[data-v2] .xp-kind { color: var(--link) !important; background: rgba(var(--link-rgb), 0.12) !important; }
 html[data-v2] :is(.footer, .site-footer, footer) a { color: var(--link) !important; }

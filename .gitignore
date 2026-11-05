@@ -1,3 +1,9 @@
 .claude/
 .DS_Store
 Resume___Reshad_Ul_karim__UIU_/
+
+# Private LinkedIn drafts (captions, flyer prompts): never publish
+LinkedIn_Content/
+
+# Local browser-test captures
+.playwright-mcp/
