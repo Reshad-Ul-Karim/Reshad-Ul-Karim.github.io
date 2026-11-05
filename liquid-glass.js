@@ -25,7 +25,7 @@
   var SELECTOR = [
     // homepage
     '.nav', '.btn', '.icon-btn', '.tilt-toggle', '.tile', '.cap', '.tl__body', '.project', '.form',
-    '.culture__item', '.honor.is-featured', '.xp-panel', '.xp-start',
+    '.culture__item', '.honor.is-featured', '.xp-panel', '.xp-start', '.toolkit',
     // other pages
     '.navbar .nav-container', '.project-card', '.publication-item', '.pub-card', '.pub-stats > li', '.detail-metric',
     '.btn-primary', '.btn-secondary', '.action-btn', '.detail-link', '.detail-back',
@@ -234,7 +234,7 @@
   /* Liquid wobble, mild glitch and blur. Only small controls react with motion:
      reading cards stay still so their links are easy to hit. */
   var CONTROL = 'a, button, .btn, .icon-btn, .tilt-toggle, .theme-toggle, .accent-trigger, .action-btn, .btn-primary, .btn-secondary, .detail-link, .detail-back';
-  var STILL = '.project, .project-card, .publication-item, .pub-card, .pub-stats > li, .tile, .cap, .tl__body, .form, .culture__item, .xp-panel, .detail-metric, .honor';
+  var STILL = '.project, .project-card, .publication-item, .pub-card, .pub-stats > li, .tile, .cap, .tl__body, .form, .culture__item, .xp-panel, .detail-metric, .honor, .toolkit';
   function moves(el) { return !reduceMQ.matches && el.matches(CONTROL) && !el.matches(STILL); }
   function wobble(el, strong) {
     if (!moves(el) || !el.animate) return;

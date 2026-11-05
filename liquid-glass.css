@@ -44,7 +44,7 @@ html[data-theme="dark"] {
   transform-origin: 50% 50%;
 }
 /* Reading surfaces (cards with paragraphs) keep a stronger tint for contrast. */
-.lg:is(.tile, .cap, .tl__body, .project, .form, .culture__item, .xp-panel, .project-card, .publication-item, .pub-card, .detail-metric, .honor) { background: var(--lg-tint-strong) !important; }
+.lg:is(.tile, .cap, .toolkit, .tl__body, .project, .form, .culture__item, .xp-panel, .project-card, .publication-item, .pub-card, .detail-metric, .honor) { background: var(--lg-tint-strong) !important; }
 /* Refraction where supported: the filter bends + splits the backdrop at the rim.
    It stays on while scrolling: backdrop-filter cannot interpolate between two
    filter chains, so any swap shows as a hard pop. Glass still waiting for its
