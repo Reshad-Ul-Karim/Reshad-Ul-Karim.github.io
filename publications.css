@@ -1,0 +1,135 @@
+/* =========================================================================
+   publications.css: the publications index (publications/index.html).
+   Markup comes from render.js (renderPublications). Builds on tokens.css,
+   glyphs.css and project-page.css (.ph-head, .ph-btn, .ph-chip, --ph-*), so
+   the page matches the project pages. Cards are liquid glass (.lg).
+   ========================================================================= */
+html[data-v2] .pub-index > .container { max-width: 1160px; padding-inline: clamp(16px, 4vw, 40px); }
+.pub-head { margin-bottom: clamp(24px, 3.5vw, 40px); }
+.pub-profiles { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+
+/* ---- At a glance --------------------------------------------------------- */
+.pub-stats {
+  list-style: none; margin: 0 0 clamp(40px, 6vw, 64px); padding: 0;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;
+}
+.pub-stats li {
+  display: grid; gap: 6px; padding: 18px 20px; border-radius: 22px;
+  background: var(--ph-glass); box-shadow: var(--ph-rim);
+}
+.pub-stats li::before { content: none !important; }
+.pub-stats strong {
+  font-family: var(--font-display); font-size: clamp(1.9rem, 1.4rem + 1.5vw, 2.6rem); font-weight: 800;
+  line-height: 1; letter-spacing: -0.035em; color: var(--ink);
+}
+.pub-stats span { color: var(--ink-2); font-size: 0.88rem; }
+
+/* ---- Groups ---------------------------------------------------------------- */
+.pub-group { margin: 0 0 clamp(48px, 7vw, 80px); }
+.pub-group__head { margin-bottom: clamp(16px, 2.4vw, 22px); }
+.pub-count {
+  display: inline-grid; place-items: center; min-width: 32px; height: 32px; padding: 0 10px; margin-left: 2px;
+  border-radius: 999px; font: 700 0.85rem/1 var(--mono); letter-spacing: 0; color: var(--ink-2);
+  background: rgba(255, 255, 255, 0.05); box-shadow: inset 0 0 0 1px var(--line);
+}
+.pub-list { display: grid; gap: clamp(14px, 2vw, 20px); }
+
+/* ---- Card ---------------------------------------------------------------- */
+html[data-v2] .pub-card {
+  position: relative;
+  display: grid; grid-template-columns: 104px minmax(0, 1fr); align-items: start;
+  gap: clamp(16px, 2.4vw, 32px);
+  padding: clamp(20px, 2.8vw, 34px);
+  border-radius: var(--ph-r);
+}
+html[data-v2] .pub-card:has(.pub-talk) { grid-template-columns: 104px minmax(0, 1fr) minmax(210px, 300px); }
+
+.pub-card__rail { display: grid; gap: 8px; padding-top: 2px; }
+.pub-year {
+  font-family: var(--font-display); font-size: clamp(2rem, 1.6rem + 1.2vw, 2.7rem); font-weight: 800;
+  line-height: 0.95; letter-spacing: -0.045em;
+  background: linear-gradient(180deg, var(--ink), rgba(var(--ink-rgb), 0.42));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.pub-card.is-first .pub-year { background-image: linear-gradient(180deg, var(--hl), rgba(var(--hl-rgb), 0.5)); }
+.pub-kind { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--link); }
+
+.pub-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-bottom: 12px; }
+.pub-date { color: var(--ink-2); font-size: 0.86rem; }
+
+html[data-v2] .pub-title {
+  margin: 0 0 10px; font-family: var(--font-display) !important;
+  font-size: clamp(1.15rem, 1rem + 0.65vw, 1.55rem) !important; font-weight: 720 !important;
+  line-height: 1.24 !important; letter-spacing: -0.018em; text-wrap: balance; color: var(--ink) !important;
+}
+.pub-title a {
+  color: inherit !important; text-decoration: none;
+  background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+  transition: background-size 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.pub-title a:hover, .pub-title a:focus-visible { background-size: 100% 1px; }
+html[data-v2] .pub-authors {
+  margin: 0 0 14px; font-family: var(--font) !important; font-size: 0.95rem; line-height: 1.55; color: var(--ink-2) !important;
+}
+.pub-authors strong { color: var(--ink); font-weight: 700; padding: 0.05em 0.35em; border-radius: 6px; background: rgba(var(--hl-rgb), 0.14); }
+
+.pub-venue { display: flex; align-items: center; gap: 12px; margin: 0 0 14px; color: var(--ink); }
+.pub-venue .gi { --gi-size: 32px; }
+.pub-venue > span { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
+.pub-venue strong { font-weight: 650; }
+.pub-venue__qual { color: var(--ink-2); font-size: 0.86rem; }
+
+.pub-summary { margin: 0 0 16px; max-width: 70ch; color: var(--ink-2); line-height: 1.65; }
+.pub-tags { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; padding: 0; }
+.pub-tags li {
+  padding: 5px 12px; border-radius: 999px; font-size: 0.82rem; color: var(--ink-2);
+  background: rgba(255, 255, 255, 0.05); box-shadow: inset 0 0 0 1px var(--line);
+}
+.pub-tags li::before { content: none !important; }
+.pub-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.pub-actions .ph-btn { min-height: 42px; padding: 4px 16px 4px 5px; font-size: 0.9rem; }
+.pub-actions .ph-btn .gi { --gi-size: 32px; }
+.ph-btn.is-muted { opacity: 0.7; cursor: default; }
+.ph-btn.is-muted:hover { transform: none; }
+
+/* Talk thumbnail: opens the video dialog (render.js wires .media-preview). */
+.pub-talk {
+  position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; margin: 0; padding: 0;
+  border: 0; border-radius: 20px; overflow: hidden; cursor: pointer; background: #000;
+  box-shadow: var(--ph-rim), 0 18px 34px -20px rgba(0, 0, 0, 0.75);
+}
+.pub-talk img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.82;
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
+}
+.pub-talk::after { /* glass rim and top sheen over the image */
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 35%);
+}
+@media (hover: hover) { .pub-talk:hover img { transform: scale(1.05); opacity: 1; } }
+.pub-talk__play { position: absolute; inset: 0; display: grid; place-items: center; }
+.pub-talk__play .gi { --gi-size: 54px; }
+.pub-talk__cap {
+  position: absolute; left: 10px; bottom: 10px; padding: 4px 10px; border-radius: 999px;
+  font-size: 0.75rem; font-weight: 600; color: #fff; background: rgba(0, 0, 0, 0.45);
+}
+
+/* ---- Small screens ---------------------------------------------------------- */
+@media (max-width: 900px) {
+  html[data-v2] .pub-card, html[data-v2] .pub-card:has(.pub-talk) { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .pub-card__rail { display: flex; align-items: baseline; gap: 12px; }
+  .pub-year { font-size: 1.9rem; }
+  .pub-talk { max-width: 520px; }
+}
+@media (max-width: 560px) {
+  .pub-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pub-actions .ph-btn { flex: 1 1 auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pub-talk img, .pub-title a { transition: none; }
+}
+@media (forced-colors: active) {
+  .pub-stats li, .pub-talk { border: 1px solid CanvasText; }
+  .pub-year { color: CanvasText; background: none; }
+}

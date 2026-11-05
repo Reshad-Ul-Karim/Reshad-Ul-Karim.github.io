@@ -10,27 +10,30 @@
 (function () {
   'use strict';
 
-  var COLOURS = ['teal', 'blue', 'red', 'orange', 'mono'];
+  /* Monochrome is the first-visit default on every page (data-accent-default). */
+  var COLOURS = ['mono', 'teal', 'blue', 'violet', 'sky', 'emerald', 'red', 'orange'];
   /* Neutral themes exist only in dark mode: picking one switches to dark, and
      choosing light while one is active falls back to the last colour accent. */
-  var NEUTRALS = ['graphite', 'stone', 'sand', 'sage', 'slate'];
+  var NEUTRALS = ['onyx', 'graphite', 'slate', 'midnight', 'plum', 'stone', 'sand', 'sage'];
   var ACCENTS = COLOURS.concat(NEUTRALS);
   var STORAGE_KEY = 'accent';
   var COLOUR_KEY = 'accent-colour';
   var LABELS = {
-    teal: 'Teal accent', blue: 'Blue accent', red: 'Red accent', orange: 'Orange accent', mono: 'Monochrome accent',
-    graphite: 'Graphite (dark only)', stone: 'Stone (dark only)', sand: 'Sand (dark only)', sage: 'Sage (dark only)', slate: 'Slate (dark only)'
+    mono: 'Monochrome accent', teal: 'Teal accent', blue: 'Blue accent', violet: 'Violet accent', sky: 'Sky accent',
+    emerald: 'Emerald accent', red: 'Red accent', orange: 'Orange accent',
+    onyx: 'Onyx (dark only)', graphite: 'Graphite (dark only)', slate: 'Slate (dark only)', midnight: 'Midnight (dark only)',
+    plum: 'Plum (dark only)', stone: 'Stone (dark only)', sand: 'Sand (dark only)', sage: 'Sage (dark only)'
   };
   function isNeutral(a) { return NEUTRALS.indexOf(a) !== -1; }
 
   /* ---- 1. Apply persisted accent ASAP (minimise flash) ----
      With nothing saved, a page can name its own default on <html
-     data-accent-default="...">; the homepage uses teal, the rest stay blue. */
+     data-accent-default="...">; every page uses mono (monochrome, dark). */
   function readAccent() {
     var saved;
     try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) { saved = null; }
     var fallback = document.documentElement.getAttribute('data-accent-default');
-    if (ACCENTS.indexOf(fallback) === -1) fallback = 'blue';
+    if (ACCENTS.indexOf(fallback) === -1) fallback = 'mono';
     return ACCENTS.indexOf(saved) !== -1 ? saved : fallback;
   }
 
@@ -191,7 +194,7 @@
         var back;
         try { back = localStorage.getItem(COLOUR_KEY); } catch (e) { back = null; }
         if (COLOURS.indexOf(back) === -1) back = document.documentElement.getAttribute('data-accent-default');
-        if (COLOURS.indexOf(back) === -1) back = 'teal';
+        if (COLOURS.indexOf(back) === -1) back = 'mono';
         applyAccent(back);
       }
     }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });

@@ -128,6 +128,32 @@ html[data-accent="slate"] {
   --accent-tertiary-rgb:  180, 194, 212;
 }
 
+/* Added schemes: violet / sky / emerald (colour), onyx / midnight / plum (neutral dark). */
+html[data-accent="violet"] {
+  --primary-color: #6D28D9; --primary-dark: #5B21B6; --secondary-color: #A78BFA; --accent-color: #F0ABFC;
+  --accent-primary-rgb: 109, 40, 217; --accent-secondary-rgb: 167, 139, 250; --accent-tertiary-rgb: 240, 171, 252;
+}
+html[data-accent="sky"] {
+  --primary-color: #0369A1; --primary-dark: #075985; --secondary-color: #38BDF8; --accent-color: #FDA4AF;
+  --accent-primary-rgb: 3, 105, 161; --accent-secondary-rgb: 56, 189, 248; --accent-tertiary-rgb: 253, 164, 175;
+}
+html[data-accent="emerald"] {
+  --primary-color: #047857; --primary-dark: #065F46; --secondary-color: #34D399; --accent-color: #FCD34D;
+  --accent-primary-rgb: 4, 120, 87; --accent-secondary-rgb: 52, 211, 153; --accent-tertiary-rgb: 252, 211, 77;
+}
+html[data-accent="onyx"] {
+  --primary-color: #52525B; --primary-dark: #3F3F46; --secondary-color: #A1A1AA; --accent-color: #D4D4D8;
+  --accent-primary-rgb: 82, 82, 91; --accent-secondary-rgb: 161, 161, 170; --accent-tertiary-rgb: 212, 212, 216;
+}
+html[data-accent="midnight"] {
+  --primary-color: #3B4A7A; --primary-dark: #2E3A61; --secondary-color: #7E8DB8; --accent-color: #A9B8E8;
+  --accent-primary-rgb: 59, 74, 122; --accent-secondary-rgb: 126, 141, 184; --accent-tertiary-rgb: 169, 184, 232;
+}
+html[data-accent="plum"] {
+  --primary-color: #6B4A73; --primary-dark: #553A5C; --secondary-color: #A98BB0; --accent-color: #D9C2DE;
+  --accent-primary-rgb: 107, 74, 115; --accent-secondary-rgb: 169, 139, 176; --accent-tertiary-rgb: 217, 194, 222;
+}
+
 /* Dark-mono: accent backgrounds turn light, so white text/icons on them
    must flip to near-black to stay legible. Auto-derived from every rule that
    paints white text on an accent background. */
@@ -316,7 +342,8 @@ html[data-theme="light"] #accent-switcher .accent-tray {
 /* Two columns: colour accents, then the neutral dark-only themes. */
 #accent-switcher { align-items: flex-end; } /* the wider tray must not overflow the right edge */
 #accent-switcher .accent-tray { flex-direction: row; align-items: flex-end; transform-origin: bottom right; }
-#accent-switcher .accent-group { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+/* Eight swatches a group: two columns of four keep the tray short. */
+#accent-switcher .accent-group { display: grid; grid-template-columns: repeat(2, 30px); gap: 10px; }
 #accent-switcher .accent-group--neutral {
   padding-left: 10px;
   border-left: 1px solid rgba(255, 255, 255, 0.14);
@@ -356,6 +383,18 @@ html[data-theme="light"] #accent-switcher .accent-tray {
 #accent-switcher .accent-swatch[data-swatch="sage"].active { color: #BCCBB8; }
 #accent-switcher .accent-swatch[data-swatch="slate"] { background: linear-gradient(135deg, #11151A, #B4C2D4); }
 #accent-switcher .accent-swatch[data-swatch="slate"].active { color: #B4C2D4; }
+#accent-switcher .accent-swatch[data-swatch="violet"]  { background: linear-gradient(135deg, #6D28D9, #F0ABFC); }
+#accent-switcher .accent-swatch[data-swatch="violet"].active { color: #A78BFA; }
+#accent-switcher .accent-swatch[data-swatch="sky"]     { background: linear-gradient(135deg, #0369A1, #7DD3FC); }
+#accent-switcher .accent-swatch[data-swatch="sky"].active { color: #38BDF8; }
+#accent-switcher .accent-swatch[data-swatch="emerald"] { background: linear-gradient(135deg, #047857, #6EE7B7); }
+#accent-switcher .accent-swatch[data-swatch="emerald"].active { color: #34D399; }
+#accent-switcher .accent-swatch[data-swatch="onyx"]    { background: linear-gradient(135deg, #000000, #D4D4D8); }
+#accent-switcher .accent-swatch[data-swatch="onyx"].active { color: #D4D4D8; }
+#accent-switcher .accent-swatch[data-swatch="midnight"] { background: linear-gradient(135deg, #0D1220, #A9B8E8); }
+#accent-switcher .accent-swatch[data-swatch="midnight"].active { color: #A9B8E8; }
+#accent-switcher .accent-swatch[data-swatch="plum"]    { background: linear-gradient(135deg, #150F17, #D9C2DE); }
+#accent-switcher .accent-swatch[data-swatch="plum"].active { color: #D9C2DE; }
 
 #accent-switcher .accent-swatch:hover {
   transform: scale(1.18);

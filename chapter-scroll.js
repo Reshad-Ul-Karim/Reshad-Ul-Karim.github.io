@@ -104,6 +104,7 @@
   var f = 0;
   var active = -1;
   var lastSy = win.scrollY;
+  var lastDir = 0;
   var lastT = performance.now();
   var vel = 0;
   var sc = 1; var sv = 0; // droplet stretch (spring)
@@ -155,14 +156,22 @@
     if (doc.activeElement && doc.activeElement.matches && doc.activeElement.matches('input, textarea, select')) return;
     var sel = win.getSelection && win.getSelection();
     if (sel && String(sel).length) return;
+    // Settles only ever continue the way the reader was going. Snapping to the
+    // nearest stop pulled every mouse-wheel notch (~100 px, then a pause) back
+    // to where it started, so the carousel and chapter starts felt stuck.
     if (P.on && P.shift > 0 && sy > P.start - 4 && sy < P.start + P.shift + 4) {
-      var k = Math.round((sy - P.start) / P.step);
+      var rel = (sy - P.start) / P.step;
+      var k = lastDir > 0 ? Math.ceil(rel - 0.04) : lastDir < 0 ? Math.floor(rel + 0.04) : Math.round(rel);
       var t = clamp(P.start + k * P.step, P.start, P.start + P.shift);
       if (Math.abs(t - sy) > 3) glideTo(t, 560);
       return;
     }
     var best = null;
-    tops.forEach(function (t) { if (best === null || Math.abs(t - sy) < Math.abs(best - sy)) best = t; });
+    tops.forEach(function (t) {
+      if (lastDir > 0 && t < sy - 3) return;
+      if (lastDir < 0 && t > sy + 3) return;
+      if (best === null || Math.abs(t - sy) < Math.abs(best - sy)) best = t;
+    });
     if (best !== null && Math.abs(best - sy) < vh * 0.16 && Math.abs(best - sy) > 3) glideTo(best, 600);
   }
 
@@ -196,6 +205,7 @@
 
     // Velocity and the droplet's watery stretch
     var dt = Math.max(1, now - lastT);
+    if (!glide && Math.abs(sy - lastSy) > 0.5) lastDir = sy > lastSy ? 1 : -1;
     var v = (sy - lastSy) / dt; lastSy = sy; lastT = now;
     vel += (v - vel) * 0.22;
     if (Math.abs(vel) < 0.003) vel = 0; else busy = true;
@@ -375,6 +385,14 @@
     var w = cards[0] ? cards[0].getBoundingClientRect().width + (parseFloat(getComputedStyle(track).columnGap) || 0) : track.clientWidth;
     track.scrollBy({ left: dir * w, behavior: reduceMQ.matches ? 'auto' : 'smooth' });
   }
+  // Pinned: the track is moved by the page scroll, so a sideways swipe (trackpad
+  // or tilt wheel) over the carousel is turned into that scroll.
+  if (sticky) sticky.addEventListener('wheel', function (e) {
+    if (!P.on || e.ctrlKey || Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+    e.preventDefault();
+    win.scrollBy(0, e.deltaMode === 1 ? e.deltaX * 16 : e.deltaX);
+    userInput();
+  }, { passive: false });
   if (track) {
     if (prevBtn) prevBtn.addEventListener('click', function () { carousel(-1); });
     if (nextBtn) nextBtn.addEventListener('click', function () { carousel(1); });

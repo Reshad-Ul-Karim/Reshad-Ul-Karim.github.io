@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en" data-accent="teal" data-accent-default="teal">
+<html lang="en" data-accent="mono" data-accent-default="mono">
 <head>
     <!-- PRE-PAINT theme + accent bootstrap: must stay the first script in <head>.
          Applies the stored theme/accent to <html> before first paint so there is no
          dark/accent flash. Same localStorage keys as every other page: 'theme'
          (home.js theme toggle -> data-theme) and 'accent' (accent-theme.js ->
-         data-accent). This page defaults to the teal accent (data-accent-default).
+         data-accent). This page defaults to the monochrome accent (data-accent-default).
          Also flags JS so the nav can collapse into its disclosure panel without a
          flash; without JS the links simply stay visible. -->
     <script>
@@ -101,14 +101,14 @@
     <!-- Homepage styles. The legacy stack (styles.css, fixes.css, modern-ui.css,
          GSAP, Lenis, vanilla-tilt, the old Three.js layers) is still used by the
          project, publication and 404 pages, but not here. -->
-    <link rel="stylesheet" href="tokens.css?v=1.1.0">
+    <link rel="stylesheet" href="tokens.css?v=1.2.0">
     <link rel="stylesheet" href="home.css?v=2.5.0">
-    <link rel="stylesheet" href="liquid-glass.css?v=1.6.0">
+    <link rel="stylesheet" href="liquid-glass.css?v=1.6.1">
     <link rel="stylesheet" href="chapter-scroll.css?v=1.2.0">
     <link rel="stylesheet" href="glyphs.css?v=1.0.4">
     <!-- Shared with every page: the accent switcher (palette button) and the chat
          widget keep their original look and behaviour. -->
-    <link rel="stylesheet" href="accent-theme.css?v=1.2.0">
+    <link rel="stylesheet" href="accent-theme.css?v=1.3.0">
     <link rel="stylesheet" href="assistant-widget.css?v=1.0.0">
     <!-- Font Awesome (palette, theme toggle and chat widget icons) and the chat
          widget's fonts load without blocking the first paint. -->
@@ -121,11 +121,11 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap">
     </noscript>
 
-    <script src="home.js?v=2.5.0" defer></script>
-    <script src="liquid-glass.js?v=1.7.0" defer></script>
-    <script src="chapter-scroll.js?v=1.2.2" defer></script>
+    <script src="home.js?v=2.6.1" defer></script>
+    <script src="liquid-glass.js?v=1.7.1" defer></script>
+    <script src="chapter-scroll.js?v=1.3.0" defer></script>
     <script src="bg-field.js?v=1.2.0" defer></script>
-    <script src="accent-theme.js?v=1.2.0" defer></script>
+    <script src="accent-theme.js?v=1.3.0" defer></script>
     <script src="assistant-widget.js?v=1.1.0" defer></script>
     <!-- Page-wide 3D (one renderer). Starts after the load event (at once behind the
          preloader); every chapter keeps a static fallback for no WebGL 2, reduced

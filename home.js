@@ -353,8 +353,6 @@
       return !el.closest('.masthead');
     });
     revealEls.forEach(function (el) {
-      var sibs = Array.prototype.filter.call(el.parentElement.children, function (c) { return revealEls.indexOf(c) > -1; });
-      el.style.setProperty('--rv-i', String(Math.min(5, sibs.indexOf(el))));
       var r = el.getBoundingClientRect();
       if (r.top > window.innerHeight || r.bottom < 0) {
         el.classList.add('rv');
@@ -363,25 +361,55 @@
         el._rvIn = true; // on screen at load: no entrance
       }
     });
+    // The stagger follows the order blocks come into view, per batch, in the
+    // scroll direction: top-down when they rise from below, bottom-up when
+    // they settle from above. A block arriving on its own has no delay, so
+    // scrolling back up never waits on a sibling that is still off screen.
     var revealIO = new IntersectionObserver(function (es) {
+      var vh = window.innerHeight;
+      var arriving = [];
       es.forEach(function (e) {
         var el = e.target;
         if (e.isIntersecting) {
           if (el._rvIn) return;
           el._rvIn = true;
-          el.classList.add('is-in');
-          clearTimeout(el._rvT);
-          el._rvT = setTimeout(function () { if (el._rvIn) el.classList.remove('rv', 'rv--up', 'is-in'); }, 1500);
+          arriving.push(e);
         } else {
           el._rvIn = false;
           clearTimeout(el._rvT);
+          el.style.setProperty('--rv-i', '0');
           el.classList.remove('is-in');
           el.classList.toggle('rv--up', e.boundingClientRect.top < 0);
           el.classList.add('rv');
         }
       });
+      var row = function (e) { return Math.round(e.boundingClientRect.top / 24); }; // same row within 24 px
+      var fromAbove = arriving.filter(function (e) { return e.boundingClientRect.top + e.boundingClientRect.height / 2 < vh / 2; });
+      var fromBelow = arriving.filter(function (e) { return fromAbove.indexOf(e) === -1; });
+      fromBelow.sort(function (a, b) { return row(a) - row(b) || a.boundingClientRect.left - b.boundingClientRect.left; });
+      fromAbove.sort(function (a, b) { return row(b) - row(a) || a.boundingClientRect.left - b.boundingClientRect.left; });
+      [fromBelow, fromAbove].forEach(function (batch) {
+        batch.forEach(function (e, i) {
+          var el = e.target;
+          el.style.setProperty('--rv-i', String(Math.min(5, i)));
+          el.classList.add('is-in');
+          clearTimeout(el._rvT);
+          el._rvT = setTimeout(function () { if (el._rvIn) el.classList.remove('rv', 'rv--up', 'is-in'); }, 1500 + i * 90);
+        });
+      });
     }, { rootMargin: '-4% 0px -8% 0px' });
     revealEls.forEach(function (el) { revealIO.observe(el); });
+    // Blocks skipped by a jump (chapter link, #hash) still carry the side they
+    // started on; set the side they will actually enter from before they reach
+    // the screen, so scrolling back up they settle from above, not rise from below.
+    var sideIO = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        var el = e.target;
+        if (!e.isIntersecting || el._rvIn || !el.classList.contains('rv')) return;
+        el.classList.toggle('rv--up', e.boundingClientRect.top < 0);
+      });
+    }, { rootMargin: '60% 0px 60% 0px' });
+    revealEls.forEach(function (el) { sideIO.observe(el); });
 
     /* Section headings come into focus word by word as they enter. */
     var heads = doc.querySelectorAll('.section-head h2');

@@ -443,9 +443,9 @@
   }
 
   var PUB_GROUPS = [
-    { key: 'journal',    title: 'Journal Articles', icon: 'fas fa-journal-whills' },
-    { key: 'conference', title: 'Conference Papers', icon: 'fas fa-users' },
-    { key: 'upcoming',   title: 'Upcoming', icon: 'fas fa-clock' }
+    { key: 'journal',    title: 'Journal articles' },
+    { key: 'conference', title: 'Conference papers' },
+    { key: 'upcoming',   title: 'Upcoming' }
   ];
 
   function pubGroupKey(p) {
@@ -463,145 +463,114 @@
     });
   }
 
-  function pubTypeBadgeHTML(p) {
-    if (p.type === 'journal') {
-      return '<div class="publication-type-badge journal"><i class="fas fa-journal-whills"></i><span>Journal Publication</span></div>';
-    }
-    return '<div class="publication-type-badge conference"><i class="fas fa-users"></i><span>Conference Paper</span></div>';
-  }
-
-  function pubDateHTML(p) {
-    var disp = esc(p.dateDisplay || p.date || '');
-    if (p.status === 'upcoming') {
-      return '<div class="publication-date"><span class="pub-status-pill"><i class="fas fa-clock"></i> To be presented</span> ' + disp + '</div>';
-    }
-    return '<div class="publication-date">' + disp + '</div>';
+  // Liquid-glass glyph tile from assets/glyphs.svg (see glyphs.css).
+  function glyph(name, clear) {
+    return '<svg class="gi' + (clear ? ' gi--clear' : '') + '" aria-hidden="true"><use href="' +
+      asset('assets/glyphs.svg') + '#g-' + name + '"/></svg>';
   }
 
   function pubVenueHTML(p) {
     var v = p.venue || {};
-    var qual = '';
-    if (v.qualifier) qual = '<span class="impact-factor">' + esc(v.qualifier) + '</span>';
-    else if (v.location) qual = '<span class="conference-location">' + esc(v.location) + '</span>';
-
-    var venue = '<div class="venue-info"><i class="fas fa-building"></i><span class="venue-name">' +
-      esc(v.name || '') + '</span>' + qual + '</div>';
-
-    var doi = '';
-    if (p.url || p.doi) {
-      var url = p.url || ('https://doi.org/' + p.doi);
-      var label = p.doi ? ('doi.org/' + p.doi) : url.replace(/^https?:\/\//, '');
-      doi = '<div class="doi-info"><i class="fas fa-link"></i><a href="' + esc(url) +
-        '" target="_blank" rel="noopener noreferrer">' + esc(label) + '</a></div>';
-    } else if (p.note) {
-      doi = '<div class="doi-info"><i class="fas fa-calendar-check"></i><span>' + esc(p.note) + '</span></div>';
-    }
-    return '<div class="publication-details">' + venue + doi + '</div>';
+    var qual = v.qualifier || v.location || '';
+    return '<p class="pub-venue">' + glyph('doc', true) + '<span><strong>' + esc(v.name || '') + '</strong>' +
+      (qual ? '<span class="pub-venue__qual">' + esc(qual) + '</span>' : '') + '</span></p>';
   }
 
-  function pubMediaHTML(p) {
+  function pubTalkHTML(p) {
     var m = p.media || {};
     if (m.type !== 'youtube' || !m.videoId) return '';
     var st = m.startTime ? ' data-start-time="' + esc(m.startTime) + '"' : '';
     return '' +
-      '<div class="publication-media">' +
-        '<div class="media-preview" data-video-id="' + esc(m.videoId) + '"' + st + '>' +
-          '<img src="https://img.youtube.com/vi/' + esc(m.videoId) + '/maxresdefault.jpg" alt="' +
-            esc(m.alt || (p.title + ' presentation')) + '" class="media-thumbnail" width="1280" height="720" loading="lazy" decoding="async">' +
-          '<div class="media-play-button"><i class="fab fa-youtube"></i></div>' +
-          '<div class="media-overlay"><span class="media-duration">' + esc(m.caption || 'Research Presentation') + '</span>' +
-            '<span class="media-type">' + esc(m.subCaption || 'Conference Talk') + '</span></div>' +
-        '</div>' +
-      '</div>';
+      '<button type="button" class="pub-talk media-preview" data-video-id="' + esc(m.videoId) + '"' + st +
+        ' aria-label="Watch the talk: ' + esc(p.title) + '">' +
+        '<img src="https://img.youtube.com/vi/' + esc(m.videoId) + '/mqdefault.jpg" alt="" width="320" height="180" loading="lazy" decoding="async">' +
+        '<span class="pub-talk__play">' + glyph('play') + '</span>' +
+        '<span class="pub-talk__cap">' + esc(m.caption || 'Research talk') + '</span>' +
+      '</button>';
   }
 
   function pubTagsHTML(p) {
-    var kinds = ['primary', 'secondary', 'accent', 'neutral'];
-    var tags = (p.tags || []).map(function (t, i) {
-      return '<span class="research-tag ' + kinds[i % kinds.length] + '">' + esc(t) + '</span>';
-    }).join('');
-    return tags ? '<div class="publication-tags">' + tags + '</div>' : '';
+    var tags = (p.tags || []).map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
+    return tags ? '<ul class="pub-tags" aria-label="Topics">' + tags + '</ul>' : '';
   }
 
   function pubActionsHTML(p) {
     var out = [];
     var L = p.links || {};
-
     if (p.status === 'upcoming') {
-      out.push('<span class="action-btn primary upcoming-btn" aria-disabled="true" title="Available after the conference">' +
-        '<i class="fas fa-clock"></i><span>' + esc(p.upcomingLabel || 'Paper pending') + '</span></span>');
+      out.push('<span class="ph-btn is-muted" aria-disabled="true">' + glyph('spark', true) + '<span>' + esc(p.upcomingLabel || 'Paper pending') + '</span></span>');
     } else if (p.url || p.doi) {
       var url = p.url || ('https://doi.org/' + p.doi);
-      out.push('<a href="' + esc(url) + '" class="action-btn primary" target="_blank" rel="noopener noreferrer">' +
-        '<i class="fas fa-external-link-alt"></i><span>' + esc(p.readLabel || 'Read Paper') + '</span></a>');
+      out.push('<a href="' + esc(url) + '" class="ph-btn is-primary" target="_blank" rel="noopener noreferrer">' +
+        glyph('external') + '<span>' + esc(p.readLabel || 'Read paper') + '</span></a>');
     }
-
-    if (L.github) {
-      out.push('<a href="' + esc(L.github) + '" class="action-btn secondary" target="_blank" rel="noopener noreferrer">' +
-        '<i class="fab fa-github"></i><span>View Code</span></a>');
-    }
+    if (isReady(p)) out.push('<a href="' + detailHref(p.slug) + '" class="ph-btn">' + glyph('eye', true) + '<span>Details</span></a>');
     if (p.pdf) {
-      out.push('<button type="button" class="action-btn secondary pdf-viewer-btn" data-pdf="' + esc(asset(p.pdf)) +
-        '" data-title="' + esc(p.pdfTitle || p.title || 'Paper') + '"><i class="fas fa-file-pdf"></i><span>View PDF</span></button>');
+      out.push('<button type="button" class="ph-btn pdf-viewer-btn" data-pdf="' + esc(asset(p.pdf)) +
+        '" data-title="' + esc(p.pdfTitle || p.title || 'Paper') + '">' + glyph('pdf', true) + '<span>PDF</span></button>');
     }
     var m = p.media || {};
     if (m.type === 'youtube' && m.videoId) {
-      out.push('<button type="button" class="action-btn tertiary youtube-modal-btn" data-video-id="' + esc(m.videoId) + '">' +
-        '<i class="fab fa-youtube"></i><span>Watch Talk</span></button>');
+      out.push('<button type="button" class="ph-btn youtube-modal-btn" data-video-id="' + esc(m.videoId) + '">' + glyph('play', true) + '<span>Talk</span></button>');
     }
-    if (p.doi) {
-      out.push('<button type="button" class="action-btn tertiary" data-copy="' + esc(p.doi) +
-        '"><i class="fas fa-copy"></i><span>Copy DOI</span></button>');
-    } else if (p.citation && p.citation.apa) {
-      out.push('<button type="button" class="action-btn tertiary" data-copy="' + esc(p.citation.apa) +
-        '"><i class="fas fa-copy"></i><span>Copy Citation</span></button>');
+    if (L.github || p.code) {
+      out.push('<a href="' + esc(L.github || p.code) + '" class="ph-btn" target="_blank" rel="noopener noreferrer">' + glyph('github', true) + '<span>Code</span></a>');
     }
-    if (isReady(p)) {
-      out.push('<a href="' + detailHref(p.slug) + '" class="action-btn secondary mp-detail-link">' +
-        '<i class="fas fa-arrow-up-right-from-square"></i><span>Details</span></a>');
+    var cite = p.doi || (p.citation && p.citation.apa);
+    if (cite) {
+      out.push('<button type="button" class="ph-btn" data-copy="' + esc(cite) + '">' + glyph('link', true) +
+        '<span>' + (p.doi ? 'Copy DOI' : 'Copy citation') + '</span></button>');
     }
-    return out.length ? '<div class="publication-actions">' + out.join('') + '</div>' : '';
+    return out.length ? '<div class="pub-actions">' + out.join('') + '</div>' : '';
   }
 
   function publicationItemHTML(p) {
-    var mod = '';
-    if (p.status === 'featured') mod = ' featured';
-    else if (p.status === 'upcoming') mod = ' upcoming';
-
-    var authors = raw(p.authorsShort || '');
-    if (p.authorRole) authors += ' &mdash; ' + esc(p.authorRole);
-
+    var mod = p.status === 'featured' ? ' is-featured' : p.status === 'upcoming' ? ' is-upcoming' : '';
+    var first = /first/i.test(p.authorRole || '');
+    if (first) mod += ' is-first';
+    var year = String(p.date || '').slice(0, 4);
+    var title = isReady(p) ? '<a href="' + detailHref(p.slug) + '">' + raw(p.title) + '</a>' : raw(p.title);
+    var chips = '<span class="ph-chip' + (first ? ' is-primary' : '') + '">' + esc(p.authorRole || 'Author') + '</span>' +
+      (p.status === 'upcoming' ? '<span class="ph-status ph-status--ongoing"><span class="ph-status__dot" aria-hidden="true"></span>To be presented</span>' : '') +
+      '<span class="pub-date">' + esc(p.dateDisplay || p.date || '') + '</span>';
     return '' +
-      '<article class="publication-item mp-reveal' + mod + '" data-slug="' + esc(p.slug) + '">' +
-        '<div class="publication-header">' + pubTypeBadgeHTML(p) + pubDateHTML(p) + '</div>' +
-        '<div class="publication-content">' +
-          '<h4 class="publication-title">' + raw(p.title) + '</h4>' +
-          (authors ? '<p class="publication-authors">' + authors + '</p>' : '') +
+      '<article class="pub-card mp-reveal' + mod + '" data-slug="' + esc(p.slug) + '">' +
+        '<div class="pub-card__rail" aria-hidden="true"><span class="pub-year">' + esc(year) + '</span>' +
+          '<span class="pub-kind">' + (p.type === 'journal' ? 'Journal' : 'Conference') + '</span></div>' +
+        '<div class="pub-card__body">' +
+          '<div class="pub-meta">' + chips + '</div>' +
+          '<h3 class="pub-title">' + title + '</h3>' +
+          (p.authorsShort ? '<p class="pub-authors">' + raw(p.authorsShort) + '</p>' : '') +
           pubVenueHTML(p) +
-          pubMediaHTML(p) +
-          (p.contribution ? '<div class="publication-abstract"><p class="publication-contribution"><strong>Contribution:</strong> ' + raw(p.contribution) + '</p></div>' : '') +
+          (p.contribution ? '<p class="pub-summary">' + raw(p.contribution) + '</p>' : '') +
           pubTagsHTML(p) +
           pubActionsHTML(p) +
         '</div>' +
+        pubTalkHTML(p) +
       '</article>';
   }
+
+  var PUB_GROUP_GLYPH = { journal: 'doc', conference: 'nodes', upcoming: 'spark' };
 
   function renderPublications(container, pubs) {
     var byGroup = { journal: [], conference: [], upcoming: [] };
     pubs.forEach(function (p) { byGroup[pubGroupKey(p)].push(p); });
 
-    var html = '';
+    var firstAuthor = pubs.filter(function (p) { return /first/i.test(p.authorRole || ''); }).length;
+    var html = '<ul class="pub-stats mp-reveal" aria-label="At a glance">' +
+      '<li><strong>' + pubs.length + '</strong><span>peer-reviewed papers</span></li>' +
+      '<li><strong>' + byGroup.journal.length + '</strong><span>journal</span></li>' +
+      '<li><strong>' + (byGroup.conference.length + byGroup.upcoming.length) + '</strong><span>conference</span></li>' +
+      (firstAuthor ? '<li><strong>' + firstAuthor + '</strong><span>first-author</span></li>' : '') +
+      '</ul>';
     PUB_GROUPS.forEach(function (g) {
       var list = sortPubs(byGroup[g.key]);
       if (!list.length) return;
       html += '' +
-        '<section class="mp-pub-group" data-group="' + g.key + '">' +
-          '<header class="mp-pub-group-head mp-reveal">' +
-            '<span class="mp-domain-icon"><i class="' + g.icon + '"></i></span>' +
-            '<h2 class="mp-pub-group-title">' + esc(g.title) + '</h2>' +
-            '<span class="mp-pub-group-count">' + list.length + '</span>' +
-          '</header>' +
-          list.map(publicationItemHTML).join('') +
+        '<section class="pub-group" data-group="' + g.key + '" aria-labelledby="pub-g-' + g.key + '">' +
+          '<header class="pub-group__head mp-reveal"><h2 class="ph-h2" id="pub-g-' + g.key + '">' + glyph(PUB_GROUP_GLYPH[g.key]) +
+            esc(g.title) + '<span class="pub-count">' + list.length + '</span></h2></header>' +
+          '<div class="pub-list">' + list.map(publicationItemHTML).join('') + '</div>' +
         '</section>';
     });
 
