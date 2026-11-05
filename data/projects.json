@@ -27,7 +27,7 @@
       "type": "image",
       "icon": "fas fa-lightbulb",
       "label": "Assistive Vision Agent",
-      "src": "assets/images/project-cards/lumenaa.jpg",
+      "src": "assets/images/project-cards/lumenaa.webp",
       "alt": "Edge-native assistive vision agent"
     },
     "metrics": [
@@ -117,7 +117,7 @@
       "type": "image",
       "icon": "fas fa-arrows-spin",
       "label": "Rotary Positional Encoding",
-      "src": "assets/images/project-cards/harp-rope.jpg",
+      "src": "assets/images/project-cards/harp-rope.webp",
       "alt": "Hierarchical rotary positional encoding"
     },
     "metrics": [],
@@ -179,7 +179,7 @@
     ],
     "media": {
       "type": "image",
-      "src": "assets/images/project-cards/jukti-llm.png",
+      "src": "assets/images/project-cards/jukti-llm.webp",
       "alt": "Bangla mathematical reasoning LLM",
       "label": "Bangla Reasoning LLM",
       "icon": "fas fa-scale-balanced"
@@ -246,7 +246,7 @@
       "type": "image",
       "icon": "fas fa-vector-square",
       "label": "Paraphrase Geometry",
-      "src": "assets/images/project-cards/paraphrase-geometry.jpg",
+      "src": "assets/images/project-cards/paraphrase-geometry.webp",
       "alt": "Paraphrase-geometry embedding refinement"
     },
     "metrics": [],
@@ -311,7 +311,7 @@
       "type": "image",
       "icon": "fas fa-cube",
       "label": "CAMDet",
-      "src": "assets/images/project-cards/camdet.jpg",
+      "src": "assets/images/project-cards/camdet.webp",
       "alt": "CAMDet — camera-agnostic 3D object detection"
     },
     "metrics": [
@@ -390,7 +390,7 @@
     ],
     "media": {
       "type": "image",
-      "src": "assets/images/project-cards/pet-segmentation.png",
+      "src": "assets/images/project-cards/pet-segmentation.webp",
       "alt": "Pet segmentation and breed classification",
       "label": "Pet Seg + Classify",
       "icon": "fas fa-paw"
@@ -683,7 +683,7 @@
     ],
     "media": {
       "type": "image",
-      "src": "assets/images/project-cards/weheal-card.png",
+      "src": "assets/images/project-cards/weheal-card.webp",
       "alt": "WeHeal all-in-one telemedicine and healthcare platform interface"
     },
     "metrics": [],
@@ -752,7 +752,7 @@
       "type": "image",
       "icon": "fas fa-graduation-cap",
       "label": "Academic Success Prediction",
-      "src": "assets/images/project-cards/academic-success-prediction.jpg",
+      "src": "assets/images/project-cards/academic-success-prediction.webp",
       "alt": "Academic success prediction — student outcome dashboard"
     },
     "metrics": [
@@ -837,7 +837,7 @@
     ],
     "media": {
       "type": "image",
-      "src": "assets/images/project-cards/vision-based-hand-gesture.png",
+      "src": "assets/images/project-cards/vision-based-hand-gesture.webp",
       "alt": "Vision-based hand gesture virtual keyboard and mouse interface in use"
     },
     "metrics": [],
@@ -908,7 +908,7 @@
       "type": "image",
       "icon": "fas fa-eye",
       "label": "DRISTEE Navigation",
-      "src": "assets/images/project-cards/dristee-navigation.jpg",
+      "src": "assets/images/project-cards/dristee-navigation.webp",
       "alt": "DRISTEE — navigation assistant for the visually impaired"
     },
     "metrics": [],
@@ -970,7 +970,7 @@
     ],
     "media": {
       "type": "image",
-      "src": "assets/images/project-cards/autism-card.png",
+      "src": "assets/images/project-cards/autism-card.webp",
       "alt": "Vision Transformer-based autism spectrum disorder screening from facial and behavioral signals"
     },
     "metrics": [],
@@ -1032,7 +1032,7 @@
     ],
     "media": {
       "type": "image",
-      "src": "assets/images/project-cards/wearable-fall-detect-elderly.jpg",
+      "src": "assets/images/project-cards/wearable-fall-detect-elderly.webp",
       "alt": "Arduino-based circuit schematic of the wearable health-monitoring and fall-detection device (sensors, GSM, GPS, power)"
     },
     "metrics": [
@@ -1125,14 +1125,14 @@
     ],
     "media": {
       "type": "image",
-      "src": "assets/images/project-cards/cse350-robot.jpg",
+      "src": "assets/images/project-cards/cse350-robot.webp",
       "alt": "Microcontroller-free obstacle-avoiding robot",
       "label": "RTL Robot",
       "icon": "fas fa-robot"
     },
     "figures": [
       {
-        "src": "assets/images/project-cards/cse350-schematic.jpg",
+        "src": "assets/images/project-cards/cse350-schematic.webp",
         "caption": "Full circuit: IR sensors → op-amp comparators → RTL NOT gates (NPN BJTs) → L298N H-bridge → DC motors — no programmable parts."
       }
     ],
@@ -1253,11 +1253,11 @@
     ],
     "figures": [
       {
-        "src": "assets/images/project-cards/aruco-marker-robot-block-diagram.jpg",
+        "src": "assets/images/project-cards/aruco-marker-robot-block-diagram.webp",
         "caption": "System block diagram — the differential-drive navigation and the 2-DOF arm run on separate ESP32 units, coordinated over WiFi by the central vision computer."
       },
       {
-        "src": "assets/images/project-cards/aruco-marker-robot-ckt-diagram.jpg",
+        "src": "assets/images/project-cards/aruco-marker-robot-ckt-diagram.webp",
         "caption": "Circuit / wiring diagram — sensors, ESP32 controllers, MG996R servos and the motor-driver power domains."
       }
     ]
@@ -1286,7 +1286,7 @@
     ],
     "media": {
       "type": "image",
-      "src": "assets/images/project-cards/rakkhosh-must-die.png",
+      "src": "assets/images/project-cards/rakkhosh-must-die.webp",
       "alt": "Rakkhosh Must Die 3D OpenGL tower defense game scene"
     },
     "metrics": [
@@ -1453,7 +1453,7 @@
     ],
     "media": {
       "type": "image",
-      "src": "assets/images/project-cards/document-assistant.png",
+      "src": "assets/images/project-cards/document-assistant.webp",
       "alt": "Enterprise AI Document Assistant interface — notebooks, PDF upload and a cited answer",
       "label": "Document Assistant",
       "icon": "fas fa-file-shield"
@@ -1587,11 +1587,11 @@
     ],
     "figures": [
       {
-        "src": "assets/images/project-cards/docai-architecture.png",
+        "src": "assets/images/project-cards/docai-architecture.webp",
         "caption": "How it works. Everything expensive happens once, up front (top): the scanned law is read into text, split into sections and turned into a small search index that ships with the code. The live server (bottom) only loads that index and answers questions — which is why it runs on a free server with no GPU."
       },
       {
-        "src": "assets/images/project-cards/docai-logo.jpg",
+        "src": "assets/images/project-cards/docai-logo.webp",
         "caption": "Enterprise AI Document Assistant — project logo."
       }
     ],

@@ -79,6 +79,55 @@ html[data-accent="mono"][data-theme="dark"] {
   --accent-tertiary-rgb:  237, 237, 237;
 }
 
+
+/* NEUTRAL DARK THEMES: legacy variables for styles.css and friends. The
+   primaries are mid-tones so white text on filled controls stays legible. */
+html[data-accent="graphite"] {
+  --primary-color:   #4B5563;
+  --primary-dark:    #374151;
+  --secondary-color: #9AA3AE;
+  --accent-color:    #C8CDD3;
+  --accent-primary-rgb:   75, 85, 99;
+  --accent-secondary-rgb: 154, 163, 174;
+  --accent-tertiary-rgb:  200, 205, 211;
+}
+html[data-accent="stone"] {
+  --primary-color:   #6B6157;
+  --primary-dark:    #544B43;
+  --secondary-color: #B2A595;
+  --accent-color:    #D9D0C3;
+  --accent-primary-rgb:   107, 97, 87;
+  --accent-secondary-rgb: 178, 165, 149;
+  --accent-tertiary-rgb:  217, 208, 195;
+}
+html[data-accent="sand"] {
+  --primary-color:   #7A6440;
+  --primary-dark:    #5F4D31;
+  --secondary-color: #C2AA7C;
+  --accent-color:    #E2CFA6;
+  --accent-primary-rgb:   122, 100, 64;
+  --accent-secondary-rgb: 194, 170, 124;
+  --accent-tertiary-rgb:  226, 207, 166;
+}
+html[data-accent="sage"] {
+  --primary-color:   #4F6249;
+  --primary-dark:    #3D4C38;
+  --secondary-color: #94A88E;
+  --accent-color:    #BCCBB8;
+  --accent-primary-rgb:   79, 98, 73;
+  --accent-secondary-rgb: 148, 168, 142;
+  --accent-tertiary-rgb:  188, 203, 184;
+}
+html[data-accent="slate"] {
+  --primary-color:   #475569;
+  --primary-dark:    #334155;
+  --secondary-color: #94A3B8;
+  --accent-color:    #B4C2D4;
+  --accent-primary-rgb:   71, 85, 105;
+  --accent-secondary-rgb: 148, 163, 184;
+  --accent-tertiary-rgb:  180, 194, 212;
+}
+
 /* Dark-mono: accent backgrounds turn light, so white text/icons on them
    must flip to near-black to stay legible. Auto-derived from every rule that
    paints white text on an accent background. */
@@ -264,6 +313,15 @@ html[data-theme="light"] #accent-switcher .accent-tray {
   border-color: rgba(0, 0, 0, 0.06);
 }
 
+/* Two columns: colour accents, then the neutral dark-only themes. */
+#accent-switcher { align-items: flex-end; } /* the wider tray must not overflow the right edge */
+#accent-switcher .accent-tray { flex-direction: row; align-items: flex-end; transform-origin: bottom right; }
+#accent-switcher .accent-group { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+#accent-switcher .accent-group--neutral {
+  padding-left: 10px;
+  border-left: 1px solid rgba(255, 255, 255, 0.14);
+}
+
 #accent-switcher.open .accent-tray {
   opacity: 1;
   transform: translateY(0) scale(1);
@@ -287,6 +345,17 @@ html[data-theme="light"] #accent-switcher .accent-tray {
 #accent-switcher .accent-swatch[data-swatch="red"]    { background: linear-gradient(135deg, #e11d48, #fb7185); }
 #accent-switcher .accent-swatch[data-swatch="orange"] { background: linear-gradient(135deg, #ea580c, #f59e0b); }
 #accent-switcher .accent-swatch[data-swatch="mono"]   { background: linear-gradient(135deg, #111111, #f5f5f5); }
+
+#accent-switcher .accent-swatch[data-swatch="graphite"] { background: linear-gradient(135deg, #121417, #C8CDD3); }
+#accent-switcher .accent-swatch[data-swatch="graphite"].active { color: #C8CDD3; }
+#accent-switcher .accent-swatch[data-swatch="stone"] { background: linear-gradient(135deg, #151312, #D9D0C3); }
+#accent-switcher .accent-swatch[data-swatch="stone"].active { color: #D9D0C3; }
+#accent-switcher .accent-swatch[data-swatch="sand"] { background: linear-gradient(135deg, #16130F, #E2CFA6); }
+#accent-switcher .accent-swatch[data-swatch="sand"].active { color: #E2CFA6; }
+#accent-switcher .accent-swatch[data-swatch="sage"] { background: linear-gradient(135deg, #121512, #BCCBB8); }
+#accent-switcher .accent-swatch[data-swatch="sage"].active { color: #BCCBB8; }
+#accent-switcher .accent-swatch[data-swatch="slate"] { background: linear-gradient(135deg, #11151A, #B4C2D4); }
+#accent-switcher .accent-swatch[data-swatch="slate"].active { color: #B4C2D4; }
 
 #accent-switcher .accent-swatch:hover {
   transform: scale(1.18);

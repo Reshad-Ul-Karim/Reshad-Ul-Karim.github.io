@@ -12,6 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Product+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Font Awesome -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Custom CSS -->
@@ -223,5 +224,17 @@
 
     <!-- Game Script -->
     <script src="game-script.js"></script>
+    <script>
+    if ('serviceWorker' in navigator) addEventListener('load', function () {
+      navigator.serviceWorker.register('/sw.js').then(function () { return navigator.serviceWorker.ready; }).then(function (reg) {
+        var c = navigator.connection;
+        try { if ((c && c.saveData) || localStorage.getItem('sw-warm') === 'v1') return; } catch (e) { return; }
+        var warm = function () {
+          if (reg.active) { reg.active.postMessage('warm'); try { localStorage.setItem('sw-warm', 'v1'); } catch (e) {} }
+        };
+        if (window.requestIdleCallback) requestIdleCallback(warm, { timeout: 8000 }); else setTimeout(warm, 4000);
+      }).catch(function () {});
+    });
+    </script>
 </body>
 </html>

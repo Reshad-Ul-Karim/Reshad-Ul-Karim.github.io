@@ -72,7 +72,10 @@ function createEngine(T) {
   /* ---- Renderer ---------------------------------------------------------- */
   let renderer;
   try {
-    renderer = new T.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+    // At 1.5x+ density the canvas already supersamples, so MSAA would only add
+    // ~4x colour memory. 'default' power keeps dual-GPU laptops off the discrete
+    // GPU (no switch-over hitch, no battery drain) for a scene this light.
+    renderer = new T.WebGLRenderer({ antialias: (window.devicePixelRatio || 1) < 1.5, alpha: true, powerPreference: 'default' });
   } catch (e) {
     root.dataset.gl = 'unsupported';
     return;

@@ -119,6 +119,222 @@ html[data-accent="mono"] {
   --tint-light: #ECECEC;
 }
 
+
+/* ---- Neutral dark themes ----------------------------------------------------
+   Muted, low-chroma palettes that exist only in dark mode (accent-theme.js
+   switches the theme to dark when one is picked, and back to a colour accent
+   if light is chosen). Each tints the charcoal surfaces as well as the accent. */
+html[data-accent="graphite"] {
+  --primary: #4B5563; --primary-rgb: 75, 85, 99;
+  --primary-hover: #374151;
+  --primary-ink: #FFFFFF;
+  --hl: #C8CDD3; --hl-rgb: 200, 205, 211;
+  --hl-hover: #E1E4E8;
+  --on-hl: #15171A;
+  --decor: #8E99A6; --decor-rgb: 142, 153, 166;
+  --decor-soft: color-mix(in srgb, #8E99A6 18%, #17191C);
+  --decor-ink: #8E99A6;
+  --hero: #121417; --hero-rgb: 18, 20, 23;
+  --hero-deep: #0A0B0D; --hero-deep-rgb: 10, 11, 13;
+  --hero-2: #14161A;
+  --hero-top: #1F2328;
+  --glow-rgb: 120, 130, 142;
+  --glow2-rgb: 40, 43, 48;
+  --glow3-rgb: 31, 34, 38;
+  --hero-ink: #ECEEF0; --hero-ink-rgb: 236, 238, 240;
+  --hero-ink-2: #A6ADB5;
+  --mark-mid: #6B7480;
+  --tint-light: #ECEEF0;
+}
+html[data-theme="dark"][data-accent="graphite"] {
+  --page: #0C0D0F;
+  --card: #17191C;
+  --card-tint: color-mix(in srgb, var(--hl) 7%, #17191C);
+  --card-warm: color-mix(in srgb, var(--decor) 7%, #17191C);
+  --ink: #ECEEF0; --ink-rgb: 236, 238, 240;
+  --ink-2: #A6ADB5;
+  --tint: color-mix(in srgb, var(--hl) 11%, #17191C);
+  --hero: #121417; --hero-rgb: 18, 20, 23;
+  --hero-deep: #0A0B0D; --hero-deep-rgb: 10, 11, 13;
+  --hero-2: #14161A;
+  --hero-top: #1F2328;
+  --glow2-rgb: 40, 43, 48;
+  --glow3-rgb: 31, 34, 38;
+  --hero-ink: #ECEEF0; --hero-ink-rgb: 236, 238, 240;
+  --hero-ink-2: #A6ADB5;
+  --glass-light: rgba(23, 25, 28, 0.62);
+  --glass-light-solid: rgba(23, 25, 28, 0.95);
+  --glass-light-panel: rgba(23, 25, 28, 0.9);
+}
+html[data-accent="stone"] {
+  --primary: #6B6157; --primary-rgb: 107, 97, 87;
+  --primary-hover: #544B43;
+  --primary-ink: #FFFFFF;
+  --hl: #D9D0C3; --hl-rgb: 217, 208, 195;
+  --hl-hover: #EAE3D8;
+  --on-hl: #1C1915;
+  --decor: #A89B8A; --decor-rgb: 168, 155, 138;
+  --decor-soft: color-mix(in srgb, #A89B8A 18%, #1A1817);
+  --decor-ink: #A89B8A;
+  --hero: #151312; --hero-rgb: 21, 19, 18;
+  --hero-deep: #0C0B0A; --hero-deep-rgb: 12, 11, 10;
+  --hero-2: #171514;
+  --hero-top: #24211F;
+  --glow-rgb: 150, 138, 122;
+  --glow2-rgb: 46, 42, 39;
+  --glow3-rgb: 36, 33, 31;
+  --hero-ink: #EFECE8; --hero-ink-rgb: 239, 236, 232;
+  --hero-ink-2: #B2ABA2;
+  --mark-mid: #857868;
+  --tint-light: #EFECE8;
+}
+html[data-theme="dark"][data-accent="stone"] {
+  --page: #0F0E0D;
+  --card: #1A1817;
+  --card-tint: color-mix(in srgb, var(--hl) 7%, #1A1817);
+  --card-warm: color-mix(in srgb, var(--decor) 7%, #1A1817);
+  --ink: #EFECE8; --ink-rgb: 239, 236, 232;
+  --ink-2: #B2ABA2;
+  --tint: color-mix(in srgb, var(--hl) 11%, #1A1817);
+  --hero: #151312; --hero-rgb: 21, 19, 18;
+  --hero-deep: #0C0B0A; --hero-deep-rgb: 12, 11, 10;
+  --hero-2: #171514;
+  --hero-top: #24211F;
+  --glow2-rgb: 46, 42, 39;
+  --glow3-rgb: 36, 33, 31;
+  --hero-ink: #EFECE8; --hero-ink-rgb: 239, 236, 232;
+  --hero-ink-2: #B2ABA2;
+  --glass-light: rgba(26, 24, 23, 0.62);
+  --glass-light-solid: rgba(26, 24, 23, 0.95);
+  --glass-light-panel: rgba(26, 24, 23, 0.9);
+}
+html[data-accent="sand"] {
+  --primary: #7A6440; --primary-rgb: 122, 100, 64;
+  --primary-hover: #5F4D31;
+  --primary-ink: #FFFFFF;
+  --hl: #E2CFA6; --hl-rgb: 226, 207, 166;
+  --hl-hover: #EEDFC0;
+  --on-hl: #221B0E;
+  --decor: #B9A57E; --decor-rgb: 185, 165, 126;
+  --decor-soft: color-mix(in srgb, #B9A57E 18%, #1B1814);
+  --decor-ink: #B9A57E;
+  --hero: #16130F; --hero-rgb: 22, 19, 15;
+  --hero-deep: #0D0B08; --hero-deep-rgb: 13, 11, 8;
+  --hero-2: #181511;
+  --hero-top: #27221A;
+  --glow-rgb: 170, 150, 110;
+  --glow2-rgb: 48, 42, 33;
+  --glow3-rgb: 38, 33, 26;
+  --hero-ink: #F1ECE2; --hero-ink-rgb: 241, 236, 226;
+  --hero-ink-2: #B8AE9C;
+  --mark-mid: #9A845C;
+  --tint-light: #F1ECE2;
+}
+html[data-theme="dark"][data-accent="sand"] {
+  --page: #100E0B;
+  --card: #1B1814;
+  --card-tint: color-mix(in srgb, var(--hl) 7%, #1B1814);
+  --card-warm: color-mix(in srgb, var(--decor) 7%, #1B1814);
+  --ink: #F1ECE2; --ink-rgb: 241, 236, 226;
+  --ink-2: #B8AE9C;
+  --tint: color-mix(in srgb, var(--hl) 11%, #1B1814);
+  --hero: #16130F; --hero-rgb: 22, 19, 15;
+  --hero-deep: #0D0B08; --hero-deep-rgb: 13, 11, 8;
+  --hero-2: #181511;
+  --hero-top: #27221A;
+  --glow2-rgb: 48, 42, 33;
+  --glow3-rgb: 38, 33, 26;
+  --hero-ink: #F1ECE2; --hero-ink-rgb: 241, 236, 226;
+  --hero-ink-2: #B8AE9C;
+  --glass-light: rgba(27, 24, 20, 0.62);
+  --glass-light-solid: rgba(27, 24, 20, 0.95);
+  --glass-light-panel: rgba(27, 24, 20, 0.9);
+}
+html[data-accent="sage"] {
+  --primary: #4F6249; --primary-rgb: 79, 98, 73;
+  --primary-hover: #3D4C38;
+  --primary-ink: #FFFFFF;
+  --hl: #BCCBB8; --hl-rgb: 188, 203, 184;
+  --hl-hover: #D3DECF;
+  --on-hl: #141A13;
+  --decor: #8FA08A; --decor-rgb: 143, 160, 138;
+  --decor-soft: color-mix(in srgb, #8FA08A 18%, #171A17);
+  --decor-ink: #8FA08A;
+  --hero: #121512; --hero-rgb: 18, 21, 18;
+  --hero-deep: #0A0C0A; --hero-deep-rgb: 10, 12, 10;
+  --hero-2: #141714;
+  --hero-top: #202620;
+  --glow-rgb: 120, 140, 115;
+  --glow2-rgb: 38, 44, 37;
+  --glow3-rgb: 30, 35, 29;
+  --hero-ink: #EBEFEA; --hero-ink-rgb: 235, 239, 234;
+  --hero-ink-2: #A7B0A5;
+  --mark-mid: #6E8268;
+  --tint-light: #EBEFEA;
+}
+html[data-theme="dark"][data-accent="sage"] {
+  --page: #0C0E0C;
+  --card: #171A17;
+  --card-tint: color-mix(in srgb, var(--hl) 7%, #171A17);
+  --card-warm: color-mix(in srgb, var(--decor) 7%, #171A17);
+  --ink: #EBEFEA; --ink-rgb: 235, 239, 234;
+  --ink-2: #A7B0A5;
+  --tint: color-mix(in srgb, var(--hl) 11%, #171A17);
+  --hero: #121512; --hero-rgb: 18, 21, 18;
+  --hero-deep: #0A0C0A; --hero-deep-rgb: 10, 12, 10;
+  --hero-2: #141714;
+  --hero-top: #202620;
+  --glow2-rgb: 38, 44, 37;
+  --glow3-rgb: 30, 35, 29;
+  --hero-ink: #EBEFEA; --hero-ink-rgb: 235, 239, 234;
+  --hero-ink-2: #A7B0A5;
+  --glass-light: rgba(23, 26, 23, 0.62);
+  --glass-light-solid: rgba(23, 26, 23, 0.95);
+  --glass-light-panel: rgba(23, 26, 23, 0.9);
+}
+html[data-accent="slate"] {
+  --primary: #475569; --primary-rgb: 71, 85, 105;
+  --primary-hover: #334155;
+  --primary-ink: #FFFFFF;
+  --hl: #B4C2D4; --hl-rgb: 180, 194, 212;
+  --hl-hover: #CDD7E4;
+  --on-hl: #121821;
+  --decor: #8796AA; --decor-rgb: 135, 150, 170;
+  --decor-soft: color-mix(in srgb, #8796AA 18%, #161A1F);
+  --decor-ink: #8796AA;
+  --hero: #11151A; --hero-rgb: 17, 21, 26;
+  --hero-deep: #090B0E; --hero-deep-rgb: 9, 11, 14;
+  --hero-2: #13171C;
+  --hero-top: #1E242C;
+  --glow-rgb: 110, 128, 150;
+  --glow2-rgb: 36, 41, 49;
+  --glow3-rgb: 28, 32, 38;
+  --hero-ink: #EAEEF3; --hero-ink-rgb: 234, 238, 243;
+  --hero-ink-2: #A4AEBB;
+  --mark-mid: #64748B;
+  --tint-light: #EAEEF3;
+}
+html[data-theme="dark"][data-accent="slate"] {
+  --page: #0B0D10;
+  --card: #161A1F;
+  --card-tint: color-mix(in srgb, var(--hl) 7%, #161A1F);
+  --card-warm: color-mix(in srgb, var(--decor) 7%, #161A1F);
+  --ink: #EAEEF3; --ink-rgb: 234, 238, 243;
+  --ink-2: #A4AEBB;
+  --tint: color-mix(in srgb, var(--hl) 11%, #161A1F);
+  --hero: #11151A; --hero-rgb: 17, 21, 26;
+  --hero-deep: #090B0E; --hero-deep-rgb: 9, 11, 14;
+  --hero-2: #13171C;
+  --hero-top: #1E242C;
+  --glow2-rgb: 36, 41, 49;
+  --glow3-rgb: 28, 32, 38;
+  --hero-ink: #EAEEF3; --hero-ink-rgb: 234, 238, 243;
+  --hero-ink-2: #A4AEBB;
+  --glass-light: rgba(22, 26, 31, 0.62);
+  --glass-light-solid: rgba(22, 26, 31, 0.95);
+  --glass-light-panel: rgba(22, 26, 31, 0.9);
+}
+
 /* Light theme surfaces (default) */
 :root {
   --page: #F4F3EE;

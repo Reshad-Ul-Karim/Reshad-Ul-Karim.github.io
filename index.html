@@ -87,14 +87,14 @@
     <!-- Homepage styles. The legacy stack (styles.css, fixes.css, modern-ui.css,
          GSAP, Lenis, vanilla-tilt, the old Three.js layers) is still used by the
          project, publication and 404 pages, but not here. -->
-    <link rel="stylesheet" href="tokens.css?v=1.0.0">
+    <link rel="stylesheet" href="tokens.css?v=1.1.0">
     <link rel="stylesheet" href="home.css?v=2.3.1">
-    <link rel="stylesheet" href="liquid-glass.css?v=1.2.0">
+    <link rel="stylesheet" href="liquid-glass.css?v=1.3.0">
     <link rel="stylesheet" href="chapter-scroll.css?v=1.0.0">
     <link rel="stylesheet" href="glyphs.css?v=1.0.4">
     <!-- Shared with every page: the accent switcher (palette button) and the chat
          widget keep their original look and behaviour. -->
-    <link rel="stylesheet" href="accent-theme.css?v=1.1.0">
+    <link rel="stylesheet" href="accent-theme.css?v=1.2.0">
     <link rel="stylesheet" href="assistant-widget.css?v=1.0.0">
     <!-- Font Awesome (palette, theme toggle and chat widget icons) and the chat
          widget's fonts load without blocking the first paint. -->
@@ -108,14 +108,14 @@
     </noscript>
 
     <script src="home.js?v=2.3.0" defer></script>
-    <script src="liquid-glass.js?v=1.2.0" defer></script>
+    <script src="liquid-glass.js?v=1.3.0" defer></script>
     <script src="chapter-scroll.js?v=1.0.0" defer></script>
     <script src="bg-field.js?v=1.0.0" defer></script>
-    <script src="accent-theme.js?v=1.1.0" defer></script>
-    <script src="assistant-widget.js?v=1.0.0" defer></script>
+    <script src="accent-theme.js?v=1.2.0" defer></script>
+    <script src="assistant-widget.js?v=1.1.0" defer></script>
     <!-- Page-wide 3D (one renderer). Starts after the load event; every chapter keeps
          a static fallback for no WebGL 2, reduced data, forced colours and failures. -->
-    <script type="module" src="home-scene.js?v=1.0.0"></script>
+    <script type="module" src="home-scene.js?v=1.1.0"></script>
 </head>
 <body>
     <!-- Icon sprite (decorative; every use sits next to a text label or aria-label). -->
@@ -404,9 +404,9 @@
                                 <li>Our team ranked 8th worldwide at the University Rover Challenge 2025.</li>
                             </ul>
                             <ul class="tl__gallery">
-                                <li><figure><img src="assets/images/pcb-design.webp" alt="A PCB layout designed for the rover arm" width="2876" height="1672" loading="lazy" decoding="async"><figcaption>PCB design</figcaption></figure></li>
-                                <li><figure><img src="assets/images/mongol-tori-phoenix.webp" alt="The Mongol Tori Phoenix 9.0 rover" width="1536" height="2048" loading="lazy" decoding="async"><figcaption>Phoenix 9.0</figcaption></figure></li>
-                                <li><figure><img src="assets/images/team-photo.webp" alt="The Mongol Tori Mars Rover team" width="3365" height="1246" loading="lazy" decoding="async"><figcaption>The team</figcaption></figure></li>
+                                <li><figure><img src="assets/images/pcb-design.webp" srcset="assets/images/pcb-design-480w.webp 480w, assets/images/pcb-design-800w.webp 800w, assets/images/pcb-design-1200w.webp 1200w, assets/images/pcb-design.webp 1600w" sizes="(max-width: 720px) 45vw, 340px" alt="A PCB layout designed for the rover arm" width="2876" height="1672" loading="lazy" decoding="async"><figcaption>PCB design</figcaption></figure></li>
+                                <li><figure><img src="assets/images/mongol-tori-phoenix.webp" srcset="assets/images/mongol-tori-phoenix-480w.webp 480w, assets/images/mongol-tori-phoenix-800w.webp 800w, assets/images/mongol-tori-phoenix.webp 1050w" sizes="(max-width: 720px) 40vw, 264px" alt="The Mongol Tori Phoenix 9.0 rover" width="1536" height="2048" loading="lazy" decoding="async"><figcaption>Phoenix 9.0</figcaption></figure></li>
+                                <li><figure><img src="assets/images/team-photo.webp" srcset="assets/images/team-photo-480w.webp 480w, assets/images/team-photo-800w.webp 800w, assets/images/team-photo-1200w.webp 1200w, assets/images/team-photo.webp 1600w" sizes="(max-width: 720px) 70vw, 540px" alt="The Mongol Tori Mars Rover team" width="3365" height="1246" loading="lazy" decoding="async"><figcaption>The team</figcaption></figure></li>
                             </ul>
                             <div class="tl__links">
                                 <a class="text-link" href="assets/papers/Certificate%20of%20Participat%20by%20iScanner.pdf" target="_blank" rel="noopener"><span>URC 2025 certificate (PDF)</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a>
@@ -447,7 +447,7 @@
 
                 <article class="feature" data-surface="dark" aria-labelledby="feature-title">
                     <div class="feature__media gl-window" data-gl="feature">
-                        <img class="gl-fallback" src="assets/images/project-cards/lumenaa.jpg" alt="" width="1400" height="875" loading="lazy" decoding="async">
+                        <img class="gl-fallback" src="assets/images/project-cards/lumenaa.webp" srcset="assets/images/project-cards/lumenaa-480w.webp 480w, assets/images/project-cards/lumenaa-800w.webp 800w, assets/images/project-cards/lumenaa-1200w.webp 1200w, assets/images/project-cards/lumenaa.webp 1400w" sizes="(max-width: 900px) 95vw, 860px" alt="" width="1400" height="875" loading="lazy" decoding="async">
                     </div>
                     <div class="feature__body">
                         <span class="badge">Ongoing research</span>
@@ -468,7 +468,7 @@
                 <div class="projects-pin__sticky">
                 <ul class="projects" id="projects-track" tabindex="0" aria-label="Selected projects, scroll sideways">
                     <li class="project">
-                        <div class="project__media"><img class="gl-fallback" src="assets/images/project-cards/document-assistant.png" alt="The Document Assistant answering a policy question with a cited source" width="1431" height="827" loading="lazy" decoding="async"></div>
+                        <div class="project__media"><img class="gl-fallback" src="assets/images/project-cards/document-assistant.webp" srcset="assets/images/project-cards/document-assistant-480w.webp 480w, assets/images/project-cards/document-assistant-800w.webp 800w, assets/images/project-cards/document-assistant-1200w.webp 1200w, assets/images/project-cards/document-assistant.webp 1431w" sizes="(max-width: 720px) 85vw, 370px" alt="The Document Assistant answering a policy question with a cited source" width="1431" height="827" loading="lazy" decoding="async"></div>
                         <div class="project__body">
                             <p class="project__meta"><span>2026</span><span class="sep" aria-hidden="true"></span><span>LLM &middot; RAG</span></p>
                             <h3><a href="projects/enterprise-ai-document-assistant.html">Enterprise AI Document Assistant</a></h3>
@@ -494,7 +494,7 @@
                         </div>
                     </li>
                     <li class="project">
-                        <div class="project__media"><img class="gl-fallback" src="assets/images/project-cards/vision-based-hand-gesture.png" alt="The gesture keyboard-mouse interface tracking a hand" width="493" height="278" loading="lazy" decoding="async"></div>
+                        <div class="project__media"><img class="gl-fallback" src="assets/images/project-cards/vision-based-hand-gesture.webp" alt="The gesture keyboard-mouse interface tracking a hand" width="493" height="278" loading="lazy" decoding="async"></div>
                         <div class="project__body">
                             <p class="project__meta"><span>2026</span><span class="sep" aria-hidden="true"></span><span>HCI &middot; IEEE JCSSE 2026</span></p>
                             <h3><a href="projects/gesture-keyboard-mouse.html">Hand-Gesture Virtual Keyboard &amp; Mouse</a></h3>
@@ -506,7 +506,7 @@
                         </div>
                     </li>
                     <li class="project">
-                        <div class="project__media"><img class="gl-fallback" src="assets/images/project-cards/pedestrian-conflict.png" alt="A Bangladeshi road scene annotated with detected pedestrians and vehicles" width="1280" height="720" loading="lazy" decoding="async"></div>
+                        <div class="project__media"><img class="gl-fallback" src="assets/images/project-cards/pedestrian-conflict.png" srcset="assets/images/project-cards/pedestrian-conflict-480w.webp 480w, assets/images/project-cards/pedestrian-conflict-800w.webp 800w, assets/images/project-cards/pedestrian-conflict.png 1280w" sizes="(max-width: 720px) 85vw, 350px" alt="A Bangladeshi road scene annotated with detected pedestrians and vehicles" width="1280" height="720" loading="lazy" decoding="async"></div>
                         <div class="project__body">
                             <p class="project__meta"><span>2025</span><span class="sep" aria-hidden="true"></span><span>Computer vision &middot; XAI</span></p>
                             <h3><a href="projects/pedestrian-vehicle-conflict-risk.html">Explainable Pedestrian&ndash;Vehicle Conflict Risk</a></h3>
@@ -531,7 +531,7 @@
                         </div>
                     </li>
                     <li class="project">
-                        <div class="project__media"><img class="gl-fallback" src="assets/images/project-cards/weheal-card.png" alt="The WeHeal patient dashboard" width="1905" height="825" loading="lazy" decoding="async"></div>
+                        <div class="project__media"><img class="gl-fallback" src="assets/images/project-cards/weheal-card.webp" alt="The WeHeal patient dashboard" width="1905" height="825" loading="lazy" decoding="async"></div>
                         <div class="project__body">
                             <p class="project__meta"><span>2025</span><span class="sep" aria-hidden="true"></span><span>Full-stack &middot; Healthcare</span></p>
                             <h3><a href="projects/weheal.html">WeHeal Telemedicine Platform</a></h3>
@@ -698,7 +698,7 @@
                 </header>
                 <div class="culture">
                     <figure class="culture__photo">
-                        <img src="assets/images/singing-performance-1.webp" alt="Reshad performing on stage at a cultural event" width="2048" height="1365" loading="lazy" decoding="async">
+                        <img src="assets/images/singing-performance-1.webp" srcset="assets/images/singing-performance-1-480w.webp 480w, assets/images/singing-performance-1-800w.webp 800w, assets/images/singing-performance-1-1200w.webp 1200w, assets/images/singing-performance-1.webp 1600w" sizes="(max-width: 900px) 90vw, 620px" alt="Reshad performing on stage at a cultural event" width="2048" height="1365" loading="lazy" decoding="async">
                     </figure>
                     <ul class="culture__list">
                         <li class="card culture__item">
@@ -831,5 +831,17 @@
             <iframe src="about:blank" title="Video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" loading="lazy"></iframe>
         </div>
     </dialog>
+    <script>
+    if ('serviceWorker' in navigator) addEventListener('load', function () {
+      navigator.serviceWorker.register('/sw.js').then(function () { return navigator.serviceWorker.ready; }).then(function (reg) {
+        var c = navigator.connection;
+        try { if ((c && c.saveData) || localStorage.getItem('sw-warm') === 'v1') return; } catch (e) { return; }
+        var warm = function () {
+          if (reg.active) { reg.active.postMessage('warm'); try { localStorage.setItem('sw-warm', 'v1'); } catch (e) {} }
+        };
+        if (window.requestIdleCallback) requestIdleCallback(warm, { timeout: 8000 }); else setTimeout(warm, 4000);
+      }).catch(function () {});
+    });
+    </script>
 </body>
 </html>

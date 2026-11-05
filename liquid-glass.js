@@ -129,6 +129,7 @@
       if (el.__lg) return;
       apply(el);
       if (ro) ro.observe(el);
+      if (glintIO) glintIO.observe(el);
     });
   }
 
@@ -183,12 +184,66 @@
     lastHover = el;
   }, { passive: true });
   doc.documentElement.addEventListener('pointerleave', function () { if (lastHover) settle(lastHover); lastHover = null; });
+  function play(el, cls, ms) {
+    el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls);
+    clearTimeout(el['__t' + cls]);
+    el['__t' + cls] = setTimeout(function () { el.classList.remove(cls); }, ms);
+  }
   doc.addEventListener('pointerdown', function (e) {
     var el = e.target.closest && e.target.closest('.lg');
     if (!el) return;
+    if (e.pointerType !== 'mouse') {
+      // Touch: the highlight jumps to the finger, then drifts home on release.
+      var r = el.getBoundingClientRect();
+      el.style.setProperty('--lx', ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%');
+      el.style.setProperty('--ly', ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%');
+      if (!reduceMQ.matches) play(el, 'lg-shine', 1400);
+      if (!moves(el) && !reduceMQ.matches) play(el, 'lg-ripple', 720); // cards: blur ripple, no movement
+    }
     wobble(el, true);
     glitch(el, true);
   }, { passive: true });
+  ['pointerup', 'pointercancel'].forEach(function (type) {
+    doc.addEventListener(type, function (e) {
+      if (e.pointerType === 'mouse') return;
+      var el = e.target.closest && e.target.closest('.lg');
+      if (el) setTimeout(function () { settle(el); }, 500);
+    }, { passive: true });
+  });
+
+  /* Touch screens have no hover, so glass answers to scrolling instead: a card
+     gliding into view catches a shine sweep and a brief focus glint, once per
+     entry. The hero name glitches once after its reveal, and again on tap. */
+  var glintIO = null;
+  if (!fineMQ.matches && !reduceMQ.matches && 'IntersectionObserver' in window) {
+    glintIO = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        var el = e.target;
+        if (!e.isIntersecting) { el.__glinted = false; return; }
+        if (el.__glinted) return;
+        el.__glinted = true;
+        play(el, 'lg-shine', 1400);
+        play(el, 'lg-glint', 900);
+      });
+    }, { rootMargin: '-18% 0px -18% 0px' });
+    var title = doc.querySelector('.hero__title');
+    if (title) {
+      setTimeout(function () { play(title, 'lg-name-glitch', 560); }, 1900);
+      title.addEventListener('pointerdown', function () { play(title, 'lg-name-glitch', 560); }, { passive: true });
+    }
+  }
+
+  /* While the page scrolls, refracting glass falls back to plain blur: the SVG
+     displacement filter is re-run for every frame the backdrop moves, which
+     halves the frame rate. Refraction returns as soon as scrolling settles. */
+  if (canRefract) {
+    var scrollT = 0;
+    window.addEventListener('scroll', function () {
+      if (!scrollT) root.classList.add('lg-scrolling');
+      clearTimeout(scrollT);
+      scrollT = setTimeout(function () { scrollT = 0; root.classList.remove('lg-scrolling'); }, 160);
+    }, { passive: true });
+  }
 
   function start() {
     doc.body.appendChild(svg);

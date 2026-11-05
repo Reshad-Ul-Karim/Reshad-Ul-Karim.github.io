@@ -1859,13 +1859,17 @@
     seedReturningVisitor();
     restoreTranscript();
     buildTooltip();
-    loadSlugKinds();
     loadBookingConfig();
   }
 
+  // The FAB is not needed for first paint: build it once the page is idle.
+  function initWhenIdle() {
+    if ('requestIdleCallback' in window) requestIdleCallback(init, { timeout: 2000 });
+    else setTimeout(init, 300);
+  }
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', initWhenIdle);
   } else {
-    init();
+    initWhenIdle();
   }
 })();

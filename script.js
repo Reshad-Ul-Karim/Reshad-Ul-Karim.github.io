@@ -1152,11 +1152,26 @@ function initYouTubeModal() {
 }
 
 // ===== PDF VIEWER FUNCTIONALITY =====
-function initPDFViewer() {
-    // Set PDF.js worker
-    if (typeof pdfjsLib !== 'undefined') {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+// pdf.js (~300 KB parsed) is fetched only when a PDF is first previewed or opened.
+let pdfjsPromise = null;
+function loadPdfJs() {
+    if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+    if (!pdfjsPromise) {
+        pdfjsPromise = new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+            s.onload = () => {
+                window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                resolve(window.pdfjsLib);
+            };
+            s.onerror = () => { pdfjsPromise = null; reject(new Error('pdf.js failed to load')); };
+            document.head.appendChild(s);
+        });
     }
+    return pdfjsPromise;
+}
+
+function initPDFViewer() {
     
     const modal = document.getElementById('pdf-modal');
     const canvas = document.getElementById('pdf-canvas');
@@ -1232,7 +1247,7 @@ function initPDFViewer() {
 
                 const ctx = canvas.getContext('2d');
                 try {
-                    const loadingTask = pdfjsLib.getDocument(pdfUrl);
+                    const loadingTask = (await loadPdfJs()).getDocument(pdfUrl);
                     const pdf = await loadingTask.promise;
                     const page = await pdf.getPage(1);
                     const viewport = page.getViewport({ scale: 0.3 });
@@ -1380,7 +1395,7 @@ function initPDFViewer() {
         
         try {
             // Load PDF
-            const loadingTask = pdfjsLib.getDocument(pdfUrl);
+            const loadingTask = (await loadPdfJs()).getDocument(pdfUrl);
             currentPDF = await loadingTask.promise;
             totalPages = currentPDF.numPages;
             currentPage = 1;

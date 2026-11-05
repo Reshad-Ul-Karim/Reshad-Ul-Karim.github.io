@@ -10,9 +10,18 @@
 (function () {
   'use strict';
 
-  var ACCENTS = ['teal', 'blue', 'red', 'orange', 'mono'];
+  var COLOURS = ['teal', 'blue', 'red', 'orange', 'mono'];
+  /* Neutral themes exist only in dark mode: picking one switches to dark, and
+     choosing light while one is active falls back to the last colour accent. */
+  var NEUTRALS = ['graphite', 'stone', 'sand', 'sage', 'slate'];
+  var ACCENTS = COLOURS.concat(NEUTRALS);
   var STORAGE_KEY = 'accent';
-  var LABELS = { teal: 'Teal accent', blue: 'Blue accent', red: 'Red accent', orange: 'Orange accent', mono: 'Monochrome accent' };
+  var COLOUR_KEY = 'accent-colour';
+  var LABELS = {
+    teal: 'Teal accent', blue: 'Blue accent', red: 'Red accent', orange: 'Orange accent', mono: 'Monochrome accent',
+    graphite: 'Graphite (dark only)', stone: 'Stone (dark only)', sand: 'Sand (dark only)', sage: 'Sage (dark only)', slate: 'Slate (dark only)'
+  };
+  function isNeutral(a) { return NEUTRALS.indexOf(a) !== -1; }
 
   /* ---- 1. Apply persisted accent ASAP (minimise flash) ----
      With nothing saved, a page can name its own default on <html
@@ -28,6 +37,22 @@
   var currentAccent = readAccent();
   document.documentElement.setAttribute('data-accent', currentAccent);
 
+  function syncThemeIcon() {
+    var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    Array.prototype.forEach.call(document.querySelectorAll('.theme-toggle'), function (btn) {
+      var icon = btn.querySelector('i');
+      if (icon) icon.className = dark ? 'fas fa-sun' : 'fas fa-moon';
+      btn.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+      btn.setAttribute('title', dark ? 'Switch to light mode' : 'Switch to dark mode');
+    });
+  }
+  function forceDark() {
+    var html = document.documentElement;
+    try { localStorage.setItem('theme', 'dark'); } catch (e) {}
+    if (html.getAttribute('data-theme') !== 'dark') { html.setAttribute('data-theme', 'dark'); syncThemeIcon(); }
+  }
+  if (isNeutral(currentAccent)) forceDark();
+
   function prefersReducedMotion() {
     return window.matchMedia &&
            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -35,6 +60,8 @@
 
   /* ---- 2. Accent application with optional View Transition ---- */
   function applyAccent(accent) {
+    if (isNeutral(accent)) forceDark();
+    else { try { localStorage.setItem(COLOUR_KEY, accent); } catch (e) {} }
     document.documentElement.setAttribute('data-accent', accent);
     try { localStorage.setItem(STORAGE_KEY, accent); } catch (e) {}
     currentAccent = accent;
@@ -74,6 +101,16 @@
     tray.setAttribute('role', 'group');
     tray.setAttribute('aria-label', 'Accent color');
 
+    var groups = {};
+    [['colour', 'Colour accents', COLOURS], ['neutral', 'Neutral dark themes', NEUTRALS]].forEach(function (g) {
+      var el = document.createElement('div');
+      el.className = 'accent-group accent-group--' + g[0];
+      el.setAttribute('role', 'group');
+      el.setAttribute('aria-label', g[1]);
+      g[2].forEach(function (a) { groups[a] = el; });
+      tray.appendChild(el);
+    });
+
     ACCENTS.forEach(function (accent) {
       var sw = document.createElement('button');
       sw.type = 'button';
@@ -86,7 +123,7 @@
         setAccent(accent);
       });
       swatchEls[accent] = sw;
-      tray.appendChild(sw);
+      groups[accent].appendChild(sw);
     });
 
     // Trigger (palette) button
@@ -147,10 +184,25 @@
     });
   }
 
+  /* Light chosen while a neutral theme is active: return to the last colour accent. */
+  function watchTheme() {
+    new MutationObserver(function () {
+      if (document.documentElement.getAttribute('data-theme') === 'light' && isNeutral(currentAccent)) {
+        var back;
+        try { back = localStorage.getItem(COLOUR_KEY); } catch (e) { back = null; }
+        if (COLOURS.indexOf(back) === -1) back = document.documentElement.getAttribute('data-accent-default');
+        if (COLOURS.indexOf(back) === -1) back = 'teal';
+        applyAccent(back);
+      }
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  }
+
   /* ---- 4. Init ---- */
   function init() {
     if (document.getElementById('accent-switcher')) return;
     buildUI();
+    watchTheme();
+    if (isNeutral(currentAccent)) { forceDark(); syncThemeIcon(); }
   }
 
   if (document.readyState === 'loading') {
