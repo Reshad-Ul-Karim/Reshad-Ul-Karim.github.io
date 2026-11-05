@@ -10,15 +10,19 @@
 (function () {
   'use strict';
 
-  var ACCENTS = ['blue', 'red', 'orange', 'mono'];
+  var ACCENTS = ['teal', 'blue', 'red', 'orange', 'mono'];
   var STORAGE_KEY = 'accent';
-  var LABELS = { blue: 'Blue accent', red: 'Red accent', orange: 'Orange accent', mono: 'Monochrome accent' };
+  var LABELS = { teal: 'Teal accent', blue: 'Blue accent', red: 'Red accent', orange: 'Orange accent', mono: 'Monochrome accent' };
 
-  /* ---- 1. Apply persisted accent ASAP (minimise flash) ---- */
+  /* ---- 1. Apply persisted accent ASAP (minimise flash) ----
+     With nothing saved, a page can name its own default on <html
+     data-accent-default="...">; the homepage uses teal, the rest stay blue. */
   function readAccent() {
     var saved;
     try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) { saved = null; }
-    return ACCENTS.indexOf(saved) !== -1 ? saved : 'blue';
+    var fallback = document.documentElement.getAttribute('data-accent-default');
+    if (ACCENTS.indexOf(fallback) === -1) fallback = 'blue';
+    return ACCENTS.indexOf(saved) !== -1 ? saved : fallback;
   }
 
   var currentAccent = readAccent();
@@ -124,7 +128,7 @@
     trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
     if (open) {
       // focus the active swatch for keyboard users
-      var active = swatchEls[currentAccent] || swatchEls.blue;
+      var active = swatchEls[currentAccent] || swatchEls[ACCENTS[0]];
       if (active) active.focus();
     }
   }
