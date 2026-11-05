@@ -223,3 +223,25 @@ html.lg-refract .lg.lg--refract {
   .lg > .lg-sheen { display: none; }
 }
 
+
+/* ---- Lite tier (perf-tier.js): low-end phones and PCs ----------------------
+   Same layout and look, cheaper pixels: one light frosted blur instead of
+   refraction or heavy blur, no blur pulses or endless decorative animation,
+   no backdrop blur on small glyph tiles. */
+html.perf-lite .lg,
+html.perf-lite.lg-refract .lg,
+html.perf-lite.lg-refract .lg.lg--refract {
+  -webkit-backdrop-filter: blur(10px) saturate(160%) !important;
+  backdrop-filter: blur(10px) saturate(160%) !important;
+}
+html.perf-lite :is(.ph-glass, .ph-hero__card, .ph-section, .story__stage, .story__beat, .detail-metric, .tilt-toggle) {
+  -webkit-backdrop-filter: blur(10px) saturate(150%) !important;
+  backdrop-filter: blur(10px) saturate(150%) !important;
+}
+html.perf-lite .gi--clear { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+html.perf-lite :is(.lg.lg-glint, .lg.lg-glitch, .lg.lg-ripple) { animation: none !important; }
+html.perf-lite .lg > .lg-sheen::before { animation: none !important; }
+html.perf-lite :is(#ask-reshad-fab, #ask-reshad-fab::before, #ask-reshad-fab::after) { animation: none !important; }
+html.perf-lite #ask-reshad-fab::after { filter: none !important; }
+html.perf-lite .story__beat { filter: none !important; }
+html.perf-lite .section-head h2.is-split .word { filter: none !important; }

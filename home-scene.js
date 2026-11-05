@@ -88,7 +88,8 @@ const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 const smooth = (t) => t * t * (3 - 2 * t);
 
 async function createEngine(T, envImg) {
-  const LITE = !fineMQ.matches || window.innerWidth < 768; // cheaper path for phones/tablets
+  // Cheaper path for phones/tablets and for low-end devices (perf-tier.js).
+  const LITE = !fineMQ.matches || window.innerWidth < 768 || root.classList.contains('perf-lite');
   let reduced = reduceMQ.matches;
 
   /* ---- Renderer ---------------------------------------------------------- */
@@ -1284,7 +1285,7 @@ async function createEngine(T, envImg) {
     vw = canvas.clientWidth || window.innerWidth;
     vh = canvas.clientHeight || window.innerHeight;
     const cap = 2;
-    const budget = LITE ? 2.2e6 : 4.4e6; // sharp on retina phones and laptops; windows are small
+    const budget = (LITE ? 2.2e6 : 4.4e6) * budgetK; // sharp on retina phones and laptops; windows are small
     const dpr = Math.min(window.devicePixelRatio || 1, cap, Math.sqrt(budget / Math.max(1, vw * vh)));
     const key = vw + 'x' + vh + '@' + dpr;
     if (key !== sized) { // the observer's first call repeats the initial size: keep what prime() built
@@ -1295,6 +1296,10 @@ async function createEngine(T, envImg) {
     }
     requestRender();
   }
+  // Turned out too slow mid-visit (perf-tier.js): the scenes are built, so
+  // drop the drawing resolution instead.
+  let budgetK = root.classList.contains('perf-lite') && fineMQ.matches ? 0.7 : 1;
+  document.addEventListener('perf:lite', () => { budgetK = 0.55; resize(); });
   const canvasRO = new ResizeObserver(resize);
   canvasRO.observe(canvasHost);
 

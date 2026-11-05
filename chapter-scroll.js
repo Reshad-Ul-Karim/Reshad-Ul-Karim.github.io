@@ -145,7 +145,8 @@
     // only their .wrap), so no layout is read during the scroll itself.
     if (!spans.length) measure();
     tops = spans.map(function (s, i) { return clamp(s[0] - margins[i], 0, max); });
-    var rects = motion ? spans.map(function (s) { return { top: s[0] - sy, bottom: s[1] - sy }; }) : null;
+    // Lite tier (perf-tier.js): chapters stay put; no per-frame morph writes.
+    var rects = motion && !root.classList.contains('perf-lite') ? spans.map(function (s) { return { top: s[0] - sy, bottom: s[1] - sy }; }) : null;
 
     // Position along the chapters, as a fractional index
     var i = 0;
@@ -303,12 +304,13 @@
   /* ---- Layout changes ---------------------------------------------------- */
   var relayout = function () {
     measureMargins(); measure(); morphCache = [];
-    if (reduceMQ.matches) morphEls.forEach(function (m) { if (!m) return; if (m.wrap) m.wrap.style.transform = ''; m.card.style.opacity = ''; m.card.style.transform = ''; });
+    if (reduceMQ.matches || root.classList.contains('perf-lite')) morphEls.forEach(function (m) { if (!m) return; if (m.wrap) m.wrap.style.transform = ''; m.card.style.opacity = ''; m.card.style.transform = ''; });
     kick();
   };
   win.addEventListener('resize', relayout, { passive: true });
   win.addEventListener('load', relayout);
   reduceMQ.addEventListener('change', relayout);
+  doc.addEventListener('perf:lite', relayout);
   var mainEl = doc.querySelector('main');
   if (win.ResizeObserver && mainEl) new ResizeObserver(function () { measure(); morphCache = []; kick(); }).observe(mainEl);
   relayout();

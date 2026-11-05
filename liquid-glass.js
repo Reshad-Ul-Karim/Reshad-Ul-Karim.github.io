@@ -38,7 +38,9 @@
   // Touch screens use the frosted glass (heavier blur, stronger edge, glint
   // pulse; liquid-glass.css): at phone sizes the bent rim barely shows, and the
   // displacement filter is the costliest per-frame effect on mobile GPUs.
+  // The lite tier (perf-tier.js) never refracts either.
   var canRefract = (function () {
+    if (root.classList.contains('perf-lite')) return false;
     try { return fineMQ.matches && CSS.supports('backdrop-filter', 'url(#a)') && /Chrome|Chromium|Edg\//.test(navigator.userAgent) && !/Firefox/.test(navigator.userAgent); } catch (e) { return false; }
   })();
 
@@ -341,6 +343,12 @@
     var pending = false;
     new MutationObserver(function () { if (!pending) { pending = true; requestAnimationFrame(function () { pending = false; scan(); }); } }).observe(doc.body, { childList: true, subtree: true });
     lessGlass.addEventListener('change', function () { Array.prototype.forEach.call(doc.querySelectorAll('.lg'), function (el) { refit(el); }); });
+    // A device that turns out too slow drops refraction once, for good.
+    doc.addEventListener('perf:lite', function () {
+      canRefract = false;
+      root.classList.remove('lg-refract'); root.classList.add('lg-frost');
+      Array.prototype.forEach.call(doc.querySelectorAll('.lg'), function (el) { refit(el); });
+    });
   }
   if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', start); else start();
 })();
