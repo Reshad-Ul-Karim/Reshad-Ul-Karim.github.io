@@ -163,7 +163,9 @@
   }
   var toUse = []; var useRaf = 0;
   function refit(el, w, h) {
-    if (!canRefract || lessGlass.matches) { el.style.removeProperty('--lg-filter'); el.classList.remove('lg--refract'); return; }
+    // Carousel cards slide over the page, so refraction would re-render every
+    // card on every frame of a swipe; they keep the (identical) frosted glass.
+    if (!canRefract || lessGlass.matches || el.classList.contains('project')) { el.style.removeProperty('--lg-filter'); el.classList.remove('lg--refract'); return; }
     if (!el.__lgNear) return; // frosted until it nears the viewport: maps are drawn on the main thread
     if (w == null) { var r = el.getBoundingClientRect(); w = r.width; h = r.height; }
     if (w < 8 || h < 8) return;

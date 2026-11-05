@@ -984,6 +984,7 @@ a.cap__work-title:hover .icon { transform: translate(2px, 2px); }
 /* Horizontal carousel: snap per card, buttons in the section head, scroll-driven
    depth where supported. Cards never move under a resting pointer. */
 .projects {
+  position: relative; /* offset parent for the cards (projects-carousel.js) */
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: min(360px, 84%);
@@ -1000,6 +1001,22 @@ a.cap__work-title:hover .icon { transform: translate(2px, 2px); }
 .projects::-webkit-scrollbar { display: none; }
 .projects:focus-visible { outline: 2px solid var(--hl); outline-offset: 4px; border-radius: var(--r-l); }
 .projects > li { scroll-snap-align: start; }
+/* Mouse drag (projects-carousel.js): snap pauses while dragging. */
+@media (hover: hover) and (pointer: fine) { .projects { cursor: grab; } }
+.projects.is-dragging { scroll-snap-type: none; cursor: grabbing; user-select: none; }
+.projects.is-dragging a { pointer-events: none; }
+.projects img { -webkit-user-drag: none; user-select: none; }
+.carousel__dots { display: flex; justify-content: center; gap: 2px; margin-top: 4px; }
+.carousel__dot {
+  position: relative; width: 26px; height: 26px; padding: 0; border: 0; background: none; cursor: pointer;
+}
+.carousel__dot::before {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; border-radius: 99px;
+  transform: translate(-50%, -50%); background: rgba(var(--ink-rgb), 0.24);
+  transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.3s ease;
+}
+.carousel__dot[aria-current="true"]::before { width: 22px; background: var(--link); }
+.carousel__dot:focus-visible { outline: 2px solid var(--hl); outline-offset: 2px; border-radius: 99px; }
 .section-head__aside { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .carousel-btn--prev .icon { transform: scaleX(-1); }
 .carousel-btn:disabled { opacity: 0.35; pointer-events: none; }
@@ -1012,12 +1029,12 @@ a.cap__work-title:hover .icon { transform: translate(2px, 2px); }
     }
   }
 }
-/* Depth by scale and fade only: the cards are glass (backdrop-filter), and a
-   filter on top of that re-renders each card's backdrop on every scroll frame. */
+/* Depth by scale only: a filter on glass re-renders its backdrop every frame,
+   and opacity below 1 on a card would cut its glass off from the page behind. */
 @keyframes carousel-depth {
-  0%   { opacity: 0.4; transform: scale(0.92) translateY(10px); }
-  22%, 78% { opacity: 1; transform: none; }
-  100% { opacity: 0.4; transform: scale(0.92) translateY(10px); }
+  0%   { transform: scale(0.93) translateY(8px); }
+  22%, 78% { transform: none; }
+  100% { transform: scale(0.93) translateY(8px); }
 }
 .project {
   display: grid;

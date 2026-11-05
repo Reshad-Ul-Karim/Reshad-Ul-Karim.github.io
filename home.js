@@ -348,7 +348,7 @@
          dropped once a block has settled, so hover styles and glass are
          untouched while it is on screen. */
   if (!reduceMQ.matches && 'IntersectionObserver' in window) {
-    var revealSel = '.section > .wrap > :not(ul, ol, .timeline-wrap, .about__grid, .culture, .projects-pin), .section > .wrap > :is(ul, ol):not(.projects) > li, .timeline > li, .about__grid > *, .culture > *';
+    var revealSel = '.section > .wrap > :not(ul, ol, .timeline-wrap, .about__grid, .culture), .section > .wrap > :is(ul, ol):not(.projects) > li, .timeline > li, .about__grid > *, .culture > *';
     var revealEls = Array.prototype.slice.call(doc.querySelectorAll(revealSel)).filter(function (el) {
       return !el.closest('.masthead');
     });

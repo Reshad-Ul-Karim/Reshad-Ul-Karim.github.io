@@ -102,9 +102,9 @@
          GSAP, Lenis, vanilla-tilt, the old Three.js layers) is still used by the
          project, publication and 404 pages, but not here. -->
     <link rel="stylesheet" href="tokens.css?v=1.2.0">
-    <link rel="stylesheet" href="home.css?v=2.6.0">
+    <link rel="stylesheet" href="home.css?v=2.7.1">
     <link rel="stylesheet" href="liquid-glass.css?v=1.6.2">
-    <link rel="stylesheet" href="chapter-scroll.css?v=1.2.0">
+    <link rel="stylesheet" href="chapter-scroll.css?v=1.3.0">
     <link rel="stylesheet" href="glyphs.css?v=1.0.4">
     <!-- Shared with every page: the accent switcher (palette button) and the chat
          widget keep their original look and behaviour. -->
@@ -121,9 +121,10 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap">
     </noscript>
 
-    <script src="home.js?v=2.6.1" defer></script>
-    <script src="liquid-glass.js?v=1.7.2" defer></script>
-    <script src="chapter-scroll.js?v=1.3.0" defer></script>
+    <script src="home.js?v=2.6.2" defer></script>
+    <script src="liquid-glass.js?v=1.7.3" defer></script>
+    <script src="chapter-scroll.js?v=1.4.0" defer></script>
+    <script src="projects-carousel.js?v=1.0.2" defer></script>
     <script src="accent-theme.js?v=1.3.0" defer></script>
     <script src="assistant-widget.js?v=1.1.0" defer></script>
     <!-- Page-wide 3D (one renderer). Starts after the load event (at once behind the
@@ -583,10 +584,9 @@
                     </div>
                 </article>
 
-                <!-- Wide screens: chapter-scroll.js pins this block and the page scroll
-                     drives the carousel. Elsewhere it is a native swipe carousel. -->
-                <div class="projects-pin" data-pin>
-                <div class="projects-pin__sticky">
+                <!-- Native sideways scroller on every screen (projects-carousel.js adds
+                     the arrows' behaviour, mouse drag and the pager dots). -->
+                <div class="carousel">
                 <ul class="projects" id="projects-track" tabindex="0" aria-label="Selected projects, scroll sideways">
                     <li class="project">
                         <div class="project__media"><img class="gl-fallback" src="assets/images/project-cards/document-assistant.webp" srcset="assets/images/project-cards/document-assistant-480w.webp 480w, assets/images/project-cards/document-assistant-800w.webp 800w, assets/images/project-cards/document-assistant-1200w.webp 1200w, assets/images/project-cards/document-assistant.webp 1431w" sizes="(max-width: 720px) 85vw, 370px" alt="The Document Assistant answering a policy question with a cited source" width="1431" height="827" loading="lazy" decoding="async"></div>
@@ -663,8 +663,7 @@
                         </div>
                     </li>
                 </ul>
-                <div class="projects-pin__bar" aria-hidden="true"><span></span></div>
-                </div>
+                <div class="carousel__dots" role="group" aria-label="Go to project"></div>
                 </div>
                 <div class="projects__more">
                     <a class="btn btn--ghost pressable" href="projects/"><span>See all 22 projects</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>

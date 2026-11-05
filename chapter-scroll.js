@@ -10,10 +10,9 @@
      chapter when a scroll stops close to its start;
    - chapter morphs: each chapter arrives as a floating glass card that opens
      into the page and recedes a little as it leaves (--ce / --cl);
-   - the projects carousel: pinned on wide screens so the page scroll moves the
-     cards sideways and settles card by card; a native swipe carousel elsewhere;
    - --scroll-v on <html>, which the liquid-glass highlight follows.
-   Reduced motion: no glides, settles, morphs or pinning; the rail still works.
+   The projects carousel is its own native scroller (projects-carousel.js).
+   Reduced motion: no glides, settles or morphs; the rail still works.
    ========================================================================= */
 (function () {
   'use strict';
@@ -21,7 +20,6 @@
   var root = doc.documentElement;
   var win = window;
   var reduceMQ = win.matchMedia('(prefers-reduced-motion: reduce)');
-  var pinMQ = win.matchMedia('(min-width: 960px) and (min-height: 560px) and (hover: hover) and (pointer: fine)');
   var LABELS = { home: 'Intro', about: 'About', expertise: 'Expertise', experience: 'Experience', projects: 'Projects', research: 'Research', awards: 'Awards', cultural: 'Culture', contact: 'Contact' };
 
   var sections = Array.prototype.filter.call(doc.querySelectorAll('main > section[id]'), function (s) { return LABELS[s.id]; });
@@ -59,45 +57,7 @@
   var dots = Array.prototype.slice.call(rail.querySelectorAll('.chapters__dot'));
   var nameEl = rail.querySelector('.chapters__name');
   var countEl = rail.querySelector('.chapters__count');
-  var projectsDot = dots[sections.map(function (s) { return s.id; }).indexOf('projects')];
 
-  /* ---- Carousel (pinned on wide screens) --------------------------------- */
-  var pin = doc.querySelector('[data-pin]');
-  var sticky = pin && pin.querySelector('.projects-pin__sticky');
-  var track = doc.getElementById('projects-track');
-  var bar = pin && pin.querySelector('.projects-pin__bar > span');
-  var cards = track ? Array.prototype.slice.call(track.children) : [];
-  var prevBtn = doc.querySelector('[data-carousel="prev"]');
-  var nextBtn = doc.querySelector('[data-carousel="next"]');
-  var P = { on: false, shift: 0, step: 0, top: 0, start: 0, p: 0, lefts: [], widths: [], trackL: 0, trackR: 0 };
-
-  function measurePin() {
-    if (!pin || !track || cards.length < 2) return;
-    var want = pinMQ.matches && !reduceMQ.matches;
-    root.classList.toggle('cs-pin', want);
-    P.on = want;
-    track.style.transform = '';
-    if (!want) {
-      pin.style.height = ''; sticky.style.top = '';
-      cards.forEach(function (c) { c.__cv = null; c.style.opacity = ''; c.style.transform = ''; });
-      return;
-    }
-    // Layout offsets (the track is positioned in pin mode), so the cards' depth
-    // scale never skews the numbers.
-    var tr = track.getBoundingClientRect();
-    var pad = parseFloat(getComputedStyle(track).paddingRight) || 0;
-    var last = cards[cards.length - 1];
-    P.lefts = cards.map(function (c) { return c.offsetLeft; });
-    P.widths = cards.map(function (c) { return c.offsetWidth; });
-    P.shift = Math.max(0, last.offsetLeft + last.offsetWidth + pad - track.clientWidth);
-    P.step = cards[1].offsetLeft - cards[0].offsetLeft;
-    P.trackL = tr.left; P.trackR = tr.left + track.clientWidth;
-    var head = (doc.querySelector('[data-header]') || { getBoundingClientRect: function () { return { bottom: 64 }; } }).getBoundingClientRect().bottom + 16;
-    var sh = sticky.offsetHeight;
-    P.top = Math.round(Math.max(head, (win.innerHeight - sh) / 2));
-    sticky.style.top = P.top + 'px';
-    pin.style.height = Math.round(sh + P.shift) + 'px';
-  }
 
   /* ---- Engine state ------------------------------------------------------ */
   var tops = [];
@@ -121,12 +81,11 @@
     return { wrap: s.querySelector(':scope > .wrap'), card: card };
   });
 
-  var spans = []; var pinTop = 0; var maxS = 0;
+  var spans = []; var maxS = 0;
   function measure() {
     var sy = win.scrollY;
     maxS = root.scrollHeight - win.innerHeight;
     spans = sections.map(function (s) { var r = s.getBoundingClientRect(); return [r.top + sy, r.bottom + sy]; });
-    if (pin) pinTop = pin.getBoundingClientRect().top + sy;
     if (list.firstElementChild) gap = list.firstElementChild.offsetHeight || gap;
   }
   function maxScroll() { return root.scrollHeight - win.innerHeight; }
@@ -158,14 +117,7 @@
     if (sel && String(sel).length) return;
     // Settles only ever continue the way the reader was going. Snapping to the
     // nearest stop pulled every mouse-wheel notch (~100 px, then a pause) back
-    // to where it started, so the carousel and chapter starts felt stuck.
-    if (P.on && P.shift > 0 && sy > P.start - 4 && sy < P.start + P.shift + 4) {
-      var rel = (sy - P.start) / P.step;
-      var k = lastDir > 0 ? Math.ceil(rel - 0.04) : lastDir < 0 ? Math.floor(rel + 0.04) : Math.round(rel);
-      var t = clamp(P.start + k * P.step, P.start, P.start + P.shift);
-      if (Math.abs(t - sy) > 3) glideTo(t, 560);
-      return;
-    }
+    // to where it started, so chapter starts felt stuck.
     var best = null;
     tops.forEach(function (t) {
       if (lastDir > 0 && t < sy - 3) return;
@@ -194,7 +146,6 @@
     if (!spans.length) measure();
     tops = spans.map(function (s, i) { return clamp(s[0] - margins[i], 0, max); });
     var rects = motion ? spans.map(function (s) { return { top: s[0] - sy, bottom: s[1] - sy }; }) : null;
-    if (P.on) P.start = pinTop - P.top;
 
     // Position along the chapters, as a fractional index
     var i = 0;
@@ -257,26 +208,6 @@
       });
     }
 
-    // Writes: pinned carousel
-    if (P.on && P.shift > 0) {
-      var p = clamp((sy - P.start) / P.shift, 0, 1);
-      P.p = p;
-      var x = p * P.shift;
-      track.style.transform = 'translate3d(' + (-x).toFixed(1) + 'px,0,0)';
-      if (bar) bar.style.transform = 'scaleX(' + p.toFixed(4) + ')';
-      var L = P.trackL - 24; var R = P.trackR + 24;
-      cards.forEach(function (c, k) {
-        var left = P.trackL + P.lefts[k] - x; var w = P.widths[k];
-        var cv = Math.round(clamp(Math.min(left + w - L, R - left) / w, 0, 1) * 500) / 500;
-        if (c.__cv === cv) return;
-        c.__cv = cv;
-        c.style.opacity = cv >= 1 ? '' : (0.35 + 0.65 * cv).toFixed(3);
-        c.style.transform = cv >= 1 ? '' : 'translateY(' + ((1 - cv) * 14).toFixed(2) + 'px) scale(' + (0.9 + 0.1 * cv).toFixed(4) + ')';
-      });
-      var inPin = sy > P.start - 2 && sy < P.start + P.shift + 2;
-      if (projectsDot) { projectsDot.classList.toggle('is-carousel', inPin); projectsDot.style.setProperty('--pin', p.toFixed(3)); }
-      syncCarouselBtns();
-    }
 
     // Settle once the user's own scroll comes to rest
     if (intent) {
@@ -368,52 +299,16 @@
   // A drag that ends over a dot must not also follow its link.
   railEl.addEventListener('click', function (e) { if (swallowClick) { e.preventDefault(); e.stopPropagation(); } }, true);
 
-  /* ---- Carousel controls ------------------------------------------------- */
-  function syncCarouselBtns() {
-    var atStart; var atEnd;
-    if (P.on) { atStart = P.p <= 0.005; atEnd = P.p >= 0.995; }
-    else if (track) { atStart = track.scrollLeft <= 2; atEnd = track.scrollLeft >= track.scrollWidth - track.clientWidth - 2; }
-    if (prevBtn) prevBtn.disabled = !!atStart;
-    if (nextBtn) nextBtn.disabled = !!atEnd;
-  }
-  function carousel(dir) {
-    if (P.on && P.shift > 0) {
-      var k = Math.round((P.p * P.shift) / P.step) + dir;
-      glideTo(clamp(P.start + k * P.step, P.start, P.start + P.shift), 640);
-      return;
-    }
-    var w = cards[0] ? cards[0].getBoundingClientRect().width + (parseFloat(getComputedStyle(track).columnGap) || 0) : track.clientWidth;
-    track.scrollBy({ left: dir * w, behavior: reduceMQ.matches ? 'auto' : 'smooth' });
-  }
-  // Pinned: the track is moved by the page scroll, so a sideways swipe (trackpad
-  // or tilt wheel) over the carousel is turned into that scroll.
-  if (sticky) sticky.addEventListener('wheel', function (e) {
-    if (!P.on || e.ctrlKey || Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
-    e.preventDefault();
-    win.scrollBy(0, e.deltaMode === 1 ? e.deltaX * 16 : e.deltaX);
-    userInput();
-  }, { passive: false });
-  if (track) {
-    if (prevBtn) prevBtn.addEventListener('click', function () { carousel(-1); });
-    if (nextBtn) nextBtn.addEventListener('click', function () { carousel(1); });
-    track.addEventListener('keydown', function (e) {
-      if (e.key === 'ArrowRight') { e.preventDefault(); carousel(1); }
-      else if (e.key === 'ArrowLeft') { e.preventDefault(); carousel(-1); }
-    });
-    track.addEventListener('scroll', syncCarouselBtns, { passive: true });
-  }
 
   /* ---- Layout changes ---------------------------------------------------- */
   var relayout = function () {
-    measureMargins(); measurePin(); measure(); morphCache = [];
+    measureMargins(); measure(); morphCache = [];
     if (reduceMQ.matches) morphEls.forEach(function (m) { if (!m) return; if (m.wrap) m.wrap.style.transform = ''; m.card.style.opacity = ''; m.card.style.transform = ''; });
-    syncCarouselBtns(); kick();
+    kick();
   };
   win.addEventListener('resize', relayout, { passive: true });
   win.addEventListener('load', relayout);
-  pinMQ.addEventListener('change', relayout);
   reduceMQ.addEventListener('change', relayout);
-  if (win.ResizeObserver && sticky) new ResizeObserver(function () { if (!glide) { measurePin(); measure(); kick(); } }).observe(sticky);
   var mainEl = doc.querySelector('main');
   if (win.ResizeObserver && mainEl) new ResizeObserver(function () { measure(); morphCache = []; kick(); }).observe(mainEl);
   relayout();

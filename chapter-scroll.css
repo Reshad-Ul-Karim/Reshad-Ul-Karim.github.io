@@ -1,6 +1,6 @@
 /* =========================================================================
-   chapter-scroll.css: chapter rail, chapter morphs and the pinned projects
-   carousel (chapter-scroll.js). The rail is tagged .lg by liquid-glass.js,
+   chapter-scroll.css: chapter rail and chapter morphs (chapter-scroll.js).
+   The rail is tagged .lg by liquid-glass.js,
    so it shares the glass tint, rim and cursor highlight.
    ========================================================================= */
 
@@ -84,15 +84,6 @@
 .chapters__dot:hover .chapters__label,
 .chapters__dot:focus-visible .chapters__label,
 .chapters.is-dragging .chapters__dot[aria-current="true"] .chapters__label { opacity: 1; transform: translate(0, -50%); }
-/* Carousel progress around the Projects dot while the cards travel. */
-.chapters__dot.is-carousel::after {
-  content: "";
-  position: absolute; inset: 2px;
-  border-radius: 50%;
-  background: conic-gradient(rgb(var(--hl-rgb)) calc(var(--pin, 0) * 360deg), rgba(var(--hl-rgb), 0.18) 0);
-  -webkit-mask: radial-gradient(closest-side, transparent 72%, #000 76%);
-  mask: radial-gradient(closest-side, transparent 72%, #000 76%);
-}
 
 .chapters__line {
   position: absolute; z-index: 0;
@@ -187,41 +178,11 @@
 @media (prefers-reduced-motion: no-preference) { .cs-on main > .section > .cs-card { display: block; } }
 main > .section:focus { outline: none; }
 
-/* ---- Pinned projects carousel (wide screens) -------------------------------- */
-.projects-pin__bar { display: none; }
-.cs-pin .projects-pin { position: relative; }
-.cs-pin .projects-pin__sticky { position: sticky; }
-.cs-pin .projects {
-  position: relative;
-  overflow: visible;
-  scroll-snap-type: none;
-  will-change: transform;
-}
-.cs-pin .projects > li {
-  animation: none;
-  transform-origin: 50% 60%; /* opacity and transform are written inline by chapter-scroll.js */
-  transition: none;
-}
-.cs-pin .projects-pin__bar {
-  display: block;
-  height: 2px;
-  margin: 2px clamp(4px, 1vw, 12px) 0;
-  border-radius: 2px;
-  background: rgba(var(--hl-rgb), 0.16);
-  overflow: hidden;
-}
-.cs-pin .projects-pin__bar > span {
-  display: block; height: 100%;
-  background: rgb(var(--hl-rgb));
-  transform-origin: 0 50%;
-  transform: scaleX(0);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .chapters, .chapters__label, .chapters__dot::before { transition: none; }
 }
 @media (forced-colors: active) {
-  .chapters__fill, .projects-pin__bar > span { background: Highlight; }
+  .chapters__fill { background: Highlight; }
   .chapters__dot::before { background: CanvasText; }
 }
 @media print { .chapters { display: none; } }
