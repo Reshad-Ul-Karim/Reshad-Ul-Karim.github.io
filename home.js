@@ -33,8 +33,8 @@
         var ch = doc.createElement('span');
         ch.className = 'char';
         ch.textContent = text[i] === ' ' ? '\u00a0' : text[i];
-        // Settle out of order, within ~0.9 s.
-        ch.style.setProperty('--d', String(Math.round(120 + ((order * 37) % 11) * 70)));
+        // Settle out of order, starting within ~1.2 s.
+        ch.style.setProperty('--d', String(Math.round(200 + ((order * 37) % 11) * 95)));
         line.appendChild(ch);
         order++;
       }

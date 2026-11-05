@@ -70,23 +70,37 @@
       }
     }
   }
-  var worker = null; var jobs = {}; var jobN = 0;
+  // Maps are drawn off the main thread. The worker only lives while it has
+  // jobs (page load, resizes) and is shut down after 3 s idle to free its heap.
+  var workerURL = null; var worker = null; var jobs = {}; var jobN = 0; var pending = 0; var idleT = 0;
   try {
     if (canRefract && typeof OffscreenCanvas === 'function' && OffscreenCanvas.prototype.convertToBlob) {
       var src = 'var drawMap = ' + drawMap.toString() + ';\n' +
         'onmessage = function (e) { var m = e.data; var c = new OffscreenCanvas(m.W, m.H); var ctx = c.getContext("2d");' +
         ' var img = ctx.createImageData(m.W, m.H); drawMap(img.data, m.W, m.H, m.rr, m.b); ctx.putImageData(img, 0, 0);' +
         ' c.convertToBlob({ type: "image/png" }).then(function (blob) { postMessage({ id: m.id, blob: blob }); }); };';
-      worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
-      worker.onmessage = function (e) { var done = jobs[e.data.id]; delete jobs[e.data.id]; if (done) done(URL.createObjectURL(e.data.blob)); };
-      worker.onerror = function () { worker = null; };
+      workerURL = URL.createObjectURL(new Blob([src], { type: 'text/javascript' }));
     }
-  } catch (e) { worker = null; }
+  } catch (e) { workerURL = null; }
+  function getWorker() {
+    if (worker || !workerURL) return worker;
+    try {
+      worker = new Worker(workerURL);
+      worker.onmessage = function (e) {
+        var done = jobs[e.data.id]; delete jobs[e.data.id]; pending--;
+        if (done) done(URL.createObjectURL(e.data.blob));
+        if (!pending) idleT = setTimeout(function () { if (!pending && worker) { worker.terminate(); worker = null; } }, 3000);
+      };
+      worker.onerror = function () { worker = null; workerURL = null; };
+    } catch (e) { worker = null; workerURL = null; }
+    return worker;
+  }
   function mapURL(w, h, r, bezel, done) {
     var s = 0.5; // half resolution is plenty for a smooth lens profile
     var W = Math.max(8, Math.round(w * s)); var H = Math.max(8, Math.round(h * s));
     var rr = Math.min(r * s, W / 2, H / 2); var b = Math.max(2, bezel * s);
-    if (worker) { var id = ++jobN; jobs[id] = done; worker.postMessage({ id: id, W: W, H: H, rr: rr, b: b }); return; }
+    var wk = getWorker();
+    if (wk) { clearTimeout(idleT); var id = ++jobN; jobs[id] = done; pending++; wk.postMessage({ id: id, W: W, H: H, rr: rr, b: b }); return; }
     var c = doc.createElement('canvas'); c.width = W; c.height = H;
     var ctx = c.getContext('2d'); var img = ctx.createImageData(W, H);
     drawMap(img.data, W, H, rr, b);
@@ -139,6 +153,8 @@
     if (cs.position === 'static') el.style.position = 'relative'; // anchor the sheen
     if (!el.querySelector(':scope > .lg-sheen')) {
       var sheen = doc.createElement('span'); sheen.className = 'lg-sheen'; sheen.setAttribute('aria-hidden', 'true');
+      var split = doc.createElement('span'); split.className = 'lg-split'; // RGB edge for glitch and glint (CSS)
+      sheen.appendChild(split);
       el.appendChild(sheen); // last child, so :first-child styles on the content keep working
     }
   }
@@ -283,7 +299,9 @@
     }, { rootMargin: '-18% 0px -18% 0px' });
     var title = doc.querySelector('.hero__title');
     if (title) {
-      setTimeout(function () { play(title, 'lg-name-glitch', 560); }, 1900);
+      var afterReveal = function () { setTimeout(function () { play(title, 'lg-name-glitch', 560); }, 2900); };
+      if (root.classList.contains('is-preloading')) doc.addEventListener('preloader:done', afterReveal, { once: true });
+      else afterReveal();
       title.addEventListener('pointerdown', function () { play(title, 'lg-name-glitch', 560); }, { passive: true });
     }
   }

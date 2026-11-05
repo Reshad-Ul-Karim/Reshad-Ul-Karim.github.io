@@ -928,10 +928,12 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.18e
     }
   }
 }
+/* Depth by scale and fade only: the cards are glass (backdrop-filter), and a
+   filter on top of that re-renders each card's backdrop on every scroll frame. */
 @keyframes carousel-depth {
-  0%   { opacity: 0.4; transform: scale(0.92) translateY(10px); filter: blur(2px); }
-  22%, 78% { opacity: 1; transform: none; filter: none; }
-  100% { opacity: 0.4; transform: scale(0.92) translateY(10px); filter: blur(2px); }
+  0%   { opacity: 0.4; transform: scale(0.92) translateY(10px); }
+  22%, 78% { opacity: 1; transform: none; }
+  100% { opacity: 0.4; transform: scale(0.92) translateY(10px); }
 }
 .project {
   display: grid;
@@ -1363,15 +1365,22 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.18e
 /* The name is hidden only while home.js splits it; the failsafe shows it anyway. */
 @media (prefers-reduced-motion: no-preference) {
   .js .hero__title:not(.is-split) { opacity: 0; animation: title-failsafe 0s linear 2s forwards; }
+  /* Fills backwards only, so the letter falls back to its own filter: none when
+     done. A forwards fill holds blur(0px), which keeps every letter on its own
+     filter layer for the life of the page. */
   .hero__title .char {
     display: inline-block;
-    opacity: 0;
-    filter: blur(12px);
-    animation: char-focus 800ms var(--ease) forwards;
+    animation: char-focus 1500ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
     animation-delay: calc(var(--d, 0) * 1ms);
   }
+  .is-preloading .hero__title .char { animation-play-state: paused; }
+  .is-preloading .hero__title:not(.is-split) { animation-play-state: paused; }
 }
-@keyframes char-focus { to { opacity: 1; filter: blur(0); } }
+@keyframes char-focus {
+  0% { opacity: 0; filter: blur(10px); transform: translateY(0.18em); }
+  55% { opacity: 1; }
+  100% { opacity: 1; filter: none; transform: none; }
+}
 @keyframes title-failsafe { to { opacity: 1; } }
 
 .tilt-offer { display: grid; gap: 6px; justify-items: start; }
@@ -1443,12 +1452,13 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.18e
   .js .rv {
     opacity: 0;
     transform: translateY(42px) scale(0.98);
-    filter: blur(8px);
-    transition: opacity 0.9s var(--ease), filter 0.9s var(--ease), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.9s var(--ease), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
     transition-delay: calc(var(--rv-i, 0) * 90ms);
   }
   .js .rv.rv--up { transform: translateY(-42px) scale(0.98); }
-  .js .rv.is-in { opacity: 1; transform: none; filter: none; }
+  .js .rv.is-in { opacity: 1; transform: none; }
+  /* No blur on blocks: re-filtering a whole block on every scroll frame drops
+     frames even on desktop GPUs. Headings keep their per-word focus pull. */
 }
 @media (prefers-reduced-motion: no-preference) {
   .section-head h2.is-split .word {
@@ -1456,5 +1466,5 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.18e
     transition: opacity 0.7s var(--ease), filter 0.7s var(--ease), transform 0.7s var(--ease);
     transition-delay: calc(var(--w, 0) * 70ms);
   }
-  .section-head h2.is-split.is-in .word { opacity: 1; filter: blur(0); transform: none; }
+  .section-head h2.is-split.is-in .word { opacity: 1; filter: none; transform: none; }
 }

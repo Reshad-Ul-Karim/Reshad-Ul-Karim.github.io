@@ -73,8 +73,10 @@ if (!shouldSkip()) {
       .then(([T, envImg]) => createEngine(T, envImg))
       .catch(() => { root.dataset.gl = 'failed'; announce('gl:primed'); });
   };
-  // Behind the preloader there is nothing to compete with, so start at once.
-  if (root.classList.contains('is-preloading')) start(); else whenIdle(start);
+  // Behind the preloader there is nothing to compete with, so start as soon as
+  // the preloader has painted (rAF runs before that paint, the timeout after).
+  if (root.classList.contains('is-preloading')) requestAnimationFrame(() => setTimeout(start, 0));
+  else whenIdle(start);
 } else {
   announce('gl:primed');
 }
@@ -755,7 +757,7 @@ async function createEngine(T, envImg) {
       if (reduced) { tlx = -0.35; tly = -0.2; }
       if (reduced) { Object.assign(state, { intro: 1, px: 0, py: 0, s: 0, lx: tlx, ly: tly, blast: 0, vib: 0, jolt: 0 }); } else {
         if (!state.introStart && !root.classList.contains('is-preloading')) state.introStart = now; // assemble as the preloader leaves
-        state.intro = state.introStart ? clamp((now - state.introStart) / 1800) : 0;
+        state.intro = state.introStart ? clamp((now - state.introStart) / 3000) : 0;
         state.px = damp(state.px, tpx, dt); state.py = damp(state.py, tpy, dt); state.s = damp(state.s, ts, dt, 9);
         state.lx = damp(state.lx, tlx, dt, 4); state.ly = damp(state.ly, tly, dt, 4);
         // hold -> charge (0.5 s) -> blast; release eases back
@@ -809,13 +811,14 @@ async function createEngine(T, envImg) {
         g.opacity = 0.86 + c * 0.1;
       });
 
-      const e = easeOut(state.intro);
+      const ti = state.intro;
+      const e = ti * ti * ti * (ti * (ti * 6 - 15) + 10); // smootherstep: no snap at either end
       const { px, py, s, lx, ly } = state;
       // One explode value for intro (assembling), scroll (scattering) and blast.
       const scrollEx = smooth(clamp((s - 0.06) / 0.55));
       const ex = Math.max(1 - e, scrollEx, state.blast);
       const par = tilt.on ? 30 : 18; // phones get a stronger, obvious parallax from tilt
-      v.camera.position.set(px * par - (1 - e) * 70, -py * 12 + s * 34, v.dist * (1 + 0.09 * (1 - e) + s * 0.12));
+      v.camera.position.set(px * par - (1 - e) * 44, -py * 12 + s * 34, v.dist * (1 + 0.07 * (1 - e) + s * 0.12));
       v.camera.lookAt(0, s * 10, 0);
       portrait.rotation.set(py * 0.008, px * 0.018, 0);
       portrait.position.y = pbox.cy + s * 6;
