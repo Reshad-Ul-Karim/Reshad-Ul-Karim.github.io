@@ -1,18 +1,15 @@
 /* =========================================================================
    chapter-scroll.js: the homepage's chapter scroller (index.html only).
 
-   One scroll loop drives everything that moves with the page:
+   One small scroll loop drives:
    - a liquid-glass chapter rail (left edge on wide screens, a bottom pill on
      phones). Its droplet glides between chapters and stretches with speed,
      then wobbles back like water. Click a chapter, drag the droplet, or use
      the arrows to travel;
-   - eased glides for every in-page link, and a gentle settle that aligns a
-     chapter when a scroll stops close to its start;
-   - chapter morphs: each chapter arrives as a floating glass card that opens
-     into the page and recedes a little as it leaves (--ce / --cl);
-   - --scroll-v on <html>, which the liquid-glass highlight follows.
-   The projects carousel is its own native scroller (projects-carousel.js).
-   Reduced motion: no glides, settles or morphs; the rail still works.
+   - --scroll-v, which the liquid-glass highlight follows.
+   Scrolling stays native: links and arrows use the browser's own smooth
+   scrolling (instant with reduced motion), and nothing moves the page after
+   the reader stops. Only the rail is written to per frame.
    ========================================================================= */
 (function () {
   'use strict';
@@ -25,14 +22,13 @@
   var sections = Array.prototype.filter.call(doc.querySelectorAll('main > section[id]'), function (s) { return LABELS[s.id]; });
   if (sections.length < 2) return;
   var n = sections.length;
-  root.style.scrollBehavior = 'auto'; // glides are eased here; CSS smooth scrolling would fight them
   root.classList.add('cs-on');
 
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
-  function ease(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
   function marginOf(el) { return parseFloat(getComputedStyle(el).scrollMarginTop) || 0; }
   var margins = [];
-  function measureMargins() { margins = sections.map(function (s, i) { return i === 0 ? 0 : marginOf(s); }); }
+  // Every section shares the [id] scroll-margin rule, so one read covers them all.
+  function measureMargins() { var m = marginOf(sections[1] || sections[0]); margins = sections.map(function (s, i) { return i === 0 ? 0 : m; }); }
   measureMargins();
 
   /* ---- Rail ------------------------------------------------------------- */
@@ -64,22 +60,12 @@
   var f = 0;
   var active = -1;
   var lastSy = win.scrollY;
-  var lastDir = 0;
   var lastT = performance.now();
   var vel = 0;
   var sc = 1; var sv = 0; // droplet stretch (spring)
   var gap = 28;
-  var glide = null;
   var drag = null;
-  var intent = false; var touching = false; var lastInput = 0;
   var scrollV = 0;
-  var morphCache = [];
-  var morphEls = sections.map(function (s, k) {
-    if (k === 0) return null;
-    var card = doc.createElement('span'); card.className = 'cs-card'; card.setAttribute('aria-hidden', 'true');
-    s.appendChild(card); // last, so :first-child rules on chapter content are unaffected
-    return { wrap: s.querySelector(':scope > .wrap'), card: card };
-  });
 
   var spans = []; var maxS = 0;
   function measure() {
@@ -90,41 +76,10 @@
   }
   function maxScroll() { return root.scrollHeight - win.innerHeight; }
 
-  function glideTo(y, dur, done) {
-    y = clamp(Math.round(y), 0, maxScroll());
-    if (reduceMQ.matches) { win.scrollTo(0, y); if (done) done(); return; }
-    var from = win.scrollY; var d = y - from;
-    if (Math.abs(d) < 2) { if (done) done(); return; }
-    // Far targets: jump to 1.2 screens short, then glide in. Flying through every
-    // chapter in between meant drawing (and revealing) all of them at speed.
-    var far = win.innerHeight * 2.2;
-    if (Math.abs(d) > far) {
-      from = y - (d > 0 ? 1 : -1) * win.innerHeight * 1.2;
-      win.scrollTo(0, Math.round(from)); d = y - from;
-    }
-    glide = { from: from, d: d, t0: performance.now(), dur: dur || clamp(420 + Math.sqrt(Math.abs(d)) * 14, 520, 1000), done: done };
-    kick();
-  }
-  function goChapter(i, done) {
+  function goChapter(i) {
     i = clamp(i, 0, n - 1);
-    glideTo(tops[i] != null ? tops[i] : sections[i].getBoundingClientRect().top + win.scrollY - margins[i], 0, done);
-  }
-
-  function settle() {
-    var sy = win.scrollY; var vh = win.innerHeight;
-    if (doc.activeElement && doc.activeElement.matches && doc.activeElement.matches('input, textarea, select')) return;
-    var sel = win.getSelection && win.getSelection();
-    if (sel && String(sel).length) return;
-    // Settles only ever continue the way the reader was going. Snapping to the
-    // nearest stop pulled every mouse-wheel notch (~100 px, then a pause) back
-    // to where it started, so chapter starts felt stuck.
-    var best = null;
-    tops.forEach(function (t) {
-      if (lastDir > 0 && t < sy - 3) return;
-      if (lastDir < 0 && t > sy + 3) return;
-      if (best === null || Math.abs(t - sy) < Math.abs(best - sy)) best = t;
-    });
-    if (best !== null && Math.abs(best - sy) < vh * 0.16 && Math.abs(best - sy) > 3) glideTo(best, 600);
+    var y = tops[i] != null ? tops[i] : sections[i].getBoundingClientRect().top + win.scrollY - margins[i];
+    win.scrollTo({ top: clamp(Math.round(y), 0, maxScroll()), behavior: reduceMQ.matches ? 'auto' : 'smooth' });
   }
 
   /* ---- The loop: reads first, then writes --------------------------------- */
@@ -133,20 +88,12 @@
   function frame(now) {
     ticking = false;
     var busy = false;
-    if (glide) {
-      var t = clamp((now - glide.t0) / glide.dur, 0, 1);
-      win.scrollTo(0, Math.round(glide.from + glide.d * ease(t)));
-      if (t >= 1) { var dn = glide.done; glide = null; if (dn) dn(); } else busy = true;
-    }
     var sy = win.scrollY; var vh = win.innerHeight; var max = maxS;
-    var motion = !reduceMQ.matches;
 
-    // Reads: page offsets cached by measure() (sections are never transformed,
-    // only their .wrap), so no layout is read during the scroll itself.
+    // Reads: page offsets cached by measure(), so no layout is read during the
+    // scroll itself.
     if (!spans.length) measure();
     tops = spans.map(function (s, i) { return clamp(s[0] - margins[i], 0, max); });
-    // Lite tier (perf-tier.js): chapters stay put; no per-frame morph writes.
-    var rects = motion && !root.classList.contains('perf-lite') ? spans.map(function (s) { return { top: s[0] - sy, bottom: s[1] - sy }; }) : null;
 
     // Position along the chapters, as a fractional index
     var i = 0;
@@ -157,7 +104,6 @@
 
     // Velocity and the droplet's watery stretch
     var dt = Math.max(1, now - lastT);
-    if (!glide && Math.abs(sy - lastSy) > 0.5) lastDir = sy > lastSy ? 1 : -1;
     var v = (sy - lastSy) / dt; lastSy = sy; lastT = now;
     vel += (v - vel) * 0.22;
     if (Math.abs(vel) < 0.003) vel = 0; else busy = true;
@@ -172,7 +118,8 @@
     rail.classList.toggle('is-awake', sy > vh * 0.35);
     if (cur !== active) {
       if (active >= 0) {
-        drop.classList.remove('lg-ripple'); void drop.offsetWidth; drop.classList.add('lg-ripple');
+        if (drop.classList.contains('lg-ripple')) { drop.classList.remove('lg-ripple'); void drop.offsetWidth; }
+        drop.classList.add('lg-ripple');
         setTimeout(function () { drop.classList.remove('lg-ripple'); }, 720);
       }
       active = cur;
@@ -190,62 +137,30 @@
       if (win.__lgScrollV) win.__lgScrollV(sq); else root.style.setProperty('--scroll-v', String(sq));
     }
 
-    // Writes: chapter morphs (inline transform/opacity on two elements only)
-    if (rects) {
-      rects.forEach(function (r, k) {
-        if (k === 0) return;
-        var e = clamp((vh - r.top) / (vh * 0.75), 0, 1);
-        var l = clamp((vh * 0.35 - r.bottom) / (vh * 0.35), 0, 1);
-        var key = e.toFixed(3) + '|' + l.toFixed(3);
-        if (morphCache[k] === key) return;
-        morphCache[k] = key;
-        var m = morphEls[k];
-        // Always a 3D transform, settled or not: dropping it would tear down the
-        // chapter's GPU layer and repaint the whole chapter when it moves again.
-        if (m.wrap) m.wrap.style.transform = 'translate3d(0,' + ((1 - e) * 7).toFixed(3) + 'vh,0) scale(' + (1 - (1 - e) * 0.05 - l * 0.035).toFixed(4) + ')';
-        var o = (1 - e) * (1 - l);
-        m.card.style.opacity = o > 0.001 ? o.toFixed(3) : '';
-        m.card.style.transform = o > 0.001 ? 'scaleX(' + (1 + e * 0.136).toFixed(4) + ')' : '';
-      });
-    }
-
-
-    // Settle once the user's own scroll comes to rest
-    if (intent) {
-      if (!glide && !drag && !touching && now - lastInput > 170 && Math.abs(vel) < 0.03) { intent = false; if (motion) settle(); }
-      else busy = true;
-    }
     if (busy) kick();
   }
 
   /* ---- Input ------------------------------------------------------------- */
   win.addEventListener('scroll', kick, { passive: true });
-  function userInput() { glide = null; intent = true; lastInput = performance.now(); kick(); }
-  win.addEventListener('wheel', userInput, { passive: true });
-  win.addEventListener('touchstart', function () { touching = true; glide = null; }, { passive: true });
-  win.addEventListener('touchend', function () { touching = false; userInput(); }, { passive: true });
-  win.addEventListener('touchcancel', function () { touching = false; }, { passive: true });
-  win.addEventListener('keydown', function (e) {
-    if (e.target.closest && e.target.closest('input, textarea, select, [contenteditable]')) return;
-    if (/^(PageUp|PageDown|ArrowUp|ArrowDown|Home|End| )$/.test(e.key)) userInput();
-  });
 
-  // In-page links glide; focus lands on the target afterwards.
+  // In-page links use native smooth scrolling. A far target is reached by an
+  // instant jump to just short of it first, so the page is not dragged through
+  // every chapter in between; focus then moves to the target as a link would.
   doc.addEventListener('click', function (e) {
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     var a = e.target.closest && e.target.closest('a[href^="#"]');
-    if (!a) return;
+    if (!a || a.hasAttribute('data-open-assistant')) return;
     var id = decodeURIComponent(a.getAttribute('href').slice(1));
     var target = id && doc.getElementById(id);
     if (!target) return;
     e.preventDefault();
-    var k = sections.indexOf(target);
-    var y = k === 0 ? 0 : target.getBoundingClientRect().top + win.scrollY - marginOf(target);
+    var y = clamp(Math.round(target.getBoundingClientRect().top + win.scrollY - marginOf(target)), 0, maxScroll());
+    var d = y - win.scrollY; var vh = win.innerHeight;
+    if (!reduceMQ.matches && Math.abs(d) > vh * 2.2) win.scrollTo({ top: y - (d > 0 ? 1 : -1) * vh * 1.1, behavior: 'auto' });
+    win.scrollTo({ top: y, behavior: reduceMQ.matches ? 'auto' : 'smooth' });
     if (history.pushState) history.pushState(null, '', '#' + id);
-    glideTo(y, 0, function () {
-      if (!target.hasAttribute('tabindex') && !target.matches('a, button, input, textarea, select')) target.setAttribute('tabindex', '-1');
-      target.focus({ preventScroll: true });
-    });
+    if (!target.hasAttribute('tabindex') && !target.matches('a, button, input, textarea, select')) target.setAttribute('tabindex', '-1');
+    target.focus({ preventScroll: true });
   });
 
   // Arrows: previous / next chapter from where the reader is now.
@@ -279,7 +194,7 @@
     if (!drag || e.pointerId !== drag.id) return;
     if (!drag.moved) {
       if (Math.abs(e.clientY - drag.y0) < 5) return;
-      drag.moved = true; glide = null;
+      drag.moved = true;
       railEl.setPointerCapture(e.pointerId);
       rail.classList.add('is-dragging');
     }
@@ -302,16 +217,10 @@
 
 
   /* ---- Layout changes ---------------------------------------------------- */
-  var relayout = function () {
-    measureMargins(); measure(); morphCache = [];
-    if (reduceMQ.matches || root.classList.contains('perf-lite')) morphEls.forEach(function (m) { if (!m) return; if (m.wrap) m.wrap.style.transform = ''; m.card.style.opacity = ''; m.card.style.transform = ''; });
-    kick();
-  };
+  var relayout = function () { measureMargins(); measure(); kick(); };
   win.addEventListener('resize', relayout, { passive: true });
   win.addEventListener('load', relayout);
-  reduceMQ.addEventListener('change', relayout);
-  doc.addEventListener('perf:lite', relayout);
   var mainEl = doc.querySelector('main');
-  if (win.ResizeObserver && mainEl) new ResizeObserver(function () { measure(); morphCache = []; kick(); }).observe(mainEl);
+  if (win.ResizeObserver && mainEl) new ResizeObserver(function () { measure(); kick(); }).observe(mainEl);
   relayout();
 })();

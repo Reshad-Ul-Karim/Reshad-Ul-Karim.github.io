@@ -17,7 +17,6 @@ function initializeWebsite() {
     initTypingEffect();
     initContactForm();
     initThemeToggle();
-    initLoadingScreen();
     initMouseEffects();
     initTechInteractions();
     initYouTubeModal();
@@ -2366,28 +2365,29 @@ function initCustomCursor() {
 
     const cursor = document.getElementById('custom-cursor');
     const dot = document.getElementById('cursor-dot');
-    if (!cursor || !dot) return;
+    if (!cursor || !dot || getComputedStyle(cursor).display === 'none') return;
 
     let cursorX = window.innerWidth / 2;
     let cursorY = window.innerHeight / 2;
     let dotX = cursorX;
     let dotY = cursorY;
+    let cursorRaf = 0;
 
-    // Ring follows with lerp for smooth trailing
+    // Ring follows with lerp for smooth trailing, and stops once it catches up
     function animateCursor() {
         cursorX += (dotX - cursorX) * 0.12;
         cursorY += (dotY - cursorY) * 0.12;
         cursor.style.left = cursorX + 'px';
         cursor.style.top = cursorY + 'px';
-        requestAnimationFrame(animateCursor);
+        cursorRaf = Math.abs(dotX - cursorX) + Math.abs(dotY - cursorY) > 0.2 ? requestAnimationFrame(animateCursor) : 0;
     }
-    animateCursor();
 
     document.addEventListener('mousemove', (e) => {
         dotX = e.clientX;
         dotY = e.clientY;
         dot.style.left = dotX + 'px';
         dot.style.top = dotY + 'px';
+        if (!cursorRaf) cursorRaf = requestAnimationFrame(animateCursor);
     });
 
     // Hover state on interactive elements

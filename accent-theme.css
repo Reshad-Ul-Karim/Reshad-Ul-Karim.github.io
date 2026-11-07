@@ -449,3 +449,14 @@ html[data-theme="light"] #accent-switcher .accent-tray {
 ::view-transition-new(root) {
   animation-duration: 0.45s;
 }
+
+/* Small phones: a tighter floating stack (chat 48 px, theme and palette 40 px)
+   so it covers less of the text column. Specific enough to override the
+   chat widget's own !important offsets on every page. */
+@media (max-width: 600px) {
+  html .ask-fab { right: max(12px, env(safe-area-inset-right, 0px)); bottom: max(14px, env(safe-area-inset-bottom, 0px)); width: 48px; height: 48px; }
+  html .theme-toggle { right: max(16px, env(safe-area-inset-right, 0px)) !important; bottom: calc(max(14px, env(safe-area-inset-bottom, 0px)) + 58px) !important; width: 40px !important; height: 40px !important; font-size: 1rem !important; }
+  html #accent-switcher { right: max(16px, env(safe-area-inset-right, 0px)) !important; bottom: calc(max(14px, env(safe-area-inset-bottom, 0px)) + 106px) !important; }
+  html #accent-switcher .accent-trigger { width: 40px; height: 40px; font-size: 0.98rem; }
+  html .ask-fab-tooltip { right: 70px; bottom: 26px; }
+}

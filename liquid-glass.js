@@ -1,5 +1,10 @@
 /* =========================================================================
-   liquid-glass.js: Apple-style liquid glass for cards, buttons and controls.
+   liquid-glass.js: Apple-style liquid glass for navigation and controls.
+
+   Glass is reserved for things that float or act: the nav bar, buttons, the
+   chapter rail and the theme/accent widgets. Reading surfaces (cards, tiles,
+   timelines, project and publication cards) are satin panels in CSS instead,
+   so long text never sits on a blurred, highlighted backdrop.
 
    For each glass element a displacement map is drawn for its exact size and
    corner radius: zero in the flat centre, rising only inside a thin bezel,
@@ -7,12 +12,12 @@
    red, green and blue channels by slightly different amounts (dispersion),
    so the rainbow split appears only where the "glass" curves.
 
-   Chromium applies it through backdrop-filter: url(#...). Other browsers get
-   frosted blur + saturation + the same rim and cursor highlight. Controls
-   get a slow jelly wobble with a soft blur on hover and a mild glitch on
-   press; reading cards never move. Reduced
-   motion turns the wobble and glitch off; reduced transparency and forced
-   colours make every surface solid (CSS).
+   Chromium with a fine pointer applies it through backdrop-filter: url(#...).
+   Everything else gets the same tint, rim and highlight (liquid-glass.css);
+   the choice is made once at load and never changes mid-visit. Controls get
+   a slow jelly wobble on hover and a mild glitch on press. Reduced motion
+   turns the wobble and glitch off; reduced transparency and forced colours
+   make every surface solid (CSS).
    ========================================================================= */
 (function () {
   'use strict';
@@ -24,21 +29,18 @@
 
   var SELECTOR = [
     // homepage
-    '.nav', '.btn', '.icon-btn', '.tilt-toggle', '.tile', '.cap', '.tl__body', '.project', '.form',
-    '.culture__item', '.honor.is-featured', '.xp-panel', '.xp-start', '.toolkit',
+    '.nav', '.btn', '.icon-btn', '.tilt-toggle', '.xp-start',
     // other pages
-    '.navbar .nav-container', '.project-card', '.publication-item', '.pub-card', '.pub-stats > li', '.detail-metric',
-    '.btn-primary', '.btn-secondary', '.action-btn', '.detail-link', '.detail-back',
+    '.navbar .nav-container', '.btn-primary', '.btn-secondary', '.action-btn', '.detail-link', '.detail-back',
     // chapter rail (chapter-scroll.js)
     '.chapters', '.chapters__drop',
     // theme widgets
     '.theme-toggle', '#accent-switcher .accent-trigger', '#accent-switcher .accent-tray'
   ].join(',');
 
-  // Touch screens use the frosted glass (heavier blur, stronger edge, glint
-  // pulse; liquid-glass.css): at phone sizes the bent rim barely shows, and the
-  // displacement filter is the costliest per-frame effect on mobile GPUs.
-  // The lite tier (perf-tier.js) never refracts either.
+  // Touch screens skip refraction: at phone sizes the bent rim barely shows,
+  // and the displacement filter is the costliest per-frame effect on mobile
+  // GPUs. The lite tier (perf-tier.js) never refracts either.
   var canRefract = (function () {
     if (root.classList.contains('perf-lite')) return false;
     try { return fineMQ.matches && CSS.supports('backdrop-filter', 'url(#a)') && /Chrome|Chromium|Edg\//.test(navigator.userAgent) && !/Firefox/.test(navigator.userAgent); } catch (e) { return false; }
@@ -149,13 +151,13 @@
     el.classList.add('lg--refract');
   }
 
-  // Reads and writes are kept apart: a style read after a class change forces
-  // a full style and layout pass, and doing that per element stalled scrolling.
-  function apply(el, cs) {
+  // Positioning comes from CSS (:where(.lg) { position: relative }, which any
+  // fixed or absolute rule overrides). The corner radius is read only where a
+  // lens map will be drawn, so phones never force a style pass here.
+  function apply(el, radius) {
     el.__lg = true;
-    el.__lgRad = parseFloat(cs.borderTopLeftRadius) || 0;
+    el.__lgRad = radius;
     el.classList.add('lg');
-    if (cs.position === 'static') el.style.position = 'relative'; // anchor the sheen
     if (!el.querySelector(':scope > .lg-sheen')) {
       var sheen = doc.createElement('span'); sheen.className = 'lg-sheen'; sheen.setAttribute('aria-hidden', 'true');
       var split = doc.createElement('span'); split.className = 'lg-split'; // RGB edge for glitch and glint (CSS)
@@ -165,9 +167,7 @@
   }
   var toUse = []; var useRaf = 0;
   function refit(el, w, h) {
-    // Carousel cards slide over the page, so refraction would re-render every
-    // card on every frame of a swipe; they keep the (identical) frosted glass.
-    if (!canRefract || lessGlass.matches || el.classList.contains('project')) { el.style.removeProperty('--lg-filter'); el.classList.remove('lg--refract'); return; }
+    if (!canRefract || lessGlass.matches) { el.style.removeProperty('--lg-filter'); el.classList.remove('lg--refract'); return; }
     if (!el.__lgNear) return; // frosted until it nears the viewport: maps are drawn on the main thread
     if (w == null) { var r = el.getBoundingClientRect(); w = r.width; h = r.height; }
     if (w < 8 || h < 8) return;
@@ -213,14 +213,13 @@
   };
   function scan() {
     var fresh = Array.prototype.filter.call(doc.querySelectorAll(SELECTOR), function (el) { return !el.__lg; });
-    var styles = fresh.map(function (el) { return getComputedStyle(el); });
-    var reads = styles.map(function (cs) { return { position: cs.position, borderTopLeftRadius: cs.borderTopLeftRadius }; });
+    if (!fresh.length) return;
+    var radii = fresh.map(function (el) { return canRefract ? parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0 : 0; });
     fresh.forEach(function (el, i) {
       if (!nearIO) el.__lgNear = true;
-      apply(el, reads[i]);
-      if (ro) ro.observe(el);
-      if (nearIO) nearIO.observe(el);
-      if (glintIO) glintIO.observe(el);
+      apply(el, radii[i]);
+      if (canRefract && ro) ro.observe(el); // sizes and proximity only matter for lens maps
+      if (canRefract && nearIO) nearIO.observe(el);
       if (viewIO) viewIO.observe(el);
     });
   }
@@ -238,8 +237,7 @@
   /* Liquid wobble, mild glitch and blur. Only small controls react with motion:
      reading cards stay still so their links are easy to hit. */
   var CONTROL = 'a, button, .btn, .icon-btn, .tilt-toggle, .theme-toggle, .accent-trigger, .action-btn, .btn-primary, .btn-secondary, .detail-link, .detail-back';
-  var STILL = '.project, .project-card, .publication-item, .pub-card, .pub-stats > li, .tile, .cap, .tl__body, .form, .culture__item, .xp-panel, .detail-metric, .honor, .toolkit';
-  function moves(el) { return !reduceMQ.matches && el.matches(CONTROL) && !el.matches(STILL); }
+  function moves(el) { return !reduceMQ.matches && el.matches(CONTROL); }
   function wobble(el, strong) {
     if (!moves(el) || !el.animate) return;
     var r = el.getBoundingClientRect();
@@ -257,7 +255,8 @@
   function glitch(el, strong) {
     if (!moves(el)) return;
     var cls = strong ? 'lg-glitch' : 'lg-ripple';
-    el.classList.remove('lg-glitch', 'lg-ripple'); void el.offsetWidth; el.classList.add(cls);
+    if (el.classList.contains('lg-glitch') || el.classList.contains('lg-ripple')) { el.classList.remove('lg-glitch', 'lg-ripple'); void el.offsetWidth; } // restart only if running
+    el.classList.add(cls);
     var f = el.__lgFilter;
     if (f && strong) lensPulse(f);
     setTimeout(function () { el.classList.remove(cls); }, strong ? 520 : 720);
@@ -285,7 +284,8 @@
   }, { passive: true });
   doc.documentElement.addEventListener('pointerleave', function () { if (lastHover) settle(lastHover); lastHover = null; });
   function play(el, cls, ms) {
-    el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls);
+    if (el.classList.contains(cls)) { el.classList.remove(cls); void el.offsetWidth; } // a reflow restarts it; skipped when idle
+    el.classList.add(cls);
     clearTimeout(el['__t' + cls]);
     el['__t' + cls] = setTimeout(function () { el.classList.remove(cls); }, ms);
   }
@@ -298,7 +298,6 @@
       el.style.setProperty('--lx', ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%');
       el.style.setProperty('--ly', ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%');
       if (!reduceMQ.matches) play(el, 'lg-shine', 1400);
-      if (!moves(el) && !reduceMQ.matches) play(el, 'lg-ripple', 720); // cards: blur ripple, no movement
     }
     wobble(el, true);
     glitch(el, true);
@@ -311,44 +310,22 @@
     }, { passive: true });
   });
 
-  /* Touch screens have no hover, so glass answers to scrolling instead: a card
-     gliding into view catches a shine sweep and a brief focus glint, once per
-     entry. The hero name glitches once after its reveal, and again on tap. */
-  var glintIO = null;
-  if (!fineMQ.matches && !reduceMQ.matches && 'IntersectionObserver' in window) {
-    glintIO = new IntersectionObserver(function (es) {
-      es.forEach(function (e) {
-        var el = e.target;
-        if (!e.isIntersecting) { el.__glinted = false; return; }
-        if (el.__glinted) return;
-        el.__glinted = true;
-        play(el, 'lg-shine', 1400);
-        play(el, 'lg-glint', 900);
-      });
-    }, { rootMargin: '-18% 0px -18% 0px' });
-    var title = doc.querySelector('.hero__title');
-    if (title) {
-      var afterReveal = function () { setTimeout(function () { play(title, 'lg-name-glitch', 560); }, 2900); };
-      if (root.classList.contains('is-preloading')) doc.addEventListener('preloader:done', afterReveal, { once: true });
-      else afterReveal();
-      title.addEventListener('pointerdown', function () { play(title, 'lg-name-glitch', 560); }, { passive: true });
-    }
+  /* The hero name glitches once after its reveal on touch screens (no
+     hover to trigger it), and again on tap. */
+  var title = doc.querySelector('.hero__title');
+  if (title && !fineMQ.matches && !reduceMQ.matches) {
+    setTimeout(function () { play(title, 'lg-name-glitch', 560); }, 2900);
+    title.addEventListener('pointerdown', function () { play(title, 'lg-name-glitch', 560); }, { passive: true });
   }
 
   function start() {
     doc.body.appendChild(svg);
     root.classList.add(canRefract ? 'lg-refract' : 'lg-frost');
     scan();
-    // Widgets and some page parts are injected after load (palette, theme toggle, chat, render.js).
+    // Widgets and some page parts are injected after load (palette, theme toggle, chat).
     var pending = false;
     new MutationObserver(function () { if (!pending) { pending = true; requestAnimationFrame(function () { pending = false; scan(); }); } }).observe(doc.body, { childList: true, subtree: true });
     lessGlass.addEventListener('change', function () { Array.prototype.forEach.call(doc.querySelectorAll('.lg'), function (el) { refit(el); }); });
-    // A device that turns out too slow drops refraction once, for good.
-    doc.addEventListener('perf:lite', function () {
-      canRefract = false;
-      root.classList.remove('lg-refract'); root.classList.add('lg-frost');
-      Array.prototype.forEach.call(doc.querySelectorAll('.lg'), function (el) { refit(el); });
-    });
   }
   if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', start); else start();
 })();

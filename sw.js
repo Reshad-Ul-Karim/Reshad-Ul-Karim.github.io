@@ -15,7 +15,7 @@
      reference are cached, so opening them later needs almost no network.
    Bump VERSION to drop every cache on the next visit.
    ========================================================================= */
-const VERSION = 'v1';
+const VERSION = 'v2';
 const PAGES = 'pages-' + VERSION;
 const STATIC = 'static-' + VERSION;
 const IMAGES = 'images-' + VERSION;

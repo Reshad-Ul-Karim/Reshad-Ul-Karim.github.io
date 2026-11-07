@@ -1,5 +1,5 @@
 /* =========================================================================
-   chapter-scroll.css: chapter rail and chapter morphs (chapter-scroll.js).
+   chapter-scroll.css: the chapter rail (chapter-scroll.js).
    The rail is tagged .lg by liquid-glass.js,
    so it shares the glass tint, rim and cursor highlight.
    ========================================================================= */
@@ -153,29 +153,6 @@
   .chapters__count { color: var(--ink-2); font-weight: 500; font-variant-numeric: tabular-nums; }
 }
 
-/* ---- Chapter morphs ----------------------------------------------------------
-   A chapter arrives as a floating glass card (inset, rounded, lit rim) that
-   opens to full width as it reaches the top, while its content rises out of
-   depth; it recedes a little as it leaves. --ce / --cl: 0..1 from the loop. */
-/* chapter-scroll.js writes transform and opacity inline on .wrap and on the
-   injected .cs-card. (Custom properties on the section were inherited by every
-   element inside it, so each scroll frame restyled whole chapters.) The card
-   keeps one fixed look and only scales and fades; fully open it has opacity 0
-   and is not painted at all. */
-@media (prefers-reduced-motion: no-preference) {
-  .cs-on main > .section > .wrap { transform-origin: 50% 0; }
-  .cs-on main > .section > .cs-card {
-    position: absolute; z-index: 0;
-    top: 0; bottom: 0; left: 6vw; right: 6vw;
-    border-radius: 56px;
-    background: linear-gradient(180deg, rgba(var(--hl-rgb), 0.12), transparent 45%);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
-    opacity: 0;
-    pointer-events: none;
-  }
-}
-.cs-card { display: none; }
-@media (prefers-reduced-motion: no-preference) { .cs-on main > .section > .cs-card { display: block; } }
 main > .section:focus { outline: none; }
 
 @media (prefers-reduced-motion: reduce) {

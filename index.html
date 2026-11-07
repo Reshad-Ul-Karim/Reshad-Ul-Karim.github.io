@@ -7,29 +7,17 @@
          (home.js theme toggle -> data-theme) and 'accent' (accent-theme.js ->
          data-accent). This page defaults to the teal accent (data-accent-default).
          Also flags JS so the nav can collapse into its disclosure panel without a
-         flash; without JS the links simply stay visible. -->
+         flash (without JS the links simply stay visible), and applies the saved
+         'motion' preference (hero-motion.js: the Pause motion control). -->
     <script>
     (function(){var d=document.documentElement;d.classList.add('js');try{
       var t=localStorage.getItem('theme'), a=localStorage.getItem('accent');
       d.setAttribute('data-theme',t||'dark'); /* dark grey is this page's default */
       if(a)d.setAttribute('data-accent',a);
+      if(localStorage.getItem('motion')==='paused')d.classList.add('motion-paused');
     }catch(e){}})();
     </script>
-    <script src="perf-tier.js?v=1.0.1"></script>
-    <!-- Every load: a CSS-only 3D preloader covers the page while home-scene.js
-         builds, compiles and uploads every 3D window (see the controller after
-         <body>); that work repeats on each load, cached files or not. Skipped for
-         Save-Data and forced colours. -->
-    <script>
-    (function(){var d=document.documentElement;try{
-      var c=navigator.connection;
-      if((c&&c.saveData)||d.classList.contains('perf-lite')||matchMedia('(forced-colors: active)').matches)return; /* lite devices skip the 3D, so there is nothing to prepare */
-      d.classList.add('is-preloading');
-      [['modulepreload','assets/vendor/three-home.min.js?v=186.1-2'],['preload','assets/env/studio_small_03_1k.jpg','image']].forEach(function(p){
-        var l=document.createElement('link');l.rel=p[0];l.href=p[1];if(p[2])l.as=p[2];document.head.appendChild(l);
-      });
-    }catch(e){}})();
-    </script>
+    <script src="perf-tier.js?v=2.0.0"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
@@ -103,116 +91,28 @@
          GSAP, Lenis, vanilla-tilt, the old Three.js layers) is still used by the
          project, publication and 404 pages, but not here. -->
     <!-- css-bundle: tokens.css home.css liquid-glass.css chapter-scroll.css glyphs.css accent-theme.css assistant-widget.css -->
-    <link rel="stylesheet" href="bundle-ef75f95b7e.css">
+    <link rel="stylesheet" href="bundle-8101d11c4e.css">
     <!-- Shared with every page: the accent switcher (palette button) and the chat
          widget keep their original look and behaviour. -->
-    <!-- Font Awesome (palette, theme toggle and chat widget icons) and the chat
-         widget's fonts load without blocking the first paint. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap">
-    </noscript>
+    <!-- The chat widget's fonts load with it, after the page has loaded and gone
+         idle. Its icons and the theme and palette icons are drawn in CSS
+         (home.css, section 19), so this page needs no icon font. -->
+    <!-- The hero backdrop's poster is painted by CSS; preloading it lets it
+         arrive with the stylesheet instead of after it. -->
+    <link rel="preload" as="image" href="assets/motion/hero-contours-poster.webp" type="image/webp">
 
-    <script src="home.js?v=2.6.2" defer></script>
-    <script src="liquid-glass.js?v=1.8.0" defer></script>
-    <script src="chapter-scroll.js?v=1.5.0" defer></script>
-    <script src="projects-carousel.js?v=1.0.2" defer></script>
+    <script src="home.js?v=3.0.1" defer></script>
+    <script src="liquid-glass.js?v=2.0.3" defer></script>
+    <script src="chapter-scroll.js?v=2.0.2" defer></script>
+    <script src="hero-motion.js?v=1.0.0" defer></script>
     <script src="accent-theme.js?v=1.3.1" defer></script>
-    <script>/* chat widget: fetched after load, off the start-up path */addEventListener("load",function(){(window.requestIdleCallback||setTimeout)(function(){var s=document.createElement("script");s.src="assistant-widget.js?v=1.1.0";document.head.appendChild(s);},{timeout:3000});});</script>
-    <!-- Page-wide 3D (one renderer). Starts after the load event (at once behind the
-         preloader); every chapter keeps a static fallback for no WebGL 2, reduced
-         data, forced colours and failures. -->
-    <script type="module" src="home-scene.js?v=1.6.1"></script>
-    <style>
-    /* First-visit preloader: transforms and opacity only, so it keeps turning on
-       the compositor while the main thread builds the 3D. */
-    .preloader { display: none; }
-    .is-preloading, .is-preloading body { overflow: hidden; scrollbar-gutter: stable; }
-    .is-preloading .masthead, .is-preloading .masthead * { animation-play-state: paused !important; }
-    .is-preloading .preloader, .is-preloaded .preloader {
-      display: grid; position: fixed; inset: 0; z-index: 10000;
-      place-content: center; justify-items: center; gap: 30px;
-      background:
-        radial-gradient(60% 50% at 50% 42%, rgba(var(--glow-rgb, 48, 128, 116), 0.22), transparent 70%),
-        var(--page, #0d0e10);
-      color: var(--ink, #e9ece9);
-      cursor: progress;
-    }
-    .is-preloaded .preloader {
-      opacity: 0; visibility: hidden; pointer-events: none;
-      transition: opacity 650ms cubic-bezier(.22,.61,.36,1), visibility 0s linear 650ms;
-    }
-    .preloader__orb { position: relative; width: 132px; height: 132px; perspective: 520px; }
-    .preloader__gyro { position: absolute; inset: 0; transform-style: preserve-3d; animation: pl-gyro 7s linear infinite; }
-    .preloader__ring {
-      position: absolute; inset: 0; border-radius: 50%;
-      border: 1.5px solid rgba(var(--ink-rgb, 236, 238, 240), 0.14);
-      border-top-color: var(--hl, #8cf0d3);
-      border-right-color: rgba(var(--ink-rgb, 236, 238, 240), 0.7);
-      box-shadow: 0 0 22px rgba(var(--glow-rgb, 48, 128, 116), 0.45), inset 0 0 14px rgba(255, 255, 255, 0.08);
-    }
-    .preloader__ring:nth-child(1) { animation: pl-r1 2.4s cubic-bezier(.45,.05,.55,.95) infinite; }
-    .preloader__ring:nth-child(2) { inset: 12px; animation: pl-r2 3.1s cubic-bezier(.45,.05,.55,.95) infinite; }
-    .preloader__ring:nth-child(3) { inset: 24px; animation: pl-r3 3.8s cubic-bezier(.45,.05,.55,.95) infinite; }
-    .preloader__core {
-      position: absolute; inset: 44px; border-radius: 50%;
-      background: radial-gradient(circle at 34% 30%, #fff 0 6%, var(--hl, #8cf0d3) 30%, rgba(var(--glow-rgb, 48, 128, 116), 0.25) 72%, transparent 74%);
-      box-shadow: 0 0 40px rgba(var(--glow-rgb, 48, 128, 116), 0.55);
-      animation: pl-core 1.8s ease-in-out infinite;
-    }
-    .preloader__name {
-      margin: 0; font: 500 12px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
-      letter-spacing: 0.32em; text-transform: uppercase; opacity: 0.72;
-    }
-    .preloader__bar { width: 168px; height: 2px; border-radius: 2px; overflow: hidden; background: rgba(var(--ink-rgb, 236, 238, 240), 0.12); }
-    .preloader__fill {
-      display: block; height: 100%; background: linear-gradient(90deg, var(--hl, #8cf0d3), var(--ink, #ECEEF0));
-      transform: scaleX(0.04); transform-origin: 0 50%; transition: transform 380ms cubic-bezier(.22,.61,.36,1);
-    }
-    .is-preloaded .preloader__orb { transform: scale(1.5); opacity: 0; transition: transform 650ms cubic-bezier(.22,.61,.36,1), opacity 450ms ease; }
-    @keyframes pl-gyro { to { transform: rotateY(360deg) rotateX(360deg); } }
-    @keyframes pl-r1 { from { transform: rotateX(68deg) rotateZ(0deg); } to { transform: rotateX(68deg) rotateZ(360deg); } }
-    @keyframes pl-r2 { from { transform: rotateY(66deg) rotateZ(0deg); } to { transform: rotateY(66deg) rotateZ(-360deg); } }
-    @keyframes pl-r3 { from { transform: rotateX(-50deg) rotateY(38deg) rotateZ(0deg); } to { transform: rotateX(-50deg) rotateY(38deg) rotateZ(360deg); } }
-    @keyframes pl-core { 50% { transform: scale(0.86); opacity: 0.8; } }
-    @media (prefers-reduced-motion: reduce) {
-      .preloader__gyro, .preloader__ring, .preloader__core { animation: none !important; }
-      .preloader__ring:nth-child(1) { transform: rotateX(68deg); }
-      .preloader__ring:nth-child(2) { transform: rotateY(66deg); }
-      .preloader__ring:nth-child(3) { transform: rotateX(-50deg) rotateY(38deg); }
-    }
-    </style>
+    <script>/* chat widget and its fonts: fetched after load, off the start-up path */addEventListener("load",function(){(window.requestIdleCallback||setTimeout)(function(){var l=document.createElement("link");l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap";document.head.appendChild(l);var s=document.createElement("script");s.src="assistant-widget.js?v=1.1.0";document.head.appendChild(s);},{timeout:3000});});</script>
+    <!-- The hero portrait's 3D (one renderer, drawn inside the hero only). Starts
+         once the page has loaded and gone idle; the static portrait stays for no
+         WebGL 2, Save-Data, forced colours and failures. -->
+    <script type="module" src="home-scene.js?v=2.1.1"></script>
 </head>
 <body>
-    <div class="preloader" aria-hidden="true">
-        <div class="preloader__orb"><div class="preloader__gyro"><span class="preloader__ring"></span><span class="preloader__ring"></span><span class="preloader__ring"></span></div><span class="preloader__core"></span></div>
-        <p class="preloader__name">Reshad Ul Karim</p>
-        <span class="preloader__bar"><span class="preloader__fill"></span></span>
-    </div>
-    <script>
-    /* Preloader controller: progress and 'gl:primed' come from home-scene.js.
-       On screen at least 0.6 s from its first frame (so it never just
-       flashes), at most 4.5 s; a click or key skips it. */
-    (function(){var d=document.documentElement;if(!d.classList.contains('is-preloading'))return;
-      var el=document.querySelector('.preloader'),fill=el.querySelector('.preloader__fill'),t0=performance.now(),gone=false;
-      requestAnimationFrame(function(){t0=performance.now();});
-      function done(){if(gone)return;gone=true;
-        setTimeout(function(){fill.style.transform='scaleX(1)';
-          d.classList.add('is-preloaded');d.classList.remove('is-preloading');
-          document.dispatchEvent(new CustomEvent('preloader:done'));
-          setTimeout(function(){el.remove();d.classList.remove('is-preloaded');},700);
-        },Math.max(0,600-(performance.now()-t0)));}
-      document.addEventListener('gl:progress',function(e){if(!gone)fill.style.transform='scaleX('+Math.max(0.04,Math.min(1,e.detail)).toFixed(3)+')';});
-      document.addEventListener('gl:primed',done);
-      el.addEventListener('click',done);
-      addEventListener('keydown',done,{once:true});
-      setTimeout(done,4500);
-    })();
-    </script>
     <!-- Icon sprite (decorative; every use sits next to a text label or aria-label). -->
     <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
         <symbol id="i-github" viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></symbol>
@@ -232,6 +132,9 @@
         <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
         <symbol id="i-chat" viewBox="0 0 24 24"><path d="M20 12a8 8 0 0 1-11.6 7.1L4 20l1-4.1A8 8 0 1 1 20 12z"/></symbol>
         <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+        <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8.5 5.5v13M15.5 5.5v13"/></symbol>
+        <symbol id="i-expand" viewBox="0 0 24 24"><path d="M14 4.5h5.5V10M10 19.5H4.5V14M19.5 4.5 13 11M4.5 19.5 11 13"/></symbol>
+        <symbol id="i-medal" viewBox="0 0 24 24"><path d="M8 3.5 10.5 9M16 3.5 13.5 9"/><circle cx="12" cy="14.5" r="5.5"/><path d="m12 11.8 .9 1.8 2 .3-1.45 1.4.35 2-1.8-.95-1.8.95.35-2L9.1 13.9l2-.3z"/></symbol>
     </svg>
 
     <a class="skip-link" href="#main">Skip to content</a>
@@ -263,6 +166,26 @@
     <main id="main">
         <!-- ================= HERO ================= -->
         <section id="home" class="masthead" data-hero data-surface="dark" aria-labelledby="hero-title">
+            <!-- Backdrop layers (decorative, behind the portrait): 1 the masthead's own
+                 colour and light, 2 a low-opacity motion loop tinted with the accent
+                 (its poster is the same first frame, so nothing changes when it starts),
+                 3 contour accents. hero-motion.js moves them with scroll and pointer and
+                 plays the loop only while the hero is on screen. -->
+            <div class="hero__backdrop" aria-hidden="true">
+                <div class="hero__media" data-hero-media>
+                    <video class="hero__video" muted playsinline loop preload="none" disablepictureinpicture disableremoteplayback tabindex="-1"
+                           data-src-webm="assets/motion/hero-contours-{w}.webm" data-src-mp4="assets/motion/hero-contours-{w}.mp4"></video>
+                </div>
+                <svg class="hero__contours" data-hero-contours viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" focusable="false">
+                    <g fill="none" stroke="currentColor" stroke-linecap="round">
+                        <ellipse cx="470" cy="300" rx="190" ry="190" stroke-width="1" opacity="0.38"/>
+                        <ellipse cx="470" cy="300" rx="262" ry="262" stroke-width="1" opacity="0.24" stroke-dasharray="2 9"/>
+                        <ellipse cx="470" cy="300" rx="340" ry="340" stroke-width="1" opacity="0.14"/>
+                        <path d="M40 470 C 210 430, 300 520, 470 488 S 700 420, 790 452" stroke-width="1.2" opacity="0.3"/>
+                        <path d="M10 528 C 190 498, 320 572, 500 540 S 720 488, 800 512" stroke-width="1" opacity="0.18"/>
+                    </g>
+                </svg>
+            </div>
             <div class="hero__inner wrap">
                 <div class="hero__copy">
                     <p class="hero__status hero__status--phd"><span class="hero__status-dot" aria-hidden="true"></span><strong>Seeking PhD opportunities</strong><span class="hero__status-sep" aria-hidden="true"></span><span class="hero__status-sub">3D vision, navigation &amp; language models</span></p>
@@ -273,7 +196,7 @@
                     </h1>
                     <p class="hero__lede">I build <strong>computer-vision and LLM systems that show their reasoning</strong>, then ship them.</p>
                     <ul class="hero__facts">
-                        <li><strong>4</strong> peer-reviewed papers</li>
+                        <li><strong data-count="publications">4</strong> peer-reviewed papers</li>
                         <li><strong>1st-author</strong> IEEE Access</li>
                         <li><strong>8th</strong> of 102 at URC 2025</li>
                     </ul>
@@ -292,9 +215,11 @@
                         <li><a class="icon-btn" href="https://www.linkedin.com/in/reshad-ul-karim" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn (opens in a new tab)"><svg class="icon icon--fill" aria-hidden="true"><use href="#i-linkedin"/></svg></a></li>
                         <li><a class="icon-btn" href="https://scholar.google.com/citations?user=2ssVmugAAAAJ" target="_blank" rel="noopener noreferrer" aria-label="Google Scholar (opens in a new tab)"><svg class="icon icon--fill" aria-hidden="true"><use href="#i-scholar"/></svg></a></li>
                     </ul>
-                    <!-- Phones only (home-scene.js reveals it): motion access is asked for
-                         only after this tap, as iOS requires. -->
+                    <!-- Phones only (home-scene.js reveals the tilt button): motion access is
+                         asked for only after this tap, as iOS requires. The motion button
+                         pauses the backdrop loop and the card motifs (saved per browser). -->
                     <div class="tilt-offer">
+                        <button class="tilt-toggle pressable" type="button" data-motion-toggle hidden><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-pause"/></svg><span>Pause motion</span></button>
                         <button class="tilt-toggle pressable" type="button" data-tilt-toggle aria-pressed="false" hidden><span>Enable tilt effects</span></button>
                         <button class="tilt-toggle pressable" type="button" data-sound-toggle aria-pressed="false" hidden><span>Sound off</span></button>
                         <p class="tilt-status" data-tilt-status role="status" aria-live="polite"></p>
@@ -316,71 +241,74 @@
         </section>
 
         <!-- ================= ABOUT ================= -->
-        <section id="about" class="section" aria-labelledby="about-title">
-            <div class="wrap">
-                <div class="about__head">
+        <section id="about" class="section about" aria-labelledby="about-title">
+            <svg class="about__motif" viewBox="0 0 640 420" preserveAspectRatio="xMaxYMin meet" aria-hidden="true" focusable="false">
+                <g fill="none" stroke="currentColor" stroke-linecap="round">
+                    <path d="M640 40 C 520 60, 470 140, 380 150 S 220 120, 150 190" stroke-width="1.2" opacity="0.5"/>
+                    <path d="M640 82 C 540 100, 500 176, 410 190 S 260 168, 190 236" stroke-width="1" opacity="0.32"/>
+                    <path d="M640 126 C 560 140, 528 214, 442 230 S 300 214, 232 282" stroke-width="1" opacity="0.2"/>
+                    <path d="M640 172 C 580 182, 556 252, 474 270 S 340 262, 276 326" stroke-width="1" opacity="0.12"/>
+                    <circle cx="380" cy="150" r="3.5" fill="currentColor" stroke="none" opacity="0.7"/>
+                </g>
+            </svg>
+            <div class="wrap about__layout">
+                <div class="about__intro">
                     <header class="section-head">
                         <p class="eyebrow">About</p>
                         <h2 id="about-title">AI that shows its work.</h2>
                     </header>
-                    <div class="gl-window about__viz" data-gl="about" aria-hidden="true">
-                        <svg class="gl-fallback" viewBox="0 0 600 200" preserveAspectRatio="xMidYMid meet" focusable="false">
-                            <path d="M40 170 C 140 20, 460 20, 560 170" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round" opacity="0.5"/>
-                            <path d="M80 176 C 170 60, 430 60, 520 176" fill="none" stroke="currentColor" stroke-width="2" opacity="0.35"/>
-                        </svg>
+                    <p class="about__lead">I&rsquo;m a computer science student at BRAC University who builds AI meant to work outside the lab. Most of my work sits where computer vision meets people who need it to be dependable.</p>
+                    <div class="about__ideas">
+                        <p>That includes a first-author IEEE Access paper that recognises signs of stroke from facial landmarks and explains each prediction, and an assistive vision agent for blind and low-vision users that decides when to answer, hedge, or ask for a better photo.</p>
+                        <p>On the Mongol Tori Mars Rover team I designed PCBs and tuned onboard detection. Lately I build LLM systems too, like a document assistant that cites the page behind every answer.</p>
+                        <p class="about__thesis">What connects it all: AI that shows its reasoning and admits what it doesn&rsquo;t know.</p>
+                    </div>
+                    <div class="about__actions">
+                        <a class="btn pressable" href="#contact" data-open-assistant>
+                            <svg class="icon icon--stroke" aria-hidden="true"><use href="#i-chat"/></svg>
+                            <span>Ask my AI assistant</span>
+                        </a>
+                        <a class="text-link" href="game.html"><span>Play my journey game</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a>
                     </div>
                 </div>
-                <div class="about__grid">
-                    <div class="about__story">
-                        <p>I&rsquo;m a computer science student at BRAC University who builds AI meant to work outside the lab. Most of my work sits where computer vision meets people who need it to be dependable.</p>
-                        <p>That includes a first-author IEEE Access paper that recognises signs of stroke from facial landmarks and explains each prediction, and an assistive vision agent for blind and low-vision users that decides when to answer, hedge, or ask for a better photo. On the Mongol Tori Mars Rover team I designed PCBs and tuned onboard detection. Lately I build LLM systems too, like a document assistant that cites the page behind every answer. What connects it all: AI that shows its reasoning and admits what it doesn&rsquo;t know.</p>
-                        <div class="about__actions">
-                            <a class="btn pressable" href="#contact" data-open-assistant>
-                                <svg class="icon icon--stroke" aria-hidden="true"><use href="#i-chat"/></svg>
-                                <span>Ask my AI assistant</span>
-                            </a>
-                            <a class="text-link" href="game.html"><span>Play my journey game</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-                        </div>
-                    </div>
 
-                    <ul class="about__tiles bare">
-                        <li class="tile tile--accent">
-                            <span class="tile__label"><svg class="gi icon--stroke" aria-hidden="true"><use href="#i-calendar"/></svg>Now</span>
-                            <span class="tile__value">Undergraduate Research Assistant, BRAC University Research Seed Grant</span>
-                            <span class="tile__meta">Since Nov 2025 &middot; DRISTEE, an AI navigation assistant for visually impaired users</span>
-                        </li>
-                        <li class="tile">
-                            <span class="tile__label"><svg class="gi icon--stroke" aria-hidden="true"><use href="#i-nodes"/></svg>Research</span>
-                            <span class="tile__num"><span data-citations>38</span></span>
-                            <span class="tile__meta">Google Scholar citations across 4 peer-reviewed papers</span>
-                            <span class="tile__links">
-                                <a class="text-link" href="https://scholar.google.com/citations?user=2ssVmugAAAAJ" target="_blank" rel="noopener noreferrer"><span>Scholar</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-                                <a class="text-link" href="https://orcid.org/0009-0000-8291-6749" target="_blank" rel="noopener noreferrer"><span>ORCID</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-                                <a class="text-link" href="https://www.researchgate.net/profile/Reshad-Karim-2" target="_blank" rel="noopener noreferrer"><span>ResearchGate</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-                            </span>
-                        </li>
-                        <li class="tile tile--edu">
-                            <span class="tile__label"><svg class="gi" aria-hidden="true"><use href="#i-scholar"/></svg>Education</span>
-                            <span class="tile__value">BSc Computer Science &amp; Engineering, BRAC University</span>
-                            <span class="edu__score">
-                                <span class="edu__ring" style="--p: 97.25" aria-hidden="true"></span>
-                                <span class="edu__gpa"><span class="edu__num">3.89</span><span class="edu__of">CGPA out of 4.00</span></span>
-                            </span>
-                            <span class="edu__honors">
-                                <span class="edu__honor"><strong>5&times;</strong> Vice Chancellor&rsquo;s List</span>
-                                <span class="edu__honor"><strong>5&times;</strong> Dean&rsquo;s List</span>
-                            </span>
-                        </li>
-                        <li class="tile">
-                            <span class="tile__label"><svg class="gi icon--stroke" aria-hidden="true"><use href="#i-doc"/></svg>CV</span>
-                            <span class="tile__value">Roles, papers, projects and awards on two pages.</span>
-                            <span class="tile__links">
-                                <a class="text-link" href="assets/papers/Reshad_Ul_Karim_Resume.pdf" target="_blank" rel="noopener"><span>View CV (PDF)</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-                                <a class="text-link" href="assets/papers/Reshad_Ul_Karim_Resume.pdf" download="Reshad_Ul_Karim_Resume.pdf"><span>Download</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-download"/></svg></a>
-                            </span>
-                        </li>
-                    </ul>
-                </div>
+                <ul class="about__evidence bare" aria-label="At a glance">
+                    <li class="ev ev--now">
+                        <p class="ev__label"><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-calendar"/></svg>Now <span class="ev__since">Since Nov 2025</span></p>
+                        <p class="ev__title">Undergraduate Research Assistant</p>
+                        <p class="ev__org">BRAC University Research Seed Grant</p>
+                        <p class="ev__meta">DRISTEE, an AI navigation assistant for visually impaired users</p>
+                        <p class="ev__links"><a class="text-link" href="projects/dristee-navigation.html"><span>About DRISTEE</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow-right"/></svg></a></p>
+                    </li>
+                    <li class="ev ev--research">
+                        <p class="ev__label"><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-nodes"/></svg>Research</p>
+                        <p class="ev__stat"><span class="ev__num" data-citations>38</span><span class="ev__unit">Google Scholar citations</span></p>
+                        <p class="ev__meta">Across <span data-count="publications">4</span> peer-reviewed papers</p>
+                        <p class="ev__links">
+                            <a class="text-link" href="https://scholar.google.com/citations?user=2ssVmugAAAAJ" target="_blank" rel="noopener noreferrer"><span>Scholar</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+                            <a class="text-link" href="https://orcid.org/0009-0000-8291-6749" target="_blank" rel="noopener noreferrer"><span>ORCID</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+                            <a class="text-link" href="https://www.researchgate.net/profile/Reshad-Karim-2" target="_blank" rel="noopener noreferrer"><span>ResearchGate</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+                        </p>
+                    </li>
+                    <li class="ev ev--edu">
+                        <p class="ev__label"><svg class="icon icon--fill" aria-hidden="true"><use href="#i-scholar"/></svg>Education</p>
+                        <p class="ev__title">BSc Computer Science &amp; Engineering</p>
+                        <p class="ev__org">BRAC University</p>
+                        <p class="ev__stat ev__stat--sm"><span class="ev__num">3.89</span><span class="ev__unit">CGPA out of 4.00</span></p>
+                        <ul class="ev__honors bare">
+                            <li><strong>5&times;</strong> Vice Chancellor&rsquo;s List</li>
+                            <li><strong>5&times;</strong> Dean&rsquo;s List</li>
+                        </ul>
+                    </li>
+                    <li class="ev ev--cv">
+                        <p class="ev__label"><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-doc"/></svg>CV</p>
+                        <p class="ev__meta">Roles, papers, projects and awards on two pages.</p>
+                        <p class="ev__actions">
+                            <a class="btn btn--ghost btn--small pressable" href="assets/papers/Reshad_Ul_Karim_Resume.pdf" target="_blank" rel="noopener"><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-eye"/></svg><span>View CV (PDF)</span></a>
+                            <a class="btn btn--small pressable" href="assets/papers/Reshad_Ul_Karim_Resume.pdf" download="Reshad_Ul_Karim_Resume.pdf"><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-download"/></svg><span>Download</span></a>
+                        </p>
+                    </li>
+                </ul>
             </div>
         </section>
 
@@ -396,8 +324,24 @@
                     </ul>
                 </header>
                 <ul class="caps">
-                    <li class="cap cap--research">
-                        <div class="cap__stage gl-window" data-gl="model" data-model="security_camera_01" data-yaw="0.9" aria-hidden="true"></div>
+                    <li class="cap">
+                        <div class="cap__visual" data-motif="vision" aria-hidden="true">
+                            <svg class="motif" viewBox="0 0 320 132" focusable="false">
+                                <g class="m-ground" fill="none" stroke="currentColor">
+                                    <path d="M0 132 L160 44 L320 132" opacity="0.18"/><path d="M80 132 L160 44 L240 132" opacity="0.14"/>
+                                    <ellipse cx="206" cy="98" rx="70" ry="14" opacity="0.3"/><ellipse cx="206" cy="98" rx="44" ry="9" opacity="0.42"/><ellipse cx="206" cy="98" rx="20" ry="4.5" opacity="0.55"/>
+                                </g>
+                                <g class="m-frustum m-anim" fill="none" stroke="currentColor">
+                                    <rect x="34" y="62" width="18" height="12" rx="3" class="m-solid"/>
+                                    <path d="M52 66 L150 36 M52 70 L150 104" opacity="0.6"/>
+                                    <path d="M150 36 L150 104" stroke-dasharray="3 5" opacity="0.6"/>
+                                    <path d="M122 56 l16 -6 l16 6 l-16 6z M122 56 v14 l16 6 v-14 M154 56 v14 l-16 6" class="m-decor" opacity="0.9"/>
+                                </g>
+                                <path class="m-route" d="M30 122 C 90 112, 120 96, 176 92 S 262 70, 300 46" pathLength="100" fill="none" stroke="currentColor" stroke-dasharray="2 4" opacity="0.5"/>
+                                <path class="m-comet m-anim" d="M30 122 C 90 112, 120 96, 176 92 S 262 70, 300 46" pathLength="100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="6 106"/>
+                                <g fill="currentColor"><circle cx="176" cy="92" r="3"/><circle cx="300" cy="46" r="3.5" class="m-decor-fill"/></g>
+                            </svg>
+                        </div>
                         <div class="cap__head">
                             <span class="cap__index" aria-hidden="true">01</span>
                             <h3>3D vision &amp; navigation</h3>
@@ -411,8 +355,20 @@
                             <li class="chip">Monocular metric depth</li><li class="chip">Camera intrinsics</li><li class="chip">Gaussian splatting</li><li class="chip">Pose estimation</li><li class="chip">Vision-language models</li>
                         </ul>
                     </li>
-                    <li class="cap cap--research">
-                        <div class="cap__stage gl-window" data-gl="model" data-model="magnifying_glass_01" data-yaw="0.4" aria-hidden="true"></div>
+                    <li class="cap">
+                        <div class="cap__visual" data-motif="bioml" aria-hidden="true">
+                            <svg class="motif" viewBox="0 0 320 132" focusable="false">
+                                <path class="m-band" d="M0 70 C 40 56, 70 84, 110 66 S 180 50, 220 68 L220 92 C 180 74, 150 102, 110 90 S 40 80, 0 94z" fill="currentColor" opacity="0.08"/>
+                                <path class="m-trace" d="M0 80 H24 l6 -4 l5 4 h10 l4 -26 l6 40 l5 -14 h16 l6 -4 l5 4 h10 l4 -26 l6 40 l5 -14 h16 l6 -4 l5 4 h10 l4 -26 l6 40 l5 -14 h16 l6 -4 l5 4 h12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" opacity="0.85"/>
+                                <g class="m-scan m-anim"><rect x="0" y="22" width="2" height="94" fill="currentColor" opacity="0.5"/><rect x="-26" y="22" width="26" height="94" class="m-scan-glow"/></g>
+                                <g class="m-calib" fill="none" stroke="currentColor">
+                                    <path d="M240 112 H306 M240 112 V46" opacity="0.45"/>
+                                    <path d="M240 112 L306 46" stroke-dasharray="3 4" opacity="0.6"/>
+                                    <path d="M244 110 C 262 96, 280 72, 304 50" class="m-decor" stroke-width="1.6"/>
+                                </g>
+                                <g fill="currentColor"><circle cx="254" cy="99" r="2.6"/><circle cx="268" cy="86" r="2.6"/><circle cx="283" cy="70" r="2.6"/><circle cx="297" cy="57" r="2.6" class="m-decor-fill"/></g>
+                            </svg>
+                        </div>
                         <div class="cap__head">
                             <span class="cap__index" aria-hidden="true">02</span>
                             <h3>Trustworthy &amp; biomedical ML</h3>
@@ -428,8 +384,25 @@
                             <li class="chip">SHAP</li><li class="chip">Calibration</li><li class="chip">Abstention</li><li class="chip">Cohort &amp; site validation</li><li class="chip">Scikit-learn</li>
                         </ul>
                     </li>
-                    <li class="cap cap--research">
-                        <div class="cap__stage gl-window" data-gl="model" data-model="classic_laptop" data-yaw="0.6" aria-hidden="true"></div>
+                    <li class="cap">
+                        <div class="cap__visual" data-motif="language" aria-hidden="true">
+                            <svg class="motif" viewBox="0 0 320 132" focusable="false">
+                                <defs><clipPath id="m-tok-clip"><rect x="18" y="14" width="284" height="26" rx="8"/></clipPath></defs>
+                                <g clip-path="url(#m-tok-clip)"><g class="m-tokens m-anim" fill="none" stroke="currentColor">
+                                    <rect x="22" y="18" width="34" height="18" rx="5" opacity="0.7"/><rect x="62" y="18" width="22" height="18" rx="5" opacity="0.5"/><rect x="90" y="18" width="44" height="18" rx="5" class="m-decor"/><rect x="140" y="18" width="28" height="18" rx="5" opacity="0.6"/><rect x="174" y="18" width="38" height="18" rx="5" opacity="0.5"/><rect x="218" y="18" width="24" height="18" rx="5" opacity="0.7"/><rect x="248" y="18" width="40" height="18" rx="5" opacity="0.5"/>
+                                    <rect x="294" y="18" width="34" height="18" rx="5" opacity="0.7"/><rect x="334" y="18" width="22" height="18" rx="5" opacity="0.5"/><rect x="362" y="18" width="44" height="18" rx="5" class="m-decor"/><rect x="412" y="18" width="28" height="18" rx="5" opacity="0.6"/><rect x="446" y="18" width="38" height="18" rx="5" opacity="0.5"/><rect x="490" y="18" width="24" height="18" rx="5" opacity="0.7"/><rect x="520" y="18" width="40" height="18" rx="5" opacity="0.5"/>
+                                </g></g>
+                                <g class="m-links m-anim" fill="none" stroke="currentColor" stroke-dasharray="3 5" opacity="0.55">
+                                    <path d="M112 40 C 112 64, 160 58, 160 78"/><path d="M196 40 C 196 64, 160 58, 160 78"/>
+                                    <path d="M160 92 C 160 110, 96 100, 82 104"/><path d="M160 92 C 160 110, 224 100, 238 104"/>
+                                </g>
+                                <circle cx="160" cy="85" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="160" cy="85" r="2.5" fill="currentColor"/>
+                                <g fill="none" stroke="currentColor">
+                                    <rect x="40" y="92" width="42" height="30" rx="5" opacity="0.75"/><path d="M44 118 l10 -12 l8 8 l6 -6 l10 10" opacity="0.75"/><circle cx="70" cy="101" r="3" opacity="0.75"/>
+                                    <path d="M240 107 h6 l4 -9 l5 18 l5 -24 l5 26 l5 -16 l4 8 h8 l4 -5 l4 5 h6" class="m-decor" stroke-width="1.5"/>
+                                </g>
+                            </svg>
+                        </div>
                         <div class="cap__head">
                             <span class="cap__index" aria-hidden="true">03</span>
                             <h3>Language &amp; multimodal models</h3>
@@ -444,8 +417,20 @@
                             <li class="chip">Pretraining from scratch</li><li class="chip">Mixed precision</li><li class="chip">Sentence embeddings</li><li class="chip">Hugging Face</li><li class="chip">Hybrid RAG</li>
                         </ul>
                     </li>
-                    <li class="cap cap--research">
-                        <div class="cap__stage gl-window" data-gl="model" data-model="circuit_board" data-yaw="0.3" aria-hidden="true"></div>
+                    <li class="cap">
+                        <div class="cap__visual" data-motif="embodied" aria-hidden="true">
+                            <svg class="motif" viewBox="0 0 320 132" focusable="false">
+                                <g fill="none" stroke="currentColor" opacity="0.45">
+                                    <rect x="78" y="18" width="46" height="34" rx="6"/><rect x="150" y="76" width="40" height="40" rx="20"/><path d="M226 22 h56 v26 h-28 v22 h-28z"/>
+                                </g>
+                                <g fill="currentColor" opacity="0.07"><rect x="78" y="18" width="46" height="34" rx="6"/><rect x="150" y="76" width="40" height="40" rx="20"/><path d="M226 22 h56 v26 h-28 v22 h-28z"/></g>
+                                <path class="m-route" d="M20 110 C 50 108, 58 70, 96 66 S 140 58, 140 60 C 142 84, 196 66, 208 60 S 236 84, 300 104" pathLength="100" fill="none" stroke="currentColor" stroke-dasharray="2 4" opacity="0.55"/>
+                                <path class="m-comet m-anim" d="M20 110 C 50 108, 58 70, 96 66 S 140 58, 140 60 C 142 84, 196 66, 208 60 S 236 84, 300 104" pathLength="100" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="5 107"/>
+                                <g class="m-sense m-anim" fill="none" stroke="currentColor"><circle cx="20" cy="110" r="10" opacity="0.5"/><circle cx="20" cy="110" r="18" opacity="0.25"/></g>
+                                <circle cx="20" cy="110" r="4.5" fill="currentColor"/>
+                                <circle cx="300" cy="104" r="5" fill="none" stroke="currentColor" class="m-decor" stroke-width="1.6"/><circle cx="300" cy="104" r="1.8" class="m-decor-fill"/>
+                            </svg>
+                        </div>
                         <div class="cap__head">
                             <span class="cap__index" aria-hidden="true">04</span>
                             <h3>Assistive &amp; embodied AI</h3>
@@ -482,7 +467,6 @@
                     <h2 id="experience-title">Where I&rsquo;ve built things</h2>
                 </header>
                 <div class="timeline-wrap">
-                <div class="gl-window timeline__gl" data-gl="rail" aria-hidden="true"></div>
                 <ol class="timeline" reversed>
                     <li class="tl">
                         <p class="tl__date"><span class="tl__now">Current</span><span><time datetime="2025-11">Nov 2025</time> &ndash; Present</span></p>
@@ -555,20 +539,18 @@
                 <header class="section-head section-head--split">
                     <p class="eyebrow">Selected work</p>
                     <h2 id="projects-title">Projects</h2>
-                    <p class="lede">Research prototypes and shipped systems. The full index has twenty-two, grouped by research area.</p>
+                    <p class="lede">Research prototypes and shipped systems. The full index has <span data-count="projects">22</span>, searchable and grouped by research area.</p>
                     <div class="section-head__aside">
                         <a class="btn btn--ghost btn--small pressable" href="projects/"><span>Browse all projects</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
-                        <button class="icon-btn carousel-btn carousel-btn--prev" type="button" data-carousel="prev" aria-controls="projects-track" aria-label="Previous projects"><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
-                        <button class="icon-btn carousel-btn" type="button" data-carousel="next" aria-controls="projects-track" aria-label="Next projects"><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
                     </div>
                 </header>
 
                 <article class="feature" data-surface="dark" aria-labelledby="feature-title">
-                    <div class="feature__media gl-window" data-gl="feature">
-                        <img class="gl-fallback" src="assets/images/project-cards/lumenaa.webp" srcset="assets/images/project-cards/lumenaa-480w.webp 480w, assets/images/project-cards/lumenaa-800w.webp 800w, assets/images/project-cards/lumenaa-1200w.webp 1200w, assets/images/project-cards/lumenaa.webp 1400w" sizes="(max-width: 900px) 95vw, 860px" alt="" width="1400" height="875" loading="lazy" decoding="async">
+                    <div class="feature__media">
+                        <img src="assets/images/project-cards/lumenaa.webp" srcset="assets/images/project-cards/lumenaa-480w.webp 480w, assets/images/project-cards/lumenaa-800w.webp 800w, assets/images/project-cards/lumenaa-1200w.webp 1200w, assets/images/project-cards/lumenaa.webp 1400w" sizes="(max-width: 860px) 95vw, 640px" alt="" width="1400" height="875" loading="lazy" decoding="async">
                     </div>
                     <div class="feature__body">
-                        <span class="badge">Ongoing research</span>
+                        <p class="feature__kicker"><span class="badge">Ongoing research</span><span class="feature__tag">Featured project</span></p>
                         <h3 id="feature-title"><a href="projects/lumenaa.html">Edge-Native Assistive Vision Agent</a></h3>
                         <p>An agentic vision assistant for blind and low-vision users. On-device tools answer most questions; a calibrated-competence policy decides when to answer, hedge, ask for a better photo, or decline. A cloud vision-language model is called only when the local tools can&rsquo;t settle it.</p>
                         <ul class="feature__stats">
@@ -580,12 +562,9 @@
                     </div>
                 </article>
 
-                <!-- Native sideways scroller on every screen (projects-carousel.js adds
-                     the arrows' behaviour, mouse drag and the pager dots). -->
-                <div class="carousel">
-                <ul class="projects" id="projects-track" tabindex="0" aria-label="Selected projects, scroll sideways">
+                <ul class="projects bare">
                     <li class="project">
-                        <div class="project__media"><img class="gl-fallback" src="assets/images/project-cards/document-assistant.webp" srcset="assets/images/project-cards/document-assistant-480w.webp 480w, assets/images/project-cards/document-assistant-800w.webp 800w, assets/images/project-cards/document-assistant-1200w.webp 1200w, assets/images/project-cards/document-assistant.webp 1431w" sizes="(max-width: 720px) 85vw, 370px" alt="The Document Assistant answering a policy question with a cited source" width="1431" height="827" loading="lazy" decoding="async"></div>
+                        <div class="project__media"><img src="assets/images/project-cards/document-assistant.webp" srcset="assets/images/project-cards/document-assistant-480w.webp 480w, assets/images/project-cards/document-assistant-800w.webp 800w, assets/images/project-cards/document-assistant-1200w.webp 1200w, assets/images/project-cards/document-assistant.webp 1431w" sizes="(max-width: 640px) 92vw, (max-width: 1080px) 46vw, 380px" alt="The Document Assistant answering a policy question with a cited source" width="1431" height="827" loading="lazy" decoding="async"></div>
                         <div class="project__body">
                             <p class="project__meta"><span>2026</span><span class="sep" aria-hidden="true"></span><span>LLM &middot; RAG</span></p>
                             <h3><a href="projects/enterprise-ai-document-assistant.html">Enterprise AI Document Assistant</a></h3>
@@ -598,10 +577,11 @@
                     </li>
                     <li class="project">
                         <div class="project__media">
-                            <img class="gl-fallback" src="https://img.youtube.com/vi/vdP5qrJQqGc/maxresdefault.jpg" alt="The Mars rover arm typing on a keyboard" width="1280" height="720" loading="lazy" decoding="async">
+                            <span class="project__flag"><svg class="icon icon--fill" aria-hidden="true"><use href="#i-play"/></svg>Video</span>
+                            <img src="https://img.youtube.com/vi/vdP5qrJQqGc/maxresdefault.jpg" alt="The Mars rover arm typing on a keyboard" width="1280" height="720" loading="lazy" decoding="async">
                         </div>
                         <div class="project__body">
-                            <p class="project__meta"><span>2024</span><span class="sep" aria-hidden="true"></span><span>Computer vision &middot; Robotics</span><span class="project__video">Video</span></p>
+                            <p class="project__meta"><span>2024</span><span class="sep" aria-hidden="true"></span><span>Computer vision &middot; Robotics</span></p>
                             <h3><a href="projects/mars-rover-keyboard-typing.html">Mars Rover Autonomous Keyboard Typing</a></h3>
                             <p>YOLOv8 finds the keyboard and PaddleOCR reads the keys so the rover&rsquo;s arm can type on its own. Part of the vision work that improved on-rover inference by up to 30%.</p>
                             <p class="project__links">
@@ -611,7 +591,7 @@
                         </div>
                     </li>
                     <li class="project">
-                        <div class="project__media"><img class="gl-fallback" src="assets/images/project-cards/vision-based-hand-gesture.webp" alt="The gesture keyboard-mouse interface tracking a hand" width="493" height="278" loading="lazy" decoding="async"></div>
+                        <div class="project__media"><img src="assets/images/project-cards/vision-based-hand-gesture.webp" alt="The gesture keyboard-mouse interface tracking a hand" width="493" height="278" loading="lazy" decoding="async"></div>
                         <div class="project__body">
                             <p class="project__meta"><span>2026</span><span class="sep" aria-hidden="true"></span><span>HCI &middot; IEEE JCSSE 2026</span></p>
                             <h3><a href="projects/gesture-keyboard-mouse.html">Hand-Gesture Virtual Keyboard &amp; Mouse</a></h3>
@@ -623,7 +603,7 @@
                         </div>
                     </li>
                     <li class="project">
-                        <div class="project__media"><img class="gl-fallback" src="assets/images/project-cards/pedestrian-conflict.png" srcset="assets/images/project-cards/pedestrian-conflict-480w.webp 480w, assets/images/project-cards/pedestrian-conflict-800w.webp 800w, assets/images/project-cards/pedestrian-conflict.png 1280w" sizes="(max-width: 720px) 85vw, 350px" alt="A Bangladeshi road scene annotated with detected pedestrians and vehicles" width="1280" height="720" loading="lazy" decoding="async"></div>
+                        <div class="project__media"><img src="assets/images/project-cards/pedestrian-conflict.png" srcset="assets/images/project-cards/pedestrian-conflict-480w.webp 480w, assets/images/project-cards/pedestrian-conflict-800w.webp 800w, assets/images/project-cards/pedestrian-conflict.png 1280w" sizes="(max-width: 640px) 92vw, (max-width: 1080px) 46vw, 380px" alt="A Bangladeshi road scene annotated with detected pedestrians and vehicles" width="1280" height="720" loading="lazy" decoding="async"></div>
                         <div class="project__body">
                             <p class="project__meta"><span>2025</span><span class="sep" aria-hidden="true"></span><span>Computer vision &middot; XAI</span></p>
                             <h3><a href="projects/pedestrian-vehicle-conflict-risk.html">Explainable Pedestrian&ndash;Vehicle Conflict Risk</a></h3>
@@ -635,10 +615,11 @@
                     </li>
                     <li class="project">
                         <div class="project__media">
-                            <img class="gl-fallback" src="https://img.youtube.com/vi/WJUcASlT_to/maxresdefault.jpg" alt="The autonomous service robot carrying equipment" width="1280" height="720" loading="lazy" decoding="async">
+                            <span class="project__flag"><svg class="icon icon--fill" aria-hidden="true"><use href="#i-play"/></svg>Video</span>
+                            <img src="https://img.youtube.com/vi/WJUcASlT_to/maxresdefault.jpg" alt="The autonomous service robot carrying equipment" width="1280" height="720" loading="lazy" decoding="async">
                         </div>
                         <div class="project__body">
-                            <p class="project__meta"><span>2025</span><span class="sep" aria-hidden="true"></span><span>Robotics &middot; Vision</span><span class="project__video">Video</span></p>
+                            <p class="project__meta"><span>2025</span><span class="sep" aria-hidden="true"></span><span>Robotics &middot; Vision</span></p>
                             <h3><a href="projects/service-robot.html">Autonomous Multi-Terrain Service Robot</a></h3>
                             <p>ArUco-marker navigation to &plusmn;5&nbsp;cm and a vision-guided 2-DOF arm for pick-and-place, split across two ESP32s so each subsystem fails on its own.</p>
                             <p class="project__links">
@@ -648,7 +629,7 @@
                         </div>
                     </li>
                     <li class="project">
-                        <div class="project__media"><img class="gl-fallback" src="assets/images/project-cards/weheal-card.webp" srcset="assets/images/project-cards/weheal-card-480w.webp 480w, assets/images/project-cards/weheal-card-800w.webp 800w, assets/images/project-cards/weheal-card-1200w.webp 1200w, assets/images/project-cards/weheal-card.webp 1600w" sizes="(max-width: 720px) 85vw, 370px" alt="The WeHeal patient dashboard" width="1905" height="825" loading="lazy" decoding="async"></div>
+                        <div class="project__media"><img src="assets/images/project-cards/weheal-card.webp" srcset="assets/images/project-cards/weheal-card-480w.webp 480w, assets/images/project-cards/weheal-card-800w.webp 800w, assets/images/project-cards/weheal-card-1200w.webp 1200w, assets/images/project-cards/weheal-card.webp 1600w" sizes="(max-width: 640px) 92vw, (max-width: 1080px) 46vw, 380px" alt="The WeHeal patient dashboard" width="1905" height="825" loading="lazy" decoding="async"></div>
                         <div class="project__body">
                             <p class="project__meta"><span>2025</span><span class="sep" aria-hidden="true"></span><span>Full-stack &middot; Healthcare</span></p>
                             <h3><a href="projects/weheal.html">WeHeal Telemedicine Platform</a></h3>
@@ -659,10 +640,8 @@
                         </div>
                     </li>
                 </ul>
-                <div class="carousel__dots" role="group" aria-label="Go to project"></div>
-                </div>
                 <div class="projects__more">
-                    <a class="btn btn--ghost pressable" href="projects/"><span>See all 22 projects</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+                    <a class="btn btn--ghost pressable" href="projects/"><span>See all <span data-count="projects">22</span> projects</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
                 </div>
             </div>
         </section>
@@ -673,7 +652,7 @@
                 <header class="section-head section-head--split">
                     <p class="eyebrow">Research</p>
                     <h2 id="research-title">Publications</h2>
-                    <p class="lede">Four peer-reviewed papers across explainable AI, physiological signals and touchless interaction, cited <span data-citations>38</span> times.</p>
+                    <p class="lede"><span data-count="publications">4</span> peer-reviewed papers across explainable AI, physiological signals and touchless interaction, cited <span data-citations>38</span> times.</p>
                     <div class="section-head__aside">
                         <a class="btn btn--ghost btn--small pressable" href="publications/"><span>All publications</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
                     </div>
@@ -734,73 +713,63 @@
         </section>
 
         <!-- ================= AWARDS + CERTIFICATIONS ================= -->
-        <section id="awards" class="section" aria-labelledby="awards-title">
-            <div class="wrap awards__grid">
+        <section id="awards" class="section awards" aria-labelledby="awards-title">
+            <div class="wrap">
                 <header class="section-head">
                     <p class="eyebrow">Recognition</p>
                     <h2 id="awards-title">Honours &amp; awards</h2>
                     <p class="lede">Competitions, academic honours and certifications, newest first.</p>
-                    <div class="gl-window awards__viz" data-gl="model" data-model="marble_bust_01" data-scroll-turn data-fit="0.46" data-yaw="0.35" aria-hidden="true">
-                        <svg class="gl-fallback" viewBox="0 0 120 160" focusable="false">
-                            <path d="M60 8 104 34v92L60 152 16 126V34z" fill="none" stroke="currentColor" stroke-width="2" opacity="0.5"/>
-                            <path d="M60 8v144M16 34l44 26 44-26" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
-                        </svg>
-                    </div>
                 </header>
-                <div>
-                    <ol class="honors" reversed>
-                        <li class="honor is-featured">
-                            <span class="honor__year">2025</span>
-                            <p class="honor__title">Globally ranked 8th of 102 teams<span class="honor__by">University Rover Challenge 2025 &middot; The Mars Society, with BRACU Mongol Tori</span></p>
-                            <span class="honor__aside"><a class="text-link" href="assets/papers/Certificate%20of%20Participat%20by%20iScanner.pdf" target="_blank" rel="noopener"><span>Certificate</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></span>
-                        </li>
-                        <li class="honor">
-                            <span class="honor__year">2025</span>
-                            <p class="honor__title">First Runner-Up<span class="honor__by">System Analysis &amp; Design Project, Summer 2025 &middot; School of Data &amp; Sciences, BRAC University</span></p>
-                        </li>
-                        <li class="honor">
-                            <span class="honor__year">2025</span>
-                            <p class="honor__title">Third Runner-Up &amp; Grand Finalist<span class="honor__by">EXCELERATE 2025 &middot; Finance &amp; Accounting Club, BRAC University</span></p>
-                        </li>
-                        <li class="honor">
-                            <span class="honor__year">2024</span>
-                            <p class="honor__title">Second Runner-Up, Robosoccer<span class="honor__by">TECHSPECTRA &middot; Robotics Club of BRAC University</span></p>
-                        </li>
-                        <li class="honor">
-                            <span class="honor__year">2023&ndash;24</span>
-                            <p class="honor__title">Bronze Award<span class="honor__by">The Duke of Edinburgh&rsquo;s International Award &middot; May 2023 &ndash; Mar 2024</span></p>
-                        </li>
-                        <li class="honor">
-                            <span class="honor__year">2023</span>
-                            <p class="honor__title">Semi-Finalist<span class="honor__by">Hult Prize BRAC University 2023 &middot; On-campus rounds</span></p>
-                        </li>
-                    </ol>
+                <div class="awards__layout">
+                    <article class="award-feature" aria-labelledby="award-feature-title">
+                        <svg class="award-feature__laurel" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+                            <g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+                                <path d="M40 98 C 22 86, 16 62, 24 40"/><path d="M80 98 C 98 86, 104 62, 96 40"/>
+                                <path d="M27 84 c-8 -1 -12 -6 -13 -12 c7 0 11 4 13 12z M22 70 c-8 -3 -10 -9 -10 -15 c7 2 10 7 10 15z M21 56 c-7 -4 -8 -10 -7 -16 c6 3 8 9 7 16z M93 84 c8 -1 12 -6 13 -12 c-7 0 -11 4 -13 12z M98 70 c8 -3 10 -9 10 -15 c-7 2 -10 7 -10 15z M99 56 c7 -4 8 -10 7 -16 c-6 3 -8 9 -7 16z"/>
+                            </g>
+                            <circle cx="60" cy="58" r="22" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                            <text x="60" y="66" text-anchor="middle" font-size="22" font-weight="700" fill="currentColor" font-family="inherit">8th</text>
+                        </svg>
+                        <div class="award-feature__body">
+                            <p class="award-feature__kicker"><span class="badge badge--sand">2025 &middot; Competition</span></p>
+                            <h3 class="award-feature__title" id="award-feature-title">Globally ranked 8th of 102 teams</h3>
+                            <p class="award-feature__by">University Rover Challenge 2025 &middot; The Mars Society, with BRACU Mongol Tori</p>
+                            <p class="award-feature__actions">
+                                <a class="text-link award__cert" href="assets/papers/Certificate%20of%20Participat%20by%20iScanner.pdf" target="_blank" rel="noopener" data-cert-preview data-cert-title="URC 2025 certificate"><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-doc"/></svg><span>Certificate</span></a>
+                                <a class="text-link" href="#experience"><span>Rover team role</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+                            </p>
+                        </div>
+                        <figure class="award-feature__media">
+                            <img src="assets/images/team-photo-800w.webp" srcset="assets/images/team-photo-480w.webp 480w, assets/images/team-photo-800w.webp 800w, assets/images/team-photo-1200w.webp 1200w" sizes="(max-width: 900px) 92vw, 520px" alt="The Mongol Tori Mars Rover team" width="3365" height="1246" loading="lazy" decoding="async">
+                        </figure>
+                    </article>
 
-                    <h3 class="honors__sub">Academic</h3>
-                    <ul class="honors bare">
-                        <li class="honor">
-                            <span class="honor__year">2023&ndash;now</span>
-                            <p class="honor__title">5&times; Vice Chancellor&rsquo;s List &amp; 5&times; Dean&rsquo;s List<span class="honor__by">BRAC University</span></p>
-                        </li>
-                        <li class="honor">
-                            <span class="honor__year">BSc</span>
-                            <p class="honor__title">Highest Distinction<span class="honor__by">BRAC University &middot; Computer Science &amp; Engineering</span></p>
-                        </li>
-                    </ul>
-
-                    <h3 class="honors__sub" id="certifications">Certifications</h3>
-                    <ul class="honors bare">
-                        <li class="honor">
-                            <span class="honor__year">Sep 2025</span>
-                            <p class="honor__title">AI Engineer for Data Scientists Associate<span class="honor__by">DataCamp &middot; Credential ID AEDS0010426564518</span></p>
-                            <span class="honor__aside"><a class="text-link" href="assets/papers/AEDS0010426564518.pdf" target="_blank" rel="noopener"><span>Certificate</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></span>
-                        </li>
-                        <li class="honor">
-                            <span class="honor__year">Sep 2025</span>
-                            <p class="honor__title">AI Fundamentals<span class="honor__by">DataCamp &middot; Credential ID AIF0025589936888</span></p>
-                            <span class="honor__aside"><a class="text-link" href="assets/papers/AI%20Fundamentals.pdf" target="_blank" rel="noopener"><span>Certificate</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a></span>
-                        </li>
-                    </ul>
+                    <div class="awards__lists">
+                        <section class="award-group" aria-labelledby="ag-competitions">
+                            <h3 class="award-group__title" id="ag-competitions"><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-medal"/></svg>Competitions</h3>
+                            <ol class="award-list bare" reversed>
+                                <li class="award"><span class="award__year">2025</span><p class="award__title">First Runner-Up<span class="award__by">System Analysis &amp; Design Project, Summer 2025 &middot; School of Data &amp; Sciences, BRAC University</span></p></li>
+                                <li class="award"><span class="award__year">2025</span><p class="award__title">Third Runner-Up &amp; Grand Finalist<span class="award__by">EXCELERATE 2025 &middot; Finance &amp; Accounting Club, BRAC University</span></p></li>
+                                <li class="award"><span class="award__year">2024</span><p class="award__title">Second Runner-Up, Robosoccer<span class="award__by">TECHSPECTRA &middot; Robotics Club of BRAC University</span></p></li>
+                                <li class="award"><span class="award__year">2023&ndash;24</span><p class="award__title">Bronze Award<span class="award__by">The Duke of Edinburgh&rsquo;s International Award &middot; May 2023 &ndash; Mar 2024</span></p></li>
+                                <li class="award"><span class="award__year">2023</span><p class="award__title">Semi-Finalist<span class="award__by">Hult Prize BRAC University 2023 &middot; On-campus rounds</span></p></li>
+                            </ol>
+                        </section>
+                        <section class="award-group" aria-labelledby="ag-academic">
+                            <h3 class="award-group__title" id="ag-academic"><svg class="icon icon--fill" aria-hidden="true"><use href="#i-scholar"/></svg>Academic</h3>
+                            <ul class="award-list bare">
+                                <li class="award"><span class="award__year">2023&ndash;now</span><p class="award__title">5&times; Vice Chancellor&rsquo;s List &amp; 5&times; Dean&rsquo;s List<span class="award__by">BRAC University</span></p></li>
+                                <li class="award"><span class="award__year">BSc</span><p class="award__title">Highest Distinction<span class="award__by">BRAC University &middot; Computer Science &amp; Engineering</span></p></li>
+                            </ul>
+                        </section>
+                        <section class="award-group" id="certifications" aria-labelledby="ag-certs">
+                            <h3 class="award-group__title" id="ag-certs"><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-doc"/></svg>Certifications</h3>
+                            <ul class="award-list bare">
+                                <li class="award"><span class="award__year">Sep 2025</span><p class="award__title">AI Engineer for Data Scientists Associate<span class="award__by">DataCamp &middot; Credential ID AEDS0010426564518</span></p><a class="text-link award__cert" href="assets/papers/AEDS0010426564518.pdf" target="_blank" rel="noopener" data-cert-preview data-cert-title="AI Engineer for Data Scientists Associate certificate"><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-doc"/></svg><span>Certificate</span></a></li>
+                                <li class="award"><span class="award__year">Sep 2025</span><p class="award__title">AI Fundamentals<span class="award__by">DataCamp &middot; Credential ID AIF0025589936888</span></p><a class="text-link award__cert" href="assets/papers/AI%20Fundamentals.pdf" target="_blank" rel="noopener" data-cert-preview data-cert-title="AI Fundamentals certificate"><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-doc"/></svg><span>Certificate</span></a></li>
+                            </ul>
+                        </section>
+                    </div>
                 </div>
             </div>
         </section>
@@ -909,8 +878,8 @@
         <div class="wrap">
             <div class="site-footer__grid">
                 <div class="site-footer__id">
-                    <div class="gl-window site-footer__sig" data-gl="signature" aria-hidden="true">
-                        <svg class="gl-fallback" viewBox="0 0 64 64" focusable="false"><path d="M14 40c6-22 30-26 36-8s-18 24-24 10 14-26 28-16" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg>
+                    <div class="site-footer__sig" aria-hidden="true">
+                        <svg viewBox="0 0 64 64" focusable="false"><path d="M14 40c6-22 30-26 36-8s-18 24-24 10 14-26 28-16" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg>
                     </div>
                     <div>
                     <p class="site-footer__name">Reshad Ul Karim</p>
@@ -933,9 +902,18 @@
         </div>
     </footer>
 
-    <!-- One shared WebGL canvas for every 3D chapter (home-scene.js). It never takes
-         pointer input and draws only inside the [data-gl] windows above. -->
-    <div class="gl-canvas" aria-hidden="true"></div>
+    <!-- Certificate preview. Certificate links open it where the browser can show a
+         PDF inline; otherwise (and with JS off) they open the PDF in a new tab. -->
+    <dialog id="cert-dialog" class="video-dialog cert-dialog" aria-labelledby="cert-dialog-title">
+        <div class="video-dialog__bar">
+            <p class="video-dialog__title" id="cert-dialog-title">Certificate</p>
+            <div class="cert-dialog__tools">
+                <a class="text-link" data-cert-open href="#" target="_blank" rel="noopener"><span>Open in new tab</span><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+                <button class="video-dialog__close" type="button" aria-label="Close certificate"><svg class="icon icon--stroke" aria-hidden="true"><use href="#i-close"/></svg></button>
+            </div>
+        </div>
+        <div class="cert-dialog__frame"><iframe title="Certificate" src="about:blank"></iframe></div>
+    </dialog>
 
     <!-- Video player. Links that open it also work as plain YouTube links. -->
     <dialog id="video-dialog" class="video-dialog" aria-labelledby="video-dialog-title">

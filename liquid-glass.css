@@ -1,22 +1,28 @@
 /* =========================================================================
-   liquid-glass.css: surfaces for elements tagged .lg by liquid-glass.js.
-   Translucent tint + rim light + cursor highlight everywhere; real edge
-   refraction with colour dispersion where the browser supports SVG filters
-   in backdrop-filter (Chromium). Text stays real DOM above the effect.
+   liquid-glass.css: surfaces for elements tagged .lg by liquid-glass.js
+   (navigation, buttons, the chapter rail, theme and accent widgets).
+
+   One recipe for every device: a translucent tint, a fine rim, a top lip and
+   a soft lift shadow. That baseline already reads as glass over the page's
+   flat colours, so blur is only an enhancement where something sits behind
+   the glass (the floating nav and widgets, controls over the hero). Chromium
+   with a fine pointer adds real edge refraction (liquid-glass.js). The tier is
+   chosen once at load; nothing switches recipe mid-visit, and no backdrop
+   filter is ever animated. Text stays real DOM above the effect.
    ========================================================================= */
 :root {
-  --lg-tint: rgba(255, 255, 255, 0.5);
-  --lg-tint-strong: rgba(255, 255, 255, 0.72);
-  --lg-rim: rgba(255, 255, 255, 0.85);
-  --lg-rim-soft: rgba(255, 255, 255, 0.25);
-  --lg-shadow: 0 12px 36px -16px rgba(16, 20, 24, 0.35);
+  --lg-tint: rgba(255, 255, 255, 0.62);
+  --lg-rim: rgba(255, 255, 255, 0.9);
+  --lg-rim-soft: rgba(var(--ink-rgb, 21, 37, 38), 0.1);
+  --lg-lip: rgba(255, 255, 255, 0.75);
+  --lg-shadow: 0 10px 28px -16px rgba(16, 20, 24, 0.32);
 }
 html[data-theme="dark"] {
-  --lg-tint: rgba(28, 30, 34, 0.46);
-  --lg-tint-strong: rgba(24, 26, 30, 0.7);
-  --lg-rim: rgba(255, 255, 255, 0.42);
+  --lg-tint: rgba(30, 32, 36, 0.5);
+  --lg-rim: rgba(255, 255, 255, 0.34);
   --lg-rim-soft: rgba(255, 255, 255, 0.08);
-  --lg-shadow: 0 16px 40px -18px rgba(0, 0, 0, 0.75);
+  --lg-lip: rgba(255, 255, 255, 0.14);
+  --lg-shadow: 0 14px 34px -18px rgba(0, 0, 0, 0.7);
 }
 
 /* Registered so the highlight can glide; it drifts back to its resting spot
@@ -24,36 +30,34 @@ html[data-theme="dark"] {
 @property --lx { syntax: '<percentage>'; inherits: true; initial-value: 28%; }
 @property --ly { syntax: '<percentage>'; inherits: true; initial-value: 0%; }
 
+:where(.lg) { position: relative; } /* anchors the sheen; any fixed/absolute rule wins */
 .lg {
   isolation: isolate;
   background: var(--lg-tint) !important;
   border-color: transparent !important;
-  /* Thick-glass edge: bright top lip, darker bottom lip, inner glow, lift shadow. */
-  /* The faint red/cyan edge is part of the glass itself, so the dispersion
-     reads even where there is nothing behind the glass to refract. */
   box-shadow:
-    inset 0 1px 0.5px rgba(255, 255, 255, 0.32),
-    inset 0 -1px 1px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 var(--lg-lip),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.16),
     inset 0 0 0 1px var(--lg-rim-soft),
-    inset 1.5px 0 1px -0.5px rgba(255, 70, 130, 0.12),
-    inset -1.5px 0 1px -0.5px rgba(0, 225, 255, 0.12),
-    inset 0 10px 22px -14px rgba(255, 255, 255, 0.22),
     var(--lg-shadow) !important;
-  -webkit-backdrop-filter: blur(14px) saturate(170%);
-  backdrop-filter: blur(14px) saturate(170%);
   transform-origin: 50% 50%;
 }
-/* Reading surfaces (cards with paragraphs) keep a stronger tint for contrast. */
-.lg:is(.tile, .cap, .toolkit, .tl__body, .project, .form, .culture__item, .xp-panel, .project-card, .publication-item, .pub-card, .detail-metric, .honor) { background: var(--lg-tint-strong) !important; }
-/* Refraction where supported: the filter bends + splits the backdrop at the rim.
-   It stays on while scrolling: backdrop-filter cannot interpolate between two
-   filter chains, so any swap shows as a hard pop. Glass still waiting for its
-   lens map uses the same light blur, so only the bent rim arrives later. */
-html.lg-refract .lg {
+/* Blur where there is a backdrop to blur: floating chrome and the hero. */
+:is(.nav, .chapters, .theme-toggle, #accent-switcher .accent-trigger, #accent-switcher .accent-tray, .navbar .nav-container).lg,
+.masthead .lg {
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+}
+/* Refraction (Chromium, fine pointer): the filter bends and splits the
+   backdrop at the rim. Glass still waiting for its lens map uses the same
+   light blur, so only the bent rim arrives later. */
+html.lg-refract :is(.nav, .chapters, .navbar .nav-container).lg,
+html.lg-refract .masthead .lg {
   -webkit-backdrop-filter: blur(2.4px) saturate(165%) brightness(1.05);
   backdrop-filter: blur(2.4px) saturate(165%) brightness(1.05);
 }
-html.lg-refract .lg.lg--refract {
+html.lg-refract :is(.nav, .chapters, .navbar .nav-container).lg.lg--refract,
+html.lg-refract .masthead .lg.lg--refract {
   -webkit-backdrop-filter: var(--lg-filter) saturate(165%) brightness(1.05);
   backdrop-filter: var(--lg-filter) saturate(165%) brightness(1.05);
 }
@@ -65,19 +69,18 @@ html.lg-refract .lg.lg--refract {
   border-radius: inherit;
   pointer-events: none;
   background:
-    radial-gradient(circle at var(--lx, 28%) calc(var(--ly, 0%) - var(--scroll-v, 0) * 40%), rgba(255, 255, 255, 0.22), transparent 46%),
-    radial-gradient(120% 60% at 50% -10%, rgba(255, 255, 255, 0.12), transparent 60%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 38%);
+    radial-gradient(circle at var(--lx, 28%) calc(var(--ly, 0%) - var(--scroll-v, 0) * 40%), rgba(255, 255, 255, 0.16), transparent 46%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent 40%);
   -webkit-mask: linear-gradient(#000 0 0);
   mask: linear-gradient(#000 0 0);
   overflow: hidden;
   transition: --lx 900ms cubic-bezier(0.22, 1, 0.36, 1), --ly 900ms cubic-bezier(0.22, 1, 0.36, 1);
 }
-/* Watery shine: a soft specular band glides across once on hover. */
+/* Watery shine: a soft specular band glides across once on hover or press. */
 .lg > .lg-sheen::before {
   content: "";
   position: absolute; inset: -20% -60%;
-  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.16) 47%, rgba(255, 255, 255, 0.05) 53%, transparent 62%);
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.14) 47%, rgba(255, 255, 255, 0.04) 53%, transparent 62%);
   transform: translateX(-60%);
   opacity: 0;
 }
@@ -102,13 +105,14 @@ html.lg-refract .lg.lg--refract {
 .lg > :where(:not(.lg-sheen)) { position: relative; z-index: 1; }
 /* Filled actions stay filled: glass rim on top of the accent fill. */
 .lg:is(.btn:not(.btn--ghost), .nav__cta, .btn-primary, .action-btn.primary, .xp-seg button[aria-pressed="true"]) { background: var(--btn-bg, var(--action-bg)) !important; }
-.site-header:not([data-surface="light"]) .lg.nav { background: rgba(var(--hero-rgb), 0.38) !important; }
+.site-header:not([data-surface="light"]) .lg.nav { background: rgba(var(--hero-rgb), 0.5) !important; }
+.site-header[data-surface="light"] .lg.nav { background: var(--glass-light) !important; }
 .site-header .lg.nav { transition: background-color 500ms cubic-bezier(0.22, 1, 0.36, 1), color 500ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 500ms cubic-bezier(0.22, 1, 0.36, 1); }
 
 /* Press: a mild RGB split with a soft blur. Hover: a gentler blur ripple.
    The filters run on the label and icon inside the glass, never on the glass
    itself: a filter on a backdrop-filter element re-renders its backdrop every
-   frame, which dropped scrolling to 30 fps on phones. */
+   frame. */
 @keyframes lg-glitch {
   0%, 100% { filter: none; }
   18% { filter: blur(0.8px) drop-shadow(1.5px 0 rgba(255, 40, 90, 0.5)) drop-shadow(-1.5px 0 rgba(0, 240, 220, 0.5)); }
@@ -141,66 +145,8 @@ html.lg-refract .lg.lg--refract {
 }
 @media (prefers-reduced-motion: no-preference) {
   .hero__title.lg-name-glitch .hero__title-accent { animation: name-glitch 520ms steps(7, end) 1; }
-  /* Shine sweep on demand: touch press, or a card gliding into view on a phone. */
+  /* Shine sweep on a touch press. */
   .lg.lg-shine > .lg-sheen::before { animation: lg-shine 1400ms cubic-bezier(0.33, 0, 0.2, 1) 1 both; }
-  /* Arrival glint on touch screens: a soft focus pull with a faint RGB split. */
-  .lg.lg-glint > .lg-sheen > .lg-split { animation: lg-glint 900ms cubic-bezier(0.22, 1, 0.36, 1) 1; }
-}
-@keyframes lg-glint {
-  0% { opacity: 1; }
-  45% { opacity: 0.5; }
-  100% { opacity: 0; }
-}
-/* Same filter functions at both ends, so the blur interpolates smoothly. */
-@keyframes lg-frost-pulse {
-  0% { -webkit-backdrop-filter: blur(36px) saturate(240%); backdrop-filter: blur(36px) saturate(240%); }
-  100% { -webkit-backdrop-filter: blur(24px) saturate(210%); backdrop-filter: blur(24px) saturate(210%); }
-}
-
-/* Touch screens: no cursor to catch the light, so the glass itself reads
-   stronger. Clearer tint over a heavier blur, a brighter, thicker rim, a fuller
-   specular cap, a visible red/cyan dispersion edge, and a highlight that
-   follows the finger and the scroll. No SVG refraction here (liquid-glass.js),
-   so the blur can pulse smoothly: the arrival glint and taps briefly deepen it. */
-@media (hover: none), (pointer: coarse) {
-  html[data-theme="dark"] {
-    --lg-rim: rgba(255, 255, 255, 0.66);
-    --lg-rim-soft: rgba(255, 255, 255, 0.16);
-    --lg-tint: rgba(30, 32, 37, 0.26);
-    --lg-tint-strong: rgba(24, 26, 30, 0.5);
-  }
-  :root:not([data-theme="dark"]) {
-    --lg-tint: rgba(255, 255, 255, 0.34);
-    --lg-tint-strong: rgba(255, 255, 255, 0.56);
-  }
-  .lg {
-    box-shadow:
-      inset 0 1px 0.5px rgba(255, 255, 255, 0.5),
-      inset 0 -1px 1px rgba(0, 0, 0, 0.28),
-      inset 0 0 0 1px var(--lg-rim-soft),
-      inset 2px 0 1.5px -0.5px rgba(255, 70, 130, 0.3),
-      inset -2px 0 1.5px -0.5px rgba(0, 225, 255, 0.3),
-      inset 0 14px 24px -14px rgba(255, 255, 255, 0.32),
-      var(--lg-shadow) !important;
-    -webkit-backdrop-filter: blur(24px) saturate(210%);
-    backdrop-filter: blur(24px) saturate(210%);
-  }
-  .lg > .lg-sheen > .lg-split {
-    box-shadow: inset 2.5px 0 1px 0 rgba(255, 40, 90, 0.7), inset -2.5px 0 1px 0 rgba(0, 240, 220, 0.7);
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    .lg.lg-glint, .lg.lg-glitch, .lg.lg-ripple { animation: lg-frost-pulse 900ms cubic-bezier(0.22, 1, 0.36, 1) 1; }
-  }
-  .lg > .lg-sheen {
-    background:
-      radial-gradient(circle at var(--lx, 28%) calc(var(--ly, 0%) - var(--scroll-v, 0) * 60%), rgba(255, 255, 255, 0.3), transparent 50%),
-      radial-gradient(120% 60% at 50% -10%, rgba(255, 255, 255, 0.18), transparent 60%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.11), transparent 40%);
-  }
-  .lg > .lg-sheen::before {
-    background: linear-gradient(105deg, transparent 36%, rgba(255, 255, 255, 0.24) 47%, rgba(255, 255, 255, 0.08) 54%, transparent 64%);
-  }
-  .lg > .lg-sheen::after { padding: 1.5px; }
 }
 @keyframes name-glitch {
   0%, 100% { text-shadow: none; transform: none; }
@@ -225,23 +171,25 @@ html.lg-refract .lg.lg--refract {
 
 
 /* ---- Lite tier (perf-tier.js): low-end phones and PCs ----------------------
-   Same layout and look, cheaper pixels: one light frosted blur instead of
-   refraction or heavy blur, no blur pulses or endless decorative animation,
-   no backdrop blur on small glyph tiles. */
+   Same tint, rim and highlight; only the floating nav keeps a (lighter) blur,
+   which it needs to stay legible over moving content. No hero blur, no glyph
+   blur, no endless decorative animation. */
 html.perf-lite .lg,
-html.perf-lite.lg-refract .lg,
-html.perf-lite.lg-refract .lg.lg--refract {
-  -webkit-backdrop-filter: blur(10px) saturate(160%) !important;
-  backdrop-filter: blur(10px) saturate(160%) !important;
+html.perf-lite .masthead .lg,
+html.perf-lite :is(.chapters, .theme-toggle, #accent-switcher .accent-trigger, #accent-switcher .accent-tray).lg {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }
-html.perf-lite :is(.ph-glass, .ph-hero__card, .ph-section, .story__stage, .story__beat, .detail-metric, .tilt-toggle) {
+html.perf-lite :is(.nav, .navbar .nav-container).lg {
   -webkit-backdrop-filter: blur(10px) saturate(150%) !important;
   backdrop-filter: blur(10px) saturate(150%) !important;
 }
-html.perf-lite .gi--clear { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
-html.perf-lite :is(.lg.lg-glint, .lg.lg-glitch, .lg.lg-ripple) { animation: none !important; }
+html.perf-lite :is(.ph-glass, .ph-hero__card, .ph-section, .story__stage, .story__beat, .detail-metric, .tilt-toggle) {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+html.perf-lite .gi--clear, html.perf-lite .eyebrow, html.perf-lite .hero__status--phd, html.perf-lite .phd-pill { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
 html.perf-lite .lg > .lg-sheen::before { animation: none !important; }
 html.perf-lite :is(#ask-reshad-fab, #ask-reshad-fab::before, #ask-reshad-fab::after) { animation: none !important; }
 html.perf-lite #ask-reshad-fab::after { filter: none !important; }
 html.perf-lite .story__beat { filter: none !important; }
-html.perf-lite .section-head h2.is-split .word { filter: none !important; }

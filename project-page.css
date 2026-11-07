@@ -19,11 +19,11 @@ html[data-theme="light"] {
   --ph-rim: inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 0 0 1px rgba(var(--ink-rgb), 0.08);
   --ph-lift: 0 30px 60px -34px rgba(var(--ink-rgb), 0.35), 0 8px 20px -14px rgba(var(--ink-rgb), 0.2);
 }
+/* Reading panels sit on the flat page colour, so a backdrop blur would cost
+   GPU time without changing a pixel: the tint and rim carry the material. */
 .ph-glass, .ph-hero__card, .ph-section, .story__stage, .story__beat, .detail-metric {
   background: var(--ph-glass);
   box-shadow: var(--ph-rim), var(--ph-lift);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-  backdrop-filter: blur(18px) saturate(160%);
 }
 
 /* ---- Back link -------------------------------------------------------------- */
@@ -160,12 +160,12 @@ html[data-theme="light"] {
   position: relative;
   margin: 0 0 34vh; padding: 22px 22px 22px 70px;
   border-radius: 24px;
-  opacity: 0.38; transform: scale(0.97) translateY(6px); filter: blur(0.4px);
-  transition: opacity 0.6s ease, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1), filter 0.6s ease, box-shadow 0.6s ease;
+  opacity: 0.45; transform: scale(0.97) translateY(6px);
+  transition: opacity 0.6s ease, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.6s ease;
 }
 .story__beat:first-child { margin-top: 14vh; }
 .story__beat:last-child { margin-bottom: 0; }
-.story__beat.is-active { opacity: 1; transform: none; filter: none; box-shadow: var(--ph-rim), var(--ph-lift), 0 0 0 1px rgba(var(--hl-rgb), 0.3); }
+.story__beat.is-active { opacity: 1; transform: none; box-shadow: var(--ph-rim), var(--ph-lift), 0 0 0 1px rgba(var(--hl-rgb), 0.3); }
 .story__num {
   position: absolute; left: 18px; top: 20px;
   display: grid; place-items: center; width: 36px; height: 36px; border-radius: 31%;
@@ -223,7 +223,7 @@ html[data-v2] .ph-page .tech-tag {
   .ph-btn { flex: 1 1 auto; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .story__beat { transition: none; transform: none; filter: none; }
+  .story__beat { transition: none; transform: none; }
   .ph-status--ongoing .ph-status__dot { animation: none; }
 }
 @media (forced-colors: active) {

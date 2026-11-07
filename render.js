@@ -13,10 +13,10 @@
         page exposes.
      3. Renders the SAME .project-card / .publication-item markup the single-
         pager uses, so the existing CSS styles it for free.
-     4. Owns ALL of its own interactions — a deterministic domain filter
-        (GSAP Flip when available, else plain show/hide), its own
-        IntersectionObserver reveal, its own VanillaTilt.init, and its own
-        YouTube/PDF modal wiring — because render.js injects cards
+     4. Owns ALL of its own interactions — the projects explorer (search,
+        area filter, views, URL state), its own IntersectionObserver reveal
+        for publications, and its own YouTube/PDF modal wiring — because
+        render.js injects cards
         ASYNCHRONOUSLY, AFTER the shared modules (projects-motion.js /
         reveal-motion.js / script.js) have already scanned the DOM at boot.
         Never rely on those boot-time scans (see plan §6).
@@ -162,7 +162,14 @@
   }
 
   /* ----------------------------------------------------------------------
-     3. PROJECTS index
+     3. PROJECTS index: search, area filter, featured row, grid or by-area view
+     ----------------------------------------------------------------------
+     State lives in the URL (?q=&area=&view=): choosing an area or a view adds
+     a history entry, typing replaces it, so Back steps through filters.
+     Counts are unique projects. A project can sit in several areas, so area
+     counts add up to more than the total (the toolbar says so). The default
+     view shows the flagship projects once, in "Featured", and every other
+     project once in the grid below; any search or filter shows one flat list.
      --------------------------------------------------------------------- */
   function initProjects(container) {
     Promise.all([
@@ -185,7 +192,7 @@
     });
   }
 
-  // Within a domain group: flagship desc -> weight desc -> date desc -> title.
+  // Flagship desc -> weight desc -> date desc -> title.
   function sortProjects(list) {
     return list.slice().sort(function (a, b) {
       var fa = a.flagship ? 1 : 0, fb = b.flagship ? 1 : 0;
@@ -193,240 +200,281 @@
       var wa = a.weight || 0, wb = b.weight || 0;
       if (wb - wa) return wb - wa;
       var da = a.date || '', db = b.date || '';
-      if (da !== db) return db < da ? -1 : 1;         // date desc (ISO-ish string)
+      if (da !== db) return db < da ? -1 : 1;
       return String(a.title || '').localeCompare(String(b.title || ''));
     });
   }
 
-  function projectMediaHTML(p) {
-    var m = p.media || {};
-    var icon = m.icon || 'fas fa-folder';
-    var label = m.label || p.shortTitle || p.title || '';
+  function stripTags(s) { return String(s || '').replace(/<[^>]*>/g, ''); }
+  function areaLabel(taxonomy, id) { return (taxonomy[id] && taxonomy[id].label) || id; }
 
+  function cardImage(src) {
+    // tools/make_card_thumbs.py writes <name>-640w.webp next to every card image.
+    var thumb = src.replace(/\.[a-z0-9]+$/i, '') + '-640w.webp';
+    return { src: asset(thumb), srcset: asset(thumb) + ' 640w, ' + asset(src) + ' 1400w' };
+  }
+
+  function projectMediaHTML(p, sizes) {
+    var m = p.media || {};
+    var label = m.label || p.shortTitle || p.title || '';
     if (m.type === 'image' && m.src) {
-      // Real thumbnail fills the image area; the FA placeholder is the fallback
-      // (CSS hides it when .project-thumb is present; onerror restores it).
-      return '' +
-        '<img class="project-thumb" src="' + esc(asset(m.src)) + '" alt="' + esc(m.alt || label) + '"' +
-        ' loading="lazy" decoding="async" onerror="this.remove()">' +
-        '<div class="project-placeholder"><i class="' + esc(icon) + '"></i><span>' + esc(label) + '</span></div>';
+      var im = cardImage(m.src);
+      return '<img src="' + esc(im.src) + '" srcset="' + esc(im.srcset) + '" sizes="' + sizes + '" alt="" loading="lazy" decoding="async">';
     }
     if (m.type === 'youtube' && m.videoId) {
-      var st = m.startTime ? ' data-start-time="' + esc(m.startTime) + '"' : '';
-      return '' +
-        '<div class="youtube-preview" data-video-id="' + esc(m.videoId) + '"' + st + '>' +
-          '<img src="https://img.youtube.com/vi/' + esc(m.videoId) + '/maxresdefault.jpg" alt="' +
-            esc(m.alt || (label + ' demo video')) + '" class="youtube-thumbnail" width="1280" height="720" loading="lazy" decoding="async">' +
-          '<div class="youtube-play-button"><i class="fab fa-youtube"></i></div>' +
-          '<div class="youtube-overlay"><span class="youtube-duration">' + esc(m.caption || 'Demo Video') + '</span></div>' +
-        '</div>';
+      return '<img src="https://img.youtube.com/vi/' + esc(m.videoId) + '/maxresdefault.jpg" alt="" loading="lazy" decoding="async">' +
+        '<span class="px-flag"><i class="fas fa-play" aria-hidden="true"></i>Video</span>';
     }
-    // default: icon placeholder
-    return '<div class="project-placeholder"><i class="' + esc(icon) + '"></i><span>' + esc(label) + '</span></div>';
+    return '<span class="px-placeholder"><i class="' + esc(m.icon || 'fas fa-diagram-project') + '" aria-hidden="true"></i><span>' + esc(label) + '</span></span>';
   }
 
-  function projectLinksHTML(p) {
+  function projectActionsHTML(p) {
     var L = p.links || {};
     var out = [];
-    if (L.github) out.push('<a href="' + esc(L.github) + '" class="project-link" target="_blank" rel="noopener noreferrer" aria-label="Source code"><i class="fab fa-github"></i></a>');
-    if (L.live)   out.push('<a href="' + esc(L.live) + '" class="project-link" target="_blank" rel="noopener noreferrer" aria-label="Live site"><i class="fas fa-external-link-alt"></i></a>');
-    if (L.paper)  out.push('<a href="' + esc(L.paper) + '" class="project-link" target="_blank" rel="noopener noreferrer" aria-label="Paper"><i class="fas fa-file-alt"></i></a>');
-    if (L.poster) out.push('<a href="' + esc(asset(L.poster)) + '" class="project-link" target="_blank" rel="noopener noreferrer" aria-label="Poster"><i class="fas fa-image"></i></a>');
+    var icon = function (href, cls, label) {
+      return '<a class="px-icon" href="' + esc(href) + '" target="_blank" rel="noopener noreferrer" aria-label="' + esc(label) + ' (opens in a new tab)" title="' + esc(label) + '"><i class="' + cls + '" aria-hidden="true"></i></a>';
+    };
     if (L.youtube) {
       var st = L.youtubeStart ? ' data-start-time="' + esc(L.youtubeStart) + '"' : '';
-      out.push('<button type="button" class="project-link youtube-modal-btn" data-video-id="' + esc(L.youtube) + '"' + st + ' aria-label="Watch demo"><i class="fab fa-youtube"></i></button>');
+      out.push('<button type="button" class="px-icon youtube-modal-btn" data-video-id="' + esc(L.youtube) + '"' + st + ' aria-label="Watch the demo video" title="Watch demo"><i class="fab fa-youtube" aria-hidden="true"></i></button>');
     }
+    if (L.live) out.push(icon(L.live, 'fas fa-arrow-up-right-from-square', 'Live site'));
+    if (L.github) out.push(icon(L.github, 'fab fa-github', 'Source code'));
+    if (L.paper) out.push(icon(L.paper, 'fas fa-file-lines', 'Paper'));
+    if (L.poster) out.push(icon(asset(L.poster), 'fas fa-image', 'Poster'));
     if (L.pdf) {
-      out.push('<button type="button" class="project-link pdf-viewer-btn" data-pdf="' + esc(asset(L.pdf)) + '" data-title="' + esc(L.pdfTitle || p.title || 'Document') + '" aria-label="Open PDF"><i class="fas fa-file-pdf"></i></button>');
+      out.push('<button type="button" class="px-icon pdf-viewer-btn" data-pdf="' + esc(asset(L.pdf)) + '" data-title="' + esc(L.pdfTitle || p.title || 'Document') + '" aria-label="Open the report (PDF)" title="Report (PDF)"><i class="fas fa-file-pdf" aria-hidden="true"></i></button>');
     }
-    if (!out.length) return '';
-    return '<div class="project-overlay"><div class="project-links">' + out.join('') + '</div></div>';
+    var cta = isReady(p)
+      ? '<a class="px-cta" href="' + detailHref(p.slug) + '">Read case study<i class="fas fa-arrow-right" aria-hidden="true"></i></a>'
+      : '<span class="px-soon"><i class="fas fa-clock" aria-hidden="true"></i>Write-up coming soon</span>';
+    return '<div class="px-card__actions">' + cta + (out.length ? '<span class="px-icons">' + out.join('') + '</span>' : '') + '</div>';
   }
 
-  function projectBadgeHTML(p) {
-    var b = p.badge || (p.status === 'ongoing' ? 'Ongoing' : '');
-    if (!b) return '';
-    return ' <span class="project-badge ongoing">' + esc(b) + '</span>';
+  function statusHTML(p) {
+    var st = p.status === 'ongoing' ? 'Ongoing' : p.status === 'completed' ? 'Completed' : '';
+    var out = st ? '<span class="px-status is-' + esc(p.status) + '">' + st + '</span>' : '';
+    if (p.badge && p.badge !== st) out += '<span class="px-badge">' + esc(p.badge) + '</span>';
+    return out;
   }
 
-  function projectCtaHTML(p) {
-    if (isReady(p)) {
-      return '<a class="mp-view-link" href="' + detailHref(p.slug) + '">' +
-        'Read more <i class="fas fa-arrow-right-long" aria-hidden="true"></i></a>';
-    }
-    return '<span class="mp-soon-badge" aria-label="Detail page coming soon">' +
-      '<i class="fas fa-clock" aria-hidden="true"></i> Coming soon</span>';
-  }
-
-  function projectCardHTML(p) {
-    var domains = (p.domains || []).join(' ');
-    var tech = (p.techTags || p.tech || []).map(function (t) {
-      return '<span class="tech-tag">' + esc(t) + '</span>';
-    }).join('');
-    var feats = (p.features || []).map(function (f) {
-      return '<span class="feature">' + esc(f) + '</span>';
-    }).join('');
-
+  function projectCardHTML(p, taxonomy, opts) {
+    var primary = (p.domains || [])[0];
+    var year = String(p.date || '').slice(0, 4);
+    var tags = (p.techTags || []).slice(0, 3).map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
+    var summary = (p.seo && p.seo.description) || stripTags(p.description);
+    var href = isReady(p) ? detailHref(p.slug) : null;
+    var media = projectMediaHTML(p, opts.sizes);
     return '' +
-      '<div class="project-card mp-reveal" data-slug="' + esc(p.slug) + '" data-domains="' + esc(domains) + '">' +
-        '<div class="project-image">' +
-          projectMediaHTML(p) +
-          projectLinksHTML(p) +
-          (tech ? '<div class="project-tech-stack">' + tech + '</div>' : '') +
+      '<article class="px-card' + (opts.featured ? ' px-card--featured' : '') + '" data-slug="' + esc(p.slug) + '">' +
+        (href ? '<a class="px-card__media" href="' + href + '" tabindex="-1" aria-hidden="true">' + media + '</a>'
+              : '<div class="px-card__media">' + media + '</div>') +
+        '<div class="px-card__body">' +
+          '<p class="px-card__meta">' + statusHTML(p) + (opts.markFeatured && p.flagship ? '<span class="px-badge is-featured">Featured</span>' : '') + '</p>' +
+          '<h3 class="px-card__title">' + (href ? '<a href="' + href + '">' + raw(p.title) + '</a>' : raw(p.title)) + '</h3>' +
+          '<p class="px-card__area">' + (year ? '<span>' + esc(year) + '</span>' : '') + (primary ? '<span>' + esc(areaLabel(taxonomy, primary)) + '</span>' : '') + '</p>' +
+          '<p class="px-card__desc">' + esc(summary) + '</p>' +
+          (tags ? '<ul class="px-tags" aria-label="Methods and tools">' + tags + '</ul>' : '') +
+          projectActionsHTML(p) +
         '</div>' +
-        '<div class="project-content">' +
-          '<h3>' + raw(p.title) + projectBadgeHTML(p) + '</h3>' +
-          '<p>' + raw(p.description) + '</p>' +
-          (feats ? '<div class="project-features">' + feats + '</div>' : '') +
-          '<div class="mp-card-cta">' + projectCtaHTML(p) + '</div>' +
-        '</div>' +
-      '</div>';
+      '</article>';
   }
 
-  function domainHeaderHTML(id, tax) {
+  function projectRowHTML(p, taxonomy) {
+    var year = String(p.date || '').slice(0, 4);
+    var summary = (p.seo && p.seo.description) || stripTags(p.description);
+    var href = isReady(p) ? detailHref(p.slug) : null;
     return '' +
-      '<header class="mp-domain-header mp-reveal" data-domain="' + esc(id) + '">' +
-        '<span class="mp-domain-icon"><i class="' + esc(tax.icon || 'fas fa-folder') + '"></i></span>' +
-        '<div class="mp-domain-heading">' +
-          '<h2 class="mp-domain-title">' + esc(tax.label || id) + '</h2>' +
-          (tax.blurb ? '<p class="mp-domain-blurb">' + esc(tax.blurb) + '</p>' : '') +
+      '<li class="px-row" data-slug="' + esc(p.slug) + '">' +
+        '<span class="px-row__media" aria-hidden="true">' + projectMediaHTML(p, '120px') + '</span>' +
+        '<div class="px-row__body">' +
+          '<p class="px-card__meta">' + statusHTML(p) + (year ? '<span class="px-row__year">' + esc(year) + '</span>' : '') + '</p>' +
+          '<h3 class="px-card__title">' + (href ? '<a href="' + href + '">' + raw(p.title) + '</a>' : raw(p.title)) + '</h3>' +
+          '<p class="px-card__desc">' + esc(summary) + '</p>' +
         '</div>' +
-      '</header>';
+      '</li>';
   }
 
   function renderProjects(container, taxonomy, projects) {
     var order = domainOrder(taxonomy);
-
-    // Bucket each project under its PRIMARY domain (domains[0]). Unknown/empty
-    // primaries fall into a synthetic "other" bucket appended last.
-    var buckets = {};
-    order.forEach(function (id) { buckets[id] = []; });
-    var extras = [];
-    projects.forEach(function (p) {
-      var primary = (p.domains && p.domains[0]) || '';
-      if (buckets[primary]) buckets[primary].push(p);
-      else extras.push(p);
-    });
-
-    // Build ONE grid: full-width domain headers + their cards, in taxonomy
-    // order. Filtering hides the headers and flattens into a single grid, so
-    // secondary-domain matches surface without duplicating any card.
-    var gridHTML = '';
-    order.forEach(function (id) {
-      var list = sortProjects(buckets[id]);
-      if (!list.length) return;
-      gridHTML += domainHeaderHTML(id, taxonomy[id]);
-      gridHTML += list.map(projectCardHTML).join('');
-    });
-    if (extras.length) {
-      gridHTML += domainHeaderHTML('other', { label: 'Other Work', icon: 'fas fa-folder', blurb: '' });
-      gridHTML += sortProjects(extras).map(projectCardHTML).join('');
-    }
-
-    var grid = document.createElement('div');
-    grid.className = 'projects-grid mp-grid';
-    grid.innerHTML = gridHTML;
-    container.innerHTML = '';
-    container.appendChild(grid);
-
-    // Filter bar: "All" + one chip per domain referenced by ANY project's
-    // full domains[] (primary OR secondary), in taxonomy order — so a domain
-    // that is only ever secondary (e.g. healthcare-ai for the assistive vision agent) still gets
-    // a chip. Chip count = projects whose domains[] includes that id.
+    var byId = {};
+    projects.forEach(function (p) { if (p && p.slug) byId[p.slug] = p; });
+    var all = sortProjects(Object.keys(byId).map(function (k) { return byId[k]; }));
+    var total = all.length;
+    // Areas that any project references (primary or secondary), in taxonomy order.
     var referenced = {};
-    projects.forEach(function (p) {
-      (p.domains || []).forEach(function (d) { if (d) referenced[d] = 1; });
-    });
-    var chipDomains = order.filter(function (id) { return referenced[id]; });
-    Object.keys(referenced).forEach(function (id) {
-      if (chipDomains.indexOf(id) === -1) chipDomains.push(id); // unknown domains last
-    });
-    buildFilterBar(container, taxonomy, chipDomains, projects, grid);
+    all.forEach(function (p) { (p.domains || []).forEach(function (d) { if (d) referenced[d] = 1; }); });
+    var areas = order.filter(function (id) { return referenced[id]; });
+    Object.keys(referenced).forEach(function (id) { if (areas.indexOf(id) === -1) areas.push(id); });
 
-    // Own interactions.
-    wireYouTube(grid);
-    wirePDF();
-    observeReveal(Array.prototype.slice.call(grid.querySelectorAll('.mp-reveal')));
-  }
+    var index = {};
+    all.forEach(function (p) {
+      index[p.slug] = [p.title, p.shortTitle, p.seo && p.seo.description, stripTags(p.description)]
+        .concat(p.techTags || [], p.features || [], p.skills || [], (p.domains || []).map(function (d) { return areaLabel(taxonomy, d); }))
+        .join(' ').toLowerCase();
+    });
 
-  function buildFilterBar(container, taxonomy, presentIds, projects, grid) {
-    var mount = document.querySelector('[data-render="project-filters"], #project-filters');
+    Array.prototype.forEach.call(document.querySelectorAll('[data-count="projects"]'), function (el) { el.textContent = String(total); });
+
+    /* ---- Toolbar ---- */
+    var mount = document.querySelector('[data-render="project-filters"], #project-filters') || container;
     var bar = document.createElement('div');
-    bar.className = 'mp-filters';
-    bar.setAttribute('role', 'group');
-    bar.setAttribute('aria-label', 'Filter projects by research domain');
+    bar.className = 'px-toolbar';
+    bar.innerHTML = '' +
+      '<div class="px-toolbar__row">' +
+        '<label class="px-search"><i class="fas fa-magnifying-glass" aria-hidden="true"></i><span class="visually-hidden">Search projects</span>' +
+          '<input type="search" name="q" placeholder="Search projects, methods or tools" autocomplete="off" aria-controls="px-results"></label>' +
+        '<label class="px-select"><span class="visually-hidden">Research area</span><select name="area" aria-controls="px-results"></select></label>' +
+        '<div class="px-view" role="group" aria-label="Layout">' +
+          '<button type="button" data-view="grid" aria-pressed="true"><i class="fas fa-table-cells-large" aria-hidden="true"></i>Grid</button>' +
+          '<button type="button" data-view="areas" aria-pressed="false"><i class="fas fa-list" aria-hidden="true"></i>By area</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="px-areas" role="group" aria-label="Filter by research area"></div>' +
+      '<div class="px-toolbar__foot"><p class="px-status-line" role="status" aria-live="polite"></p>' +
+        '<button type="button" class="px-reset" hidden>Clear filters</button>' +
+        '<p class="px-note">A project can belong to several areas, so area counts add up to more than ' + total + '.</p></div>';
+    mount.appendChild(bar);
+    var input = bar.querySelector('input');
+    var select = bar.querySelector('select');
+    var chipsEl = bar.querySelector('.px-areas');
+    var statusEl = bar.querySelector('.px-status-line');
+    var resetBtn = bar.querySelector('.px-reset');
+    var viewBtns = Array.prototype.slice.call(bar.querySelectorAll('[data-view]'));
 
-    function countFor(id) {
-      if (id === 'all') return projects.length;
-      return projects.filter(function (p) {
-        return (p.domains || []).indexOf(id) !== -1;
-      }).length;
+    var results = document.createElement('div');
+    results.id = 'px-results';
+    results.className = 'px-results';
+    container.innerHTML = '';
+    container.appendChild(results);
+
+    /* ---- State <-> URL ---- */
+    var state = { q: '', area: 'all', view: 'grid' };
+    function readURL() {
+      var sp = new URLSearchParams(window.location.search);
+      var area = sp.get('area') || 'all';
+      state = {
+        q: (sp.get('q') || '').slice(0, 80),
+        area: area === 'all' || areas.indexOf(area) !== -1 ? area : 'all',
+        view: sp.get('view') === 'areas' ? 'areas' : 'grid'
+      };
+    }
+    function writeURL(push) {
+      var sp = new URLSearchParams();
+      if (state.q) sp.set('q', state.q);
+      if (state.area !== 'all') sp.set('area', state.area);
+      if (state.view !== 'grid') sp.set('view', state.view);
+      var qs = sp.toString();
+      var url = window.location.pathname + (qs ? '?' + qs : '') + window.location.hash;
+      if (push) history.pushState(state, '', url); else history.replaceState(state, '', url);
     }
 
-    var chips = [];
-    chips.push(chipHTML('all', 'All', '', countFor('all'), true));
-    presentIds.forEach(function (id) {
-      var t = taxonomy[id] || {};
-      chips.push(chipHTML(id, t.label || id, t.icon || '', countFor(id), false));
-    });
-    bar.innerHTML = chips.join('');
+    function matches(p, q) {
+      if (!q) return true;
+      var hay = index[p.slug];
+      return q.split(/\s+/).every(function (t) { return !t || hay.indexOf(t) !== -1; });
+    }
+    function inArea(p, area) { return area === 'all' || (p.domains || []).indexOf(area) !== -1; }
 
-    if (mount) mount.appendChild(bar);
-    else container.parentNode.insertBefore(bar, container);
+    /* ---- Render ---- */
+    var GRID_SIZES = '(max-width: 680px) 92vw, (max-width: 1100px) 46vw, 360px';
+    var FEAT_SIZES = '(max-width: 680px) 92vw, (max-width: 1100px) 46vw, 560px';
+    function render() {
+      var q = state.q.trim().toLowerCase();
+      var hits = all.filter(function (p) { return matches(p, q); });
+      var shown = hits.filter(function (p) { return inArea(p, state.area); });
 
-    bar.addEventListener('click', function (e) {
-      var chip = e.target.closest('.mp-chip');
-      if (!chip) return;
-      var domain = chip.getAttribute('data-filter');
-      bar.querySelectorAll('.mp-chip').forEach(function (c) {
-        var on = c === chip;
-        c.classList.toggle('is-active', on);
-        c.setAttribute('aria-pressed', on ? 'true' : 'false');
-      });
-      applyFilter(grid, domain);
-    });
-  }
+      // Controls
+      input.value = state.q;
+      var countFor = function (id) { return id === 'all' ? hits.length : hits.filter(function (p) { return inArea(p, id); }).length; };
+      var opts = [['all', 'All areas']].concat(areas.map(function (id) { return [id, areaLabel(taxonomy, id)]; }));
+      chipsEl.innerHTML = opts.map(function (o) {
+        var on = o[0] === state.area; var n = countFor(o[0]);
+        return '<button type="button" class="px-chip" data-area="' + esc(o[0]) + '" aria-pressed="' + on + '"' + (n || on ? '' : ' data-empty') + '>' +
+          esc(o[0] === 'all' ? 'All' : o[1]) + '<span class="px-chip__n">' + n + '</span></button>';
+      }).join('');
+      select.innerHTML = opts.map(function (o) {
+        return '<option value="' + esc(o[0]) + '"' + (o[0] === state.area ? ' selected' : '') + '>' + esc(o[1]) + ' (' + countFor(o[0]) + ')</option>';
+      }).join('');
+      viewBtns.forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-view') === state.view)); });
+      var filtered = !!q || state.area !== 'all';
+      resetBtn.hidden = !filtered;
+      var where = state.area !== 'all' ? ' in ' + areaLabel(taxonomy, state.area) : '';
+      var what = q ? ' matching \u201c' + state.q.trim() + '\u201d' : '';
+      statusEl.textContent = filtered
+        ? shown.length + ' of ' + total + ' projects' + where + what
+        : total + ' projects';
 
-  function chipHTML(id, label, icon, count, active) {
-    return '<button type="button" class="mp-chip' + (active ? ' is-active' : '') +
-      '" data-filter="' + esc(id) + '" aria-pressed="' + (active ? 'true' : 'false') + '">' +
-      (icon ? '<i class="' + esc(icon) + '" aria-hidden="true"></i> ' : '') +
-      esc(label) + '<span class="mp-chip-count">' + count + '</span></button>';
-  }
-
-  // Filter: "all" restores the grouped view; a domain flattens to every card
-  // whose data-domains includes it. GSAP Flip animates the reflow when present.
-  function applyFilter(grid, domain) {
-    var animated = Array.prototype.slice.call(
-      grid.querySelectorAll('.project-card, .mp-domain-header')
-    );
-    var useFlip = !REDUCED && window.gsap && window.Flip;
-    var state = useFlip ? window.Flip.getState(animated) : null;
-
-    grid.querySelectorAll('.mp-domain-header').forEach(function (h) {
-      h.classList.toggle('mp-hidden', domain !== 'all');
-    });
-    grid.querySelectorAll('.project-card').forEach(function (c) {
-      if (domain === 'all') { c.classList.remove('mp-hidden'); return; }
-      var d = (c.getAttribute('data-domains') || '').split(/\s+/);
-      c.classList.toggle('mp-hidden', d.indexOf(domain) === -1);
-    });
-
-    if (useFlip) {
-      window.Flip.from(state, {
-        duration: 0.5,
-        ease: 'power2.inOut',
-        scale: true,
-        absolute: true,
-        onEnter: function (els) {
-          return window.gsap.fromTo(els, { opacity: 0, scale: 0.85 },
-            { opacity: 1, scale: 1, duration: 0.4, ease: 'power2.out' });
-        },
-        onLeave: function (els) {
-          return window.gsap.to(els, { opacity: 0, scale: 0.85, duration: 0.3, ease: 'power2.in' });
+      // Results
+      var html = '';
+      if (!shown.length) {
+        html = '<div class="px-empty"><p class="px-empty__title">No projects' + esc(where + what) + '.</p>' +
+          '<p>Try a broader word (for example \u201cvision\u201d, \u201cLLM\u201d or \u201crobot\u201d), or clear the filters.</p>' +
+          '<button type="button" class="px-reset-inline">Clear search and filters</button></div>';
+      } else if (state.view === 'areas') {
+        var groups = state.area !== 'all' ? [state.area] : areas;
+        groups.forEach(function (id) {
+          var list = state.area !== 'all'
+            ? shown
+            : shown.filter(function (p) { return ((p.domains || [])[0] || '') === id; }); // each project once, under its primary area
+          if (!list.length) return;
+          var tax = taxonomy[id] || {};
+          html += '<section class="px-group" aria-labelledby="px-g-' + esc(id) + '">' +
+            '<header class="px-group__head"><h2 class="px-h2" id="px-g-' + esc(id) + '">' + esc(tax.label || id) + '<span class="px-h2__n">' + list.length + '</span></h2>' +
+            (tax.blurb ? '<p>' + esc(tax.blurb) + '</p>' : '') + '</header>' +
+            '<ol class="px-rows">' + list.map(function (p) { return projectRowHTML(p, taxonomy); }).join('') + '</ol></section>';
+        });
+      } else if (!filtered) {
+        var featured = shown.filter(function (p) { return p.flagship; });
+        var rest = shown.filter(function (p) { return !p.flagship; });
+        if (featured.length) {
+          html += '<section class="px-section" aria-labelledby="px-featured"><h2 class="px-h2" id="px-featured">Featured<span class="px-h2__n">' + featured.length + '</span></h2>' +
+            '<div class="px-grid px-grid--featured">' + featured.map(function (p) { return projectCardHTML(p, taxonomy, { featured: true, sizes: FEAT_SIZES }); }).join('') + '</div></section>';
         }
-      });
+        html += '<section class="px-section" aria-labelledby="px-more"><h2 class="px-h2" id="px-more">' + (featured.length ? 'More projects' : 'All projects') + '<span class="px-h2__n">' + rest.length + '</span></h2>' +
+          '<div class="px-grid">' + rest.map(function (p) { return projectCardHTML(p, taxonomy, { sizes: GRID_SIZES }); }).join('') + '</div></section>';
+      } else {
+        html = '<section class="px-section" aria-label="Results"><div class="px-grid">' +
+          shown.map(function (p) { return projectCardHTML(p, taxonomy, { sizes: GRID_SIZES, markFeatured: true }); }).join('') + '</div></section>';
+      }
+      results.innerHTML = html;
+      wirePDF();
     }
+
+    function set(patch, push) {
+      Object.keys(patch).forEach(function (k) { state[k] = patch[k]; });
+      writeURL(push);
+      render();
+    }
+    var typing = 0;
+    input.addEventListener('input', function () {
+      var v = input.value.slice(0, 80);
+      clearTimeout(typing);
+      typing = setTimeout(function () { set({ q: v }, false); }, 140);
+    });
+    input.addEventListener('keydown', function (e) { if (e.key === 'Escape' && input.value) { input.value = ''; set({ q: '' }, false); } });
+    select.addEventListener('change', function () { set({ area: select.value }, true); });
+    chipsEl.addEventListener('click', function (e) {
+      var c = e.target.closest('.px-chip'); if (!c) return;
+      set({ area: c.getAttribute('data-area') }, true);
+      var again = chipsEl.querySelector('[data-area="' + c.getAttribute('data-area') + '"]');
+      if (again) again.focus();
+    });
+    bar.querySelector('.px-view').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-view]'); if (!b) return;
+      set({ view: b.getAttribute('data-view') }, true);
+      var again = bar.querySelector('[data-view="' + b.getAttribute('data-view') + '"]');
+      if (again) again.focus();
+    });
+    function clearAll() { set({ q: '', area: 'all' }, true); input.focus(); }
+    resetBtn.addEventListener('click', clearAll);
+    results.addEventListener('click', function (e) { if (e.target.closest('.px-reset-inline')) clearAll(); });
+    window.addEventListener('popstate', function () { readURL(); render(); });
+
+    wireYouTube(results);
+    readURL();
+    writeURL(false);
+    render();
   }
 
   /* ----------------------------------------------------------------------
@@ -576,18 +624,42 @@
 
     container.innerHTML = html;
 
-    // Copy-to-clipboard for DOI / citation buttons (delegated).
+    // Copy-to-clipboard for DOI / citation buttons (delegated). The result is
+    // announced in a polite live region as well as on the button.
+    var live = document.createElement('p');
+    live.className = 'visually-hidden';
+    live.setAttribute('role', 'status');
+    live.setAttribute('aria-live', 'polite');
+    container.appendChild(live);
+    function legacyCopy(text) {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+      ta.remove();
+      return ok ? Promise.resolve() : Promise.reject(new Error('copy failed'));
+    }
     container.addEventListener('click', function (e) {
       var btn = e.target.closest('[data-copy]');
       if (!btn) return;
       var text = btn.getAttribute('data-copy');
-      if (navigator.clipboard) navigator.clipboard.writeText(text);
       var span = btn.querySelector('span');
-      if (span) {
-        var prev = span.textContent;
-        span.textContent = 'Copied!';
-        setTimeout(function () { span.textContent = prev; }, 1400);
-      }
+      var prev = span ? (span.getAttribute('data-label') || span.textContent) : '';
+      if (span) span.setAttribute('data-label', prev);
+      var copy = navigator.clipboard && window.isSecureContext
+        ? navigator.clipboard.writeText(text).catch(function () { return legacyCopy(text); })
+        : legacyCopy(text);
+      copy.then(function () {
+        if (span) span.textContent = 'Copied';
+        live.textContent = (/doi/i.test(prev) ? 'DOI' : 'Citation') + ' copied to the clipboard.';
+      }, function () {
+        if (span) span.textContent = 'Copy failed';
+        live.textContent = 'Could not copy. The text is: ' + text;
+      }).then(function () {
+        clearTimeout(btn.__copyT);
+        btn.__copyT = setTimeout(function () { if (span) span.textContent = prev; }, 1800);
+      });
     });
 
     wireYouTube(container);

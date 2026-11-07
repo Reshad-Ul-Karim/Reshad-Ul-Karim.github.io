@@ -6,8 +6,10 @@
    YouTube, and the portrait is a normal image.
 
    Owns: nav disclosure + scrollspy, header surface tint, cursor ring, press
-   feedback, the video dialog, the contact form, and the citation count.
-   The 3D hero lives in hero-scene.js; the chat widget in assistant-widget.js.
+   feedback, the video and certificate dialogs, the contact form, the citation
+   and data-driven counts, block reveals, research-card motifs and the awards
+   highlight. The hero 3D lives in home-scene.js, the hero backdrop in
+   hero-motion.js, the chat widget in assistant-widget.js.
    ========================================================================= */
 (function () {
   'use strict';
@@ -341,91 +343,150 @@
   if (year) year.textContent = String(new Date().getFullYear());
 
   /* ---- 10b. Block reveals ---------------------------------------------------
-         Chapter motion, the rail and the carousel live in chapter-scroll.js.
-         Blocks focus in from a soft blur, staggered, in both scroll directions:
-         scrolling down they rise from below; scrolling up they settle from
-         above, and blocks leaving the bottom blur back out. Reveal classes are
-         dropped once a block has settled, so hover styles and glass are
-         untouched while it is on screen. */
+         Blocks below the first screen rise in once (opacity + transform only)
+         and are then left alone: nothing re-hides on the way back up, and
+         blocks already on screen at load never animate. */
   if (!reduceMQ.matches && 'IntersectionObserver' in window) {
-    var revealSel = '.section > .wrap > :not(ul, ol, .timeline-wrap, .about__grid, .culture), .section > .wrap > :is(ul, ol):not(.projects) > li, .timeline > li, .about__grid > *, .culture > *';
-    var revealEls = Array.prototype.slice.call(doc.querySelectorAll(revealSel)).filter(function (el) {
-      return !el.closest('.masthead');
-    });
-    revealEls.forEach(function (el) {
-      var r = el.getBoundingClientRect();
-      if (r.top > window.innerHeight || r.bottom < 0) {
-        el.classList.add('rv');
-        el.classList.toggle('rv--up', r.bottom < 0);
-      } else {
-        el._rvIn = true; // on screen at load: no entrance
-      }
-    });
-    // The stagger follows the order blocks come into view, per batch, in the
-    // scroll direction: top-down when they rise from below, bottom-up when
-    // they settle from above. A block arriving on its own has no delay, so
-    // scrolling back up never waits on a sibling that is still off screen.
+    var revealSel = '.section > .wrap > :not(ul, ol, .timeline-wrap, .about__layout, .awards__layout, .culture), .section > .wrap > :is(ul, ol) > li, .timeline > li, .about__layout > *, .awards__layout > *, .culture > *';
+    var revealEls = Array.prototype.slice.call(doc.querySelectorAll(revealSel)).filter(function (el) { return !el.closest('.masthead'); });
+    // The observer's first report says which blocks start below the screen
+    // (only those are hidden), so set-up needs no layout reads of its own.
+    var seen = new WeakSet();
     var revealIO = new IntersectionObserver(function (es) {
-      var vh = window.innerHeight;
-      var arriving = [];
-      es.forEach(function (e) {
+      es = es.filter(function (e) {
+        if (seen.has(e.target)) return true;
+        seen.add(e.target);
+        if (!e.isIntersecting && e.boundingClientRect.top >= window.innerHeight) { e.target.classList.add('rv'); return false; }
+        if (e.isIntersecting) revealIO.unobserve(e.target); // on screen at load: no entrance
+        return false;
+      });
+      var batch = es.filter(function (e) { return e.isIntersecting; });
+      batch.sort(function (a, b) { return a.boundingClientRect.top - b.boundingClientRect.top || a.boundingClientRect.left - b.boundingClientRect.left; });
+      batch.forEach(function (e, i) {
         var el = e.target;
-        if (e.isIntersecting) {
-          if (el._rvIn) return;
-          el._rvIn = true;
-          arriving.push(e);
-        } else {
-          el._rvIn = false;
-          clearTimeout(el._rvT);
-          el.style.setProperty('--rv-i', '0');
-          el.classList.remove('is-in');
-          el.classList.toggle('rv--up', e.boundingClientRect.top < 0);
-          el.classList.add('rv');
-        }
+        revealIO.unobserve(el);
+        el.style.setProperty('--rv-i', String(Math.min(4, i)));
+        el.classList.add('is-in');
+        setTimeout(function () { el.classList.remove('rv', 'is-in'); el.style.removeProperty('--rv-i'); }, 1100 + i * 80);
       });
-      var row = function (e) { return Math.round(e.boundingClientRect.top / 24); }; // same row within 24 px
-      var fromAbove = arriving.filter(function (e) { return e.boundingClientRect.top + e.boundingClientRect.height / 2 < vh / 2; });
-      var fromBelow = arriving.filter(function (e) { return fromAbove.indexOf(e) === -1; });
-      fromBelow.sort(function (a, b) { return row(a) - row(b) || a.boundingClientRect.left - b.boundingClientRect.left; });
-      fromAbove.sort(function (a, b) { return row(b) - row(a) || a.boundingClientRect.left - b.boundingClientRect.left; });
-      [fromBelow, fromAbove].forEach(function (batch) {
-        batch.forEach(function (e, i) {
-          var el = e.target;
-          el.style.setProperty('--rv-i', String(Math.min(5, i)));
-          el.classList.add('is-in');
-          clearTimeout(el._rvT);
-          el._rvT = setTimeout(function () { if (el._rvIn) el.classList.remove('rv', 'rv--up', 'is-in'); }, 1500 + i * 90);
-        });
-      });
-    }, { rootMargin: '-4% 0px -8% 0px' });
+    }, { rootMargin: '0px 0px -6% 0px' });
     revealEls.forEach(function (el) { revealIO.observe(el); });
-    // Blocks skipped by a jump (chapter link, #hash) still carry the side they
-    // started on; set the side they will actually enter from before they reach
-    // the screen, so scrolling back up they settle from above, not rise from below.
-    var sideIO = new IntersectionObserver(function (es) {
-      es.forEach(function (e) {
-        var el = e.target;
-        if (!e.isIntersecting || el._rvIn || !el.classList.contains('rv')) return;
-        el.classList.toggle('rv--up', e.boundingClientRect.top < 0);
-      });
-    }, { rootMargin: '60% 0px 60% 0px' });
-    revealEls.forEach(function (el) { sideIO.observe(el); });
+  }
 
-    /* Section headings come into focus word by word as they enter. */
-    var heads = doc.querySelectorAll('.section-head h2');
-    Array.prototype.forEach.call(heads, function (h) {
-      var words = h.textContent.trim().split(/\s+/);
-      h.textContent = '';
-      words.forEach(function (wd, i) {
-        var s = doc.createElement('span'); s.className = 'word'; s.style.setProperty('--w', String(i));
-        s.textContent = wd; h.appendChild(s); if (i < words.length - 1) h.appendChild(doc.createTextNode(' '));
-      });
-      h.classList.add('is-split');
+  /* ---- 10c. Research cards: one live motif at a time ------------------------
+         Fine pointers: the hovered or focused card. Touch: the card most in
+         view (one at a time). Others keep their still frame (home.css). */
+  var caps = Array.prototype.slice.call(doc.querySelectorAll('.cap'));
+  if (caps.length) {
+    var activeCap = null;
+    var setActive = function (cap) {
+      if (cap === activeCap) return;
+      if (activeCap) activeCap.classList.remove('is-active');
+      activeCap = cap;
+      if (cap) cap.classList.add('is-active');
+    };
+    caps.forEach(function (cap) {
+      cap.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') setActive(cap); });
+      cap.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse' && activeCap === cap) setActive(null); });
+      cap.addEventListener('focusin', function () { setActive(cap); });
+      cap.addEventListener('focusout', function (e) { if (!cap.contains(e.relatedTarget) && activeCap === cap) setActive(null); });
     });
-    var headIO = new IntersectionObserver(function (es) {
-      es.forEach(function (e) { e.target.classList.toggle('is-in', e.isIntersecting); });
-    }, { rootMargin: '0px 0px -12% 0px' });
-    Array.prototype.forEach.call(heads, function (h) { headIO.observe(h); });
+    if ('IntersectionObserver' in window) {
+      // Observed per card visual (cards can be taller than a phone screen).
+      var ratios = new Map();
+      var capIO = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { ratios.set(e.target.closest('.cap'), e.isIntersecting ? e.intersectionRatio : 0); });
+        if (fineMQ.matches) return;
+        var best = null; var bestR = 0.55;
+        ratios.forEach(function (r, cap) { if (r > bestR) { best = cap; bestR = r; } });
+        setActive(best);
+      }, { threshold: [0, 0.3, 0.55, 0.7, 0.85, 1] });
+      caps.forEach(function (cap) { capIO.observe(cap.querySelector('.cap__visual') || cap); });
+    }
+  }
+
+  /* ---- 10d. Awards: a highlight that follows the hovered or focused entry,
+         and the timeline line drawn once when the section comes into view. */
+  doc.querySelectorAll('.award-list').forEach(function (list) {
+    var mark = doc.createElement('li');
+    mark.className = 'award-list__mark';
+    mark.setAttribute('aria-hidden', 'true');
+    list.appendChild(mark);
+    var show = function (item) {
+      if (!item || item === mark) { list.classList.remove('has-mark'); return; }
+      mark.style.transform = 'translateY(' + item.offsetTop + 'px)';
+      mark.style.height = item.offsetHeight + 'px';
+      list.classList.add('has-mark');
+    };
+    list.addEventListener('pointerover', function (e) { show(e.target.closest('.award')); });
+    list.addEventListener('pointerleave', function () { show(null); });
+    list.addEventListener('focusin', function (e) { show(e.target.closest('.award')); });
+    list.addEventListener('focusout', function (e) { if (!list.contains(e.relatedTarget)) show(null); });
+  });
+  var awards = doc.getElementById('awards');
+  if (awards) {
+    if (!('IntersectionObserver' in window) || reduceMQ.matches) awards.classList.add('is-drawn');
+    else {
+      var drawIO = new IntersectionObserver(function (es) {
+        if (es.some(function (e) { return e.isIntersecting; })) { awards.classList.add('is-drawn'); drawIO.disconnect(); }
+      }, { rootMargin: '0px 0px -15% 0px' });
+      drawIO.observe(awards);
+    }
+  }
+
+  /* ---- 10e. Certificate preview: loads the PDF only when asked, where the
+         browser can show PDFs inline. Escape and the close button restore
+         focus to the link; elsewhere the link opens the PDF in a new tab. */
+  var certDialog = doc.getElementById('cert-dialog');
+  if (certDialog && typeof certDialog.showModal === 'function' && navigator.pdfViewerEnabled) {
+    var certFrame = certDialog.querySelector('iframe');
+    var certTitle = certDialog.querySelector('.video-dialog__title');
+    var certOpen = certDialog.querySelector('[data-cert-open]');
+    var certTrigger = null;
+    doc.addEventListener('click', function (e) {
+      var a = e.target.closest('a[data-cert-preview]');
+      if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+      e.preventDefault();
+      certTrigger = a;
+      var label = a.getAttribute('data-cert-title') || 'Certificate';
+      certTitle.textContent = label;
+      certFrame.title = label;
+      certOpen.href = a.href;
+      certFrame.src = a.href + '#view=FitH';
+      certDialog.showModal();
+    });
+    certDialog.querySelector('.video-dialog__close').addEventListener('click', function () { certDialog.close(); });
+    certDialog.addEventListener('click', function (e) { if (e.target === certDialog) certDialog.close(); });
+    certDialog.addEventListener('close', function () {
+      certFrame.src = 'about:blank';
+      if (certTrigger) { certTrigger.focus(); certTrigger = null; }
+    });
+  }
+
+  /* ---- 10f. Counts from the data files, so the page never drifts from them. */
+  var countEls = doc.querySelectorAll('[data-count]');
+  if (countEls.length && window.fetch) {
+    var fill = function (kind, n) {
+      Array.prototype.forEach.call(doc.querySelectorAll('[data-count="' + kind + '"]'), function (el) { el.textContent = String(n); });
+    };
+    var unique = function (list) {
+      var seen = {};
+      list.forEach(function (x) { if (x && x.slug) seen[x.slug] = 1; });
+      return Object.keys(seen).length;
+    };
+    var countFrom = function (file, kind, keys) {
+      fetch(file).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+        if (!d) return;
+        var list = Array.isArray(d) ? d : (keys.map(function (k) { return d[k]; }).filter(Array.isArray)[0] || []);
+        if (kind === 'publications') list = list.filter(function (p) { return p.status !== 'upcoming'; });
+        if (list.length) fill(kind, unique(list));
+      }).catch(function () {});
+    };
+    var runCounts = function () {
+      countFrom('data/projects.json', 'projects', ['projects', 'items']);
+      countFrom('data/publications.json', 'publications', ['publications', 'items']);
+    };
+    if (doc.readyState === 'complete') runCounts(); else window.addEventListener('load', runCounts, { once: true });
   }
 
   /* ---- 11. Theme toggle: same control and key as script.js on the other
