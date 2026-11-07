@@ -6,16 +6,16 @@
    timelines, project and publication cards) are satin panels in CSS instead,
    so long text never sits on a blurred, highlighted backdrop.
 
-   For each glass element a displacement map is drawn for its exact size and
-   corner radius: zero in the flat centre, rising only inside a thin bezel,
-   pointing along the edge normal. An SVG filter displaces the backdrop's
-   red, green and blue channels by slightly different amounts (dispersion),
-   so the rainbow split appears only where the "glass" curves.
+   For each glass size a lens map is built (the Glass Surface recipe, see
+   mapURL): an SVG filter bends the backdrop most at the rim and splits its
+   red, green and blue channels by slightly different amounts (dispersion).
 
    Chromium with a fine pointer applies it through backdrop-filter: url(#...).
-   Everything else gets the same tint, rim and highlight (liquid-glass.css);
-   the choice is made once at load and never changes mid-visit. Controls get
-   a slow jelly wobble on hover and a mild glitch on press. Reduced motion
+   Everything else gets the same frosted tint, rim and highlight
+   (liquid-glass.css); the choice is made once at load and never changes
+   mid-visit. Controls get a slow jelly wobble with a soft blur ripple on
+   hover and a mild glitch on press; on touch screens a press and a control's
+   arrival in view add a shine, a glint and a brief frost pulse. Reduced motion
    turns the wobble and glitch off; reduced transparency and forced colours
    make every surface solid (CSS).
    ========================================================================= */
@@ -55,64 +55,45 @@
   svg.appendChild(defs);
   var cache = {}; var count = 0;
 
-  // The map is drawn and PNG-encoded in a worker (OffscreenCanvas): encoding
-  // on the main thread cost ~20-30 ms per map, mostly while scrolling into a
-  // section. Without worker support it is drawn here.
-  function drawMap(d, W, H, rr, b) {
-    for (var y = 0; y < H; y++) {
-      for (var x = 0; x < W; x++) {
-        var px = x + 0.5 - W / 2; var py = y + 0.5 - H / 2;
-        var qx = Math.abs(px) - (W / 2 - rr); var qy = Math.abs(py) - (H / 2 - rr);
-        var ox = Math.max(qx, 0); var oy = Math.max(qy, 0);
-        var sdf = Math.sqrt(ox * ox + oy * oy) + Math.min(Math.max(qx, qy), 0) - rr; // < 0 inside
-        var dist = -sdf; var R = 128; var G = 128;
-        if (dist >= 0 && dist < b) {
-          var t = 1 - dist / b; var mag = t * t * (3 - 2 * t); // convex bezel, flat centre
-          var nx; var ny;
-          if (qx > 0 && qy > 0) { var l = Math.sqrt(qx * qx + qy * qy) || 1; nx = (qx / l) * Math.sign(px); ny = (qy / l) * Math.sign(py); }
-          else if (qx > qy) { nx = Math.sign(px); ny = 0; } else { nx = 0; ny = Math.sign(py); }
-          R = 128 - 127 * nx * mag; G = 128 - 127 * ny * mag; // bend toward the centre
-        }
-        var i = (y * W + x) * 4; d[i] = R; d[i + 1] = G; d[i + 2] = 128; d[i + 3] = 255;
-      }
-    }
+  /* Lens map and filter chain adapted from React Bits' Glass Surface
+     (reactbits.dev/components/glass-surface; MIT + Commons Clause,
+     Copyright (c) 2026 David Haz). The map is a small SVG: a horizontal red
+     ramp and a vertical blue ramp (difference-blended) give every point a
+     displacement direction, and a soft, almost neutral panel inset from the
+     edge keeps the centre calm, so the backdrop bends most at the rim. The
+     backdrop is displaced three times at slightly different strengths for a
+     red/green/blue split. Built as a string: no canvas, no worker. */
+  var GS = { distortion: -180, offsets: [0, 10, 20], borderWidth: 0.07, brightness: 50, opacity: 0.93, blur: 11 };
+  var mapN = 0;
+  function mapURL(w, h, r, k) {
+    var n = ++mapN; var edge = Math.min(w, h) * (GS.borderWidth * 0.5);
+    var blur = Math.max(4, GS.blur * k);
+    var svgText = '<svg width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg"><defs>' +
+      '<linearGradient id="r' + n + '" x1="100%" y1="0%" x2="0%" y2="0%"><stop offset="0%" stop-color="#0000"/><stop offset="100%" stop-color="red"/></linearGradient>' +
+      '<linearGradient id="b' + n + '" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#0000"/><stop offset="100%" stop-color="blue"/></linearGradient>' +
+      '<filter id="s' + n + '" filterUnits="userSpaceOnUse" x="0" y="0" width="' + w + '" height="' + h + '" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="' + blur + '"/></filter></defs>' +
+      '<rect width="' + w + '" height="' + h + '" fill="black"/>' +
+      '<rect width="' + w + '" height="' + h + '" rx="' + r + '" fill="url(#r' + n + ')"/>' +
+      '<rect width="' + w + '" height="' + h + '" rx="' + r + '" fill="url(#b' + n + ')" style="mix-blend-mode:difference"/>' +
+      '<rect x="' + edge + '" y="' + edge + '" width="' + (w - edge * 2) + '" height="' + (h - edge * 2) + '" rx="' + r + '" fill="hsl(0 0% ' + GS.brightness + '% / ' + GS.opacity + ')" filter="url(#s' + n + ')"/></svg>';
+    return 'data:image/svg+xml,' + encodeURIComponent(svgText);
   }
-  // Maps are drawn off the main thread. The worker only lives while it has
-  // jobs (page load, resizes) and is shut down after 3 s idle to free its heap.
-  var workerURL = null; var worker = null; var jobs = {}; var jobN = 0; var pending = 0; var idleT = 0;
-  try {
-    if (canRefract && typeof OffscreenCanvas === 'function' && OffscreenCanvas.prototype.convertToBlob) {
-      var src = 'var drawMap = ' + drawMap.toString() + ';\n' +
-        'onmessage = function (e) { var m = e.data; var c = new OffscreenCanvas(m.W, m.H); var ctx = c.getContext("2d");' +
-        ' var img = ctx.createImageData(m.W, m.H); drawMap(img.data, m.W, m.H, m.rr, m.b); ctx.putImageData(img, 0, 0);' +
-        ' c.convertToBlob({ type: "image/png" }).then(function (blob) { postMessage({ id: m.id, blob: blob }); }); };';
-      workerURL = URL.createObjectURL(new Blob([src], { type: 'text/javascript' }));
-    }
-  } catch (e) { workerURL = null; }
-  function getWorker() {
-    if (worker || !workerURL) return worker;
-    try {
-      worker = new Worker(workerURL);
-      worker.onmessage = function (e) {
-        var done = jobs[e.data.id]; delete jobs[e.data.id]; pending--;
-        if (done) done(URL.createObjectURL(e.data.blob));
-        if (!pending) idleT = setTimeout(function () { if (!pending && worker) { worker.terminate(); worker = null; } }, 3000);
+
+  // The SVG map is swapped for a PNG of itself once the browser is idle, so
+  // the filter samples a cached bitmap instead of re-rendering vector art.
+  function rasterise(feImage, w, h) {
+    var run = function () {
+      var img = new Image();
+      img.onload = function () {
+        try {
+          var c = doc.createElement('canvas'); c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          c.toBlob(function (blob) { if (blob) feImage.setAttribute('href', URL.createObjectURL(blob)); }, 'image/png');
+        } catch (e) { /* keep the SVG map */ }
       };
-      worker.onerror = function () { worker = null; workerURL = null; };
-    } catch (e) { worker = null; workerURL = null; }
-    return worker;
-  }
-  function mapURL(w, h, r, bezel, done) {
-    var s = 0.5; // half resolution is plenty for a smooth lens profile
-    var W = Math.max(8, Math.round(w * s)); var H = Math.max(8, Math.round(h * s));
-    var rr = Math.min(r * s, W / 2, H / 2); var b = Math.max(2, bezel * s);
-    var wk = getWorker();
-    if (wk) { clearTimeout(idleT); var id = ++jobN; jobs[id] = done; pending++; wk.postMessage({ id: id, W: W, H: H, rr: rr, b: b }); return; }
-    var c = doc.createElement('canvas'); c.width = W; c.height = H;
-    var ctx = c.getContext('2d'); var img = ctx.createImageData(W, H);
-    drawMap(img.data, W, H, rr, b);
-    ctx.putImageData(img, 0, 0);
-    done(c.toDataURL());
+      img.src = feImage.getAttribute('href');
+    };
+    (window.requestIdleCallback || function (fn) { return setTimeout(fn, 200); })(run, { timeout: 2000 });
   }
 
   function filterFor(w, h, r) {
@@ -120,31 +101,26 @@
     var key = bw + 'x' + bh + 'r' + br;
     if (cache[key]) return cache[key];
     var id = 'lg-' + (++count);
-    var bezel = Math.min(24, Math.max(8, Math.min(bw, bh) * 0.22));
-    var strength = Math.min(46, Math.max(14, Math.min(bw, bh) * 0.32));
+    // Glass Surface is tuned for ~200 x 80 panels; small controls bend less.
+    var k = Math.max(0.3, Math.min(1, Math.min(bw, bh) / 80));
+    var scales = GS.offsets.map(function (o) { return (GS.distortion + o) * k; });
     var ns = svg.namespaceURI;
     var f = doc.createElementNS(ns, 'filter');
-    f.setAttribute('id', id); f.setAttribute('x', '0'); f.setAttribute('y', '0'); f.setAttribute('width', '100%'); f.setAttribute('height', '100%');
+    f.setAttribute('id', id); f.setAttribute('x', '0%'); f.setAttribute('y', '0%'); f.setAttribute('width', '100%'); f.setAttribute('height', '100%');
     f.setAttribute('color-interpolation-filters', 'sRGB');
+    var chan = function (scale, row, res) {
+      return '<feDisplacementMap in="SourceGraphic" in2="map" scale="' + scale.toFixed(1) + '" xChannelSelector="R" yChannelSelector="G" result="d' + res + '"/>' +
+        '<feColorMatrix in="d' + res + '" type="matrix" values="' + row + '" result="' + res + '"/>';
+    };
     f.innerHTML =
-      '<feGaussianBlur in="SourceGraphic" stdDeviation="2.4" result="blur"/>' +
-      '<feImage x="0" y="0" width="' + bw + '" height="' + bh + '" preserveAspectRatio="none" result="map"/>' +
-      '<feDisplacementMap in="blur" in2="map" scale="' + strength + '" xChannelSelector="R" yChannelSelector="G" result="dr"/>' +
-      '<feColorMatrix in="dr" type="matrix" values="1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0" result="r"/>' +
-      '<feDisplacementMap in="blur" in2="map" scale="' + (strength * 0.88) + '" xChannelSelector="R" yChannelSelector="G" result="dg"/>' +
-      '<feColorMatrix in="dg" type="matrix" values="0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0" result="g"/>' +
-      '<feDisplacementMap in="blur" in2="map" scale="' + (strength * 0.76) + '" xChannelSelector="R" yChannelSelector="G" result="db"/>' +
-      '<feColorMatrix in="db" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0" result="b"/>' +
-      '<feBlend in="r" in2="g" mode="screen" result="rg"/><feBlend in="rg" in2="b" mode="screen"/>';
+      '<feImage x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="map" href="' + mapURL(bw, bh, br, k) + '"/>' +
+      chan(scales[0], '1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0', 'red') +
+      chan(scales[1], '0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0', 'green') +
+      chan(scales[2], '0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0', 'blue') +
+      '<feBlend in="red" in2="green" mode="screen" result="rg"/><feBlend in="rg" in2="blue" mode="screen"/>';
     defs.appendChild(f);
-    var entry = cache[key] = { id: id, el: f, strength: strength, ready: false, waiting: [] };
-    mapURL(bw, bh, br, bezel, function (url) {
-      f.querySelector('feImage').setAttribute('href', url);
-      entry.ready = true;
-      entry.waiting.forEach(function (el) { if (el.__lgFilter === entry) useFilter(el, entry); });
-      entry.waiting = [];
-    });
-    return entry;
+    rasterise(f.querySelector('feImage'), bw, bh);
+    return (cache[key] = { id: id, el: f, scales: scales });
   }
   function useFilter(el, f) {
     el.style.setProperty('--lg-filter', 'url(#' + f.id + ')');
@@ -168,12 +144,11 @@
   var toUse = []; var useRaf = 0;
   function refit(el, w, h) {
     if (!canRefract || lessGlass.matches) { el.style.removeProperty('--lg-filter'); el.classList.remove('lg--refract'); return; }
-    if (!el.__lgNear) return; // frosted until it nears the viewport: maps are drawn on the main thread
+    if (!el.__lgNear) return; // frosted until it nears the viewport: fewer live filters
     if (w == null) { var r = el.getBoundingClientRect(); w = r.width; h = r.height; }
     if (w < 8 || h < 8) return;
     var f = filterFor(w, h, Math.min(el.__lgRad || 0, h / 2));
     el.__lgFilter = f;
-    if (!f.ready) { f.waiting.push(el); return; } // stays frosted until its map is encoded
     toUse.push(el);
     if (!useRaf) useRaf = requestAnimationFrame(function () {
       useRaf = 0;
@@ -220,6 +195,7 @@
       apply(el, radii[i]);
       if (canRefract && ro) ro.observe(el); // sizes and proximity only matter for lens maps
       if (canRefract && nearIO) nearIO.observe(el);
+      if (glintIO) glintIO.observe(el);
       if (viewIO) viewIO.observe(el);
     });
   }
@@ -269,7 +245,7 @@
       if (f.pulse !== t0) return; // a newer press took over
       var t = now - t0;
       var a = t < 120 ? 0.7 * (t / 120) : 0.7 * Math.pow(Math.max(0, 1 - (t - 120) / 520), 3);
-      Array.prototype.forEach.call(maps, function (m, i) { m.setAttribute('scale', (f.strength * (1 - i * 0.12) * (1 + a)).toFixed(2)); });
+      Array.prototype.forEach.call(maps, function (m, i) { m.setAttribute('scale', (f.scales[i] * (1 + a)).toFixed(2)); });
       if (t < 640) requestAnimationFrame(step);
     })(t0);
   }
@@ -310,8 +286,22 @@
     }, { passive: true });
   });
 
-  /* The hero name glitches once after its reveal on touch screens (no
-     hover to trigger it), and again on tap. */
+  /* Touch screens have no hover, so glass answers to scrolling instead: a
+     control gliding into view catches a shine sweep and a brief glint, once
+     per entry. The hero name glitches once after its reveal, and on tap. */
+  var glintIO = null;
+  if (!fineMQ.matches && !reduceMQ.matches && 'IntersectionObserver' in window) {
+    glintIO = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        var el = e.target;
+        if (!e.isIntersecting) { el.__glinted = false; return; }
+        if (el.__glinted) return;
+        el.__glinted = true;
+        play(el, 'lg-shine', 1400);
+        play(el, 'lg-glint', 900);
+      });
+    }, { rootMargin: '-18% 0px -18% 0px' });
+  }
   var title = doc.querySelector('.hero__title');
   if (title && !fineMQ.matches && !reduceMQ.matches) {
     setTimeout(function () { play(title, 'lg-name-glitch', 560); }, 2900);
@@ -324,7 +314,16 @@
     scan();
     // Widgets and some page parts are injected after load (palette, theme toggle, chat).
     var pending = false;
-    new MutationObserver(function () { if (!pending) { pending = true; requestAnimationFrame(function () { pending = false; scan(); }); } }).observe(doc.body, { childList: true, subtree: true });
+    var relevant = function (n) { return n.nodeType === 1 && (n.matches(SELECTOR) || !!n.querySelector(SELECTOR)); };
+    new MutationObserver(function (records) {
+      if (pending) return;
+      for (var i = 0; i < records.length; i++) {
+        var added = records[i].addedNodes;
+        for (var j = 0; j < added.length; j++) {
+          if (relevant(added[j])) { pending = true; requestAnimationFrame(function () { pending = false; scan(); }); return; }
+        }
+      }
+    }).observe(doc.body, { childList: true, subtree: true });
     lessGlass.addEventListener('change', function () { Array.prototype.forEach.call(doc.querySelectorAll('.lg'), function (el) { refit(el); }); });
   }
   if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', start); else start();

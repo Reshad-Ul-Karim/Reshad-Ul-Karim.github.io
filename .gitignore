@@ -7,3 +7,9 @@ LinkedIn_Content/
 
 # Local browser-test captures
 .playwright-mcp/
+
+# Private documents kept locally, never published (e.g. the TA appointment letter)
+private/
+
+# Islands build tooling (React Bits components; the built output in assets/islands/ is committed)
+islands/node_modules/

@@ -1,0 +1,1 @@
+import{p as r,n as u,t as e}from"./compat.module-DdK5-UJK.js";function o(n){return{render:function(t){u(t,n)},unmount:function(){r(n)}}}function f(n,t){return e(t,n),o(n)}const c={createRoot:o,hydrateRoot:f};export{o as createRoot,c as default,f as hydrateRoot};

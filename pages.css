@@ -61,8 +61,9 @@ html[data-v2] .nav-logo a {
   display: inline-flex; align-items: center; gap: 10px; min-height: 44px; text-decoration: none;
 }
 html[data-v2] .nav-logo a::before {
-  content: ""; width: 30px; height: 30px; border-radius: 10px;
-  background: linear-gradient(145deg, var(--hl), var(--mark-mid) 55%, var(--primary));
+  content: ""; width: 32px; height: 32px; border-radius: 50%; flex: none;
+  background: url("assets/brand/avatar-96.webp") center / cover;
+  box-shadow: 0 0 0 1.5px rgba(var(--hl-rgb), 0.55);
 }
 html[data-v2] .nav-link {
   display: inline-flex; align-items: center; min-height: 44px; padding: 0 13px !important;

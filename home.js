@@ -5,8 +5,9 @@
    still has every link, the nav stays a plain list of links, videos open on
    YouTube, and the portrait is a normal image.
 
-   Owns: nav disclosure + scrollspy, header surface tint, cursor ring, press
-   feedback, the video and certificate dialogs, the contact form, the citation
+   Owns: nav disclosure + scrollspy (also announced as 'spychange' for the
+   Gooey Nav island), header surface tint, press feedback, the video and
+   certificate dialogs, the contact form, the citation
    and data-driven counts, block reveals, research-card motifs and the awards
    highlight. The hero 3D lives in home-scene.js, the hero backdrop in
    hero-motion.js, the chat widget in assistant-widget.js.
@@ -18,31 +19,7 @@
   var root = doc.documentElement;
   var reduceMQ = window.matchMedia('(prefers-reduced-motion: reduce)');
   var fineMQ = window.matchMedia('(hover: hover) and (pointer: fine)');
-  var forcedMQ = window.matchMedia('(forced-colors: active)');
   var mobileNavMQ = window.matchMedia('(max-width: 900px)');
-
-  /* ---- 0. Name reveal: characters come into focus one by one ------------- */
-  var title = doc.querySelector('.hero__title');
-  if (title && !reduceMQ.matches) {
-    var label = title.textContent.replace(/\s+/g, ' ').trim();
-    title.setAttribute('aria-label', label); // screen readers get the name as one word group
-    var order = 0;
-    Array.prototype.forEach.call(title.querySelectorAll(':scope > span'), function (line) {
-      var text = line.textContent;
-      line.textContent = '';
-      line.setAttribute('aria-hidden', 'true');
-      for (var i = 0; i < text.length; i++) {
-        var ch = doc.createElement('span');
-        ch.className = 'char';
-        ch.textContent = text[i] === ' ' ? '\u00a0' : text[i];
-        // Settle out of order, starting within ~1.2 s.
-        ch.style.setProperty('--d', String(Math.round(200 + ((order * 37) % 11) * 95)));
-        line.appendChild(ch);
-        order++;
-      }
-    });
-  }
-  if (title) title.classList.add('is-split');
 
   /* ---- 1. Navigation: disclosure on narrow screens ---------------------- */
   var header = doc.querySelector('[data-header]');
@@ -123,6 +100,7 @@
         if (a === linkFor[next]) a.setAttribute('aria-current', 'location');
         else a.removeAttribute('aria-current');
       });
+      doc.dispatchEvent(new CustomEvent('spychange', { detail: { id: next } }));
     };
     window.addEventListener('scroll', function () {
       if (!spyTicking) { spyTicking = true; requestAnimationFrame(updateSpy); }
@@ -170,66 +148,6 @@
     el.addEventListener('pointercancel', release);
     el.addEventListener('pointerleave', release);
   }, { passive: true });
-
-  /* ---- 5. Cursor: crisp SVG cursor + damped ring (fine pointers only) ----- */
-  var ring = null;
-  var ringState = { x: -100, y: -100, tx: -100, ty: -100, raf: 0 };
-
-  function cursorAllowed() {
-    return fineMQ.matches && !reduceMQ.matches && !forcedMQ.matches;
-  }
-  function ringFrame() {
-    ringState.raf = 0;
-    ringState.x += (ringState.tx - ringState.x) * 0.28;
-    ringState.y += (ringState.ty - ringState.y) * 0.28;
-    ring.style.transform = 'translate3d(' + ringState.x.toFixed(1) + 'px,' + ringState.y.toFixed(1) + 'px,0)';
-    if (Math.abs(ringState.tx - ringState.x) > 0.1 || Math.abs(ringState.ty - ringState.y) > 0.1) {
-      ringState.raf = requestAnimationFrame(ringFrame);
-    }
-  }
-  function onCursorMove(e) {
-    if (e.pointerType !== 'mouse') return;
-    if (!ring.classList.contains('is-visible')) {
-      ringState.x = e.clientX; ringState.y = e.clientY;
-      ring.classList.add('is-visible');
-    }
-    ringState.tx = e.clientX; ringState.ty = e.clientY;
-    var t = e.target;
-    var action = t.closest && t.closest('a, button, summary, label[for], [role="button"]');
-    var field = t.closest && t.closest('input, textarea, select');
-    var text = !action && !field && t.closest && t.closest('p, h1, h2, h3, dd, dt, blockquote, figcaption');
-    ring.classList.toggle('is-action', !!action);
-    ring.classList.toggle('is-text', !!(text || field));
-    ring.classList.toggle('on-dark', !!(t.closest && t.closest('[data-surface="dark"], .site-footer, .feature')));
-    if (!ringState.raf) ringState.raf = requestAnimationFrame(ringFrame);
-  }
-  function onCursorDown() { ring.classList.add('is-down'); }
-  function onCursorUp() { ring.classList.remove('is-down'); }
-  function onCursorLeave() { ring.classList.remove('is-visible'); }
-
-  function setupCursor() {
-    var on = cursorAllowed();
-    root.classList.toggle('has-cursor', fineMQ.matches && !forcedMQ.matches);
-    if (on && !ring) {
-      ring = doc.createElement('div');
-      ring.className = 'cursor-ring';
-      ring.setAttribute('aria-hidden', 'true');
-      doc.body.appendChild(ring);
-      doc.addEventListener('pointermove', onCursorMove, { passive: true });
-      doc.addEventListener('pointerdown', onCursorDown, { passive: true });
-      doc.addEventListener('pointerup', onCursorUp, { passive: true });
-      doc.documentElement.addEventListener('pointerleave', onCursorLeave);
-    } else if (!on && ring) {
-      doc.removeEventListener('pointermove', onCursorMove);
-      doc.removeEventListener('pointerdown', onCursorDown);
-      doc.removeEventListener('pointerup', onCursorUp);
-      doc.documentElement.removeEventListener('pointerleave', onCursorLeave);
-      cancelAnimationFrame(ringState.raf); ringState.raf = 0;
-      ring.remove(); ring = null;
-    }
-  }
-  setupCursor();
-  [fineMQ, reduceMQ, forcedMQ].forEach(function (mq) { mq.addEventListener('change', setupCursor); });
 
   /* ---- 6. Video dialog: [data-video] links open an embedded player -------- */
   var dialog = doc.getElementById('video-dialog');
@@ -434,31 +352,39 @@
     }
   }
 
-  /* ---- 10e. Certificate preview: loads the PDF only when asked, where the
-         browser can show PDFs inline. Escape and the close button restore
-         focus to the link; elsewhere the link opens the PDF in a new tab. */
+  /* ---- 10e. Certificate and photo preview: files load only when asked.
+         Photos always open here; PDFs only where the browser can show them
+         inline (elsewhere the link opens the PDF in a new tab). Escape and the
+         close button restore focus to the link. */
   var certDialog = doc.getElementById('cert-dialog');
-  if (certDialog && typeof certDialog.showModal === 'function' && navigator.pdfViewerEnabled) {
+  if (certDialog && typeof certDialog.showModal === 'function') {
     var certFrame = certDialog.querySelector('iframe');
+    var certImg = certDialog.querySelector('.cert-dialog__img');
     var certTitle = certDialog.querySelector('.video-dialog__title');
     var certOpen = certDialog.querySelector('[data-cert-open]');
     var certTrigger = null;
     doc.addEventListener('click', function (e) {
-      var a = e.target.closest('a[data-cert-preview]');
+      var a = e.target.closest('a[data-cert-preview], a[data-lightbox]');
       if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+      var photo = a.hasAttribute('data-lightbox');
+      if (!photo && !navigator.pdfViewerEnabled) return;
       e.preventDefault();
       certTrigger = a;
-      var label = a.getAttribute('data-cert-title') || 'Certificate';
+      var label = a.getAttribute('data-cert-title') || (photo ? 'Photo' : 'Certificate');
       certTitle.textContent = label;
-      certFrame.title = label;
       certOpen.href = a.href;
-      certFrame.src = a.href + '#view=FitH';
+      certDialog.classList.toggle('is-photo', photo);
+      certFrame.hidden = photo;
+      certImg.hidden = !photo;
+      if (photo) { certImg.alt = label; certImg.src = a.href; }
+      else { certFrame.title = label; certFrame.src = a.href + '#view=FitH'; }
       certDialog.showModal();
     });
     certDialog.querySelector('.video-dialog__close').addEventListener('click', function () { certDialog.close(); });
     certDialog.addEventListener('click', function (e) { if (e.target === certDialog) certDialog.close(); });
     certDialog.addEventListener('close', function () {
       certFrame.src = 'about:blank';
+      certImg.removeAttribute('src');
       if (certTrigger) { certTrigger.focus(); certTrigger = null; }
     });
   }
