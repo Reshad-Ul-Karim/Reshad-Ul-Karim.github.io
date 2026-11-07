@@ -15,7 +15,7 @@ const ISLANDS = {
   'gooey-nav': { when: 'idle', allow: () => media.desktop(), load: () => import('./islands/NavIsland.jsx') },
   'tech-text': { when: 'intent', load: () => import('./islands/NameIsland.jsx') },
   scanner: { when: 'idle', allow: () => !media.saveData(), load: () => import('./islands/ScannerIsland.jsx') },
-  'splash-cursor': { when: 'idle', allow: () => media.fine() && !media.reduced() && !media.lite() && !media.saveData(), load: () => import('./islands/CursorIsland.jsx') },
+  'splash-cursor': { when: 'idle', allow: () => !media.reduced() && !media.lite() && !media.saveData(), load: () => import('./islands/CursorIsland.jsx') },
   'profile-card': { when: 'visible', load: () => import('./islands/ProfileIsland.jsx') },
   'card-swap': { when: 'idle', load: () => import('./islands/ProjectsIsland.jsx') },
   'flying-button': { when: 'near', load: () => import('./islands/AssistantButtonIsland.jsx') }

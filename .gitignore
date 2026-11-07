@@ -13,3 +13,8 @@ private/
 
 # Islands build tooling (React Bits components; the built output in assets/islands/ is committed)
 islands/node_modules/
+
+# Unused source photos (kept locally, not published)
+assets/IMG_9983.jpeg
+assets/portrait/IMG_8190.PNG
+assets/portrait/reshad-cutout-*

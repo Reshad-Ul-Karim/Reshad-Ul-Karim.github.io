@@ -38,12 +38,12 @@
     '.theme-toggle', '#accent-switcher .accent-trigger', '#accent-switcher .accent-tray'
   ].join(',');
 
-  // Touch screens skip refraction: at phone sizes the bent rim barely shows,
-  // and the displacement filter is the costliest per-frame effect on mobile
-  // GPUs. The lite tier (perf-tier.js) never refracts either.
+  // Refraction wherever the browser can apply an SVG filter to the backdrop
+  // (Chromium, desktop and Android); Safari and Firefox keep the frosted
+  // Glass Surface fallback. The lite tier (perf-tier.js) never refracts.
   var canRefract = (function () {
     if (root.classList.contains('perf-lite')) return false;
-    try { return fineMQ.matches && CSS.supports('backdrop-filter', 'url(#a)') && /Chrome|Chromium|Edg\//.test(navigator.userAgent) && !/Firefox/.test(navigator.userAgent); } catch (e) { return false; }
+    try { return CSS.supports('backdrop-filter', 'url(#a)') && /Chrome|Chromium|Edg\//.test(navigator.userAgent) && !/Firefox/.test(navigator.userAgent); } catch (e) { return false; }
   })();
 
   // One hidden <svg> hosts every filter; filters are shared by size bucket.
@@ -143,7 +143,10 @@
   }
   var toUse = []; var useRaf = 0;
   function refit(el, w, h) {
-    if (!canRefract || lessGlass.matches) { el.style.removeProperty('--lg-filter'); el.classList.remove('lg--refract'); return; }
+    // On touch screens the chapter pill floats over body text, which the
+    // colour-split lens smears into rainbow ghosts: it stays frosted there.
+    var frosted = !canRefract || lessGlass.matches || (!fineMQ.matches && el.classList.contains('chapters'));
+    if (frosted) { el.style.removeProperty('--lg-filter'); el.classList.remove('lg--refract'); return; }
     if (!el.__lgNear) return; // frosted until it nears the viewport: fewer live filters
     if (w == null) { var r = el.getBoundingClientRect(); w = r.width; h = r.height; }
     if (w < 8 || h < 8) return;

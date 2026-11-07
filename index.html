@@ -94,7 +94,7 @@
          GSAP, Lenis, vanilla-tilt, the old Three.js layers) is still used by the
          project, publication and 404 pages, but not here. -->
     <!-- css-bundle: tokens.css home.css liquid-glass.css chapter-scroll.css glyphs.css accent-theme.css assistant-widget.css -->
-    <link rel="stylesheet" href="bundle-0b3506984b.css">
+    <link rel="stylesheet" href="bundle-3b6f249956.css">
     <!-- Shared with every page: the accent switcher (palette button) and the chat
          widget keep their original look and behaviour. -->
     <!-- The chat widget's fonts load with it, after the page has loaded and gone
@@ -102,14 +102,14 @@
          (home.css, section 19), so this page needs no icon font. -->
 
     <script src="home.js?v=3.2.0" defer></script>
-    <script src="liquid-glass.js?v=3.0.3" defer></script>
+    <script src="liquid-glass.js?v=3.1.0" defer></script>
     <script src="chapter-scroll.js?v=2.0.2" defer></script>
     <script src="hero-motion.js?v=2.0.0" defer></script>
     <script src="accent-theme.js?v=1.3.1" defer></script>
     <!-- React islands (islands/, built into assets/islands/): React Bits components
          mounted into [data-island] placeholders after load. Each placeholder holds
          working static HTML, so the page is complete without them. -->
-    <script type="module" src="assets/islands/islands.js?v=9499c20fd4"></script>
+    <script type="module" src="assets/islands/islands.js?v=4d568b2591"></script>
     <script>/* chat widget and its fonts: fetched after load, off the start-up path */addEventListener("load",function(){(window.requestIdleCallback||setTimeout)(function(){var l=document.createElement("link");l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap";document.head.appendChild(l);var s=document.createElement("script");s.src="assistant-widget.js?v=1.1.0";document.head.appendChild(s);},{timeout:3000});});</script>
     <!-- The hero portrait's 3D (one renderer, drawn inside the hero only). Starts
          once the page has loaded and gone idle; the static portrait stays for no

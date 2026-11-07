@@ -433,11 +433,29 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.18e
   .js .nav__links .nav__cta { margin: 6px 0 0; justify-content: center; border-radius: var(--capsule); }
   @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
     .js .nav__links {
-      -webkit-backdrop-filter: blur(24px) saturate(170%);
-      backdrop-filter: blur(24px) saturate(170%);
+      -webkit-backdrop-filter: blur(18px) saturate(1.6) brightness(1.05);
+      backdrop-filter: blur(18px) saturate(1.6) brightness(1.05);
     }
-    .js .site-header:not([data-surface="light"]) .nav__links { --glass-bg: rgba(var(--hero-rgb), 0.92); }
-    .js .site-header[data-surface="light"] .nav__links { --glass-bg: var(--glass-light-panel); }
+    /* The menu panel is the same Glass Surface glass as the bar (React Bits):
+       tinted just enough for its links over moving content. */
+    .js .site-header:not([data-surface="light"]) .nav__links { --glass-bg: rgba(var(--hero-rgb), 0.62); }
+    .js .site-header[data-surface="light"] .nav__links { --glass-bg: color-mix(in srgb, var(--glass-light-panel) 68%, transparent); }
+    /* A backdrop filter on the bar would confine the panel's blur to the bar
+       itself, so while the menu is open the bar trades its glass for tint. */
+    html.js .site-header .lg.nav.is-open {
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+      background: rgba(var(--hero-rgb), 0.86) !important;
+    }
+    html.js .site-header[data-surface="light"] .lg.nav.is-open { background: var(--glass-light-panel) !important; }
+    .js .nav__links {
+      border-color: transparent;
+      box-shadow:
+        inset 0 0 2px 1px var(--lg-line, rgba(255, 255, 255, 0.35)),
+        inset 0 0 10px 4px var(--lg-glow, rgba(255, 255, 255, 0.15)),
+        inset 0 1px 0 0 var(--lg-lip, rgba(255, 255, 255, 0.3)),
+        0 24px 50px -20px rgba(0, 0, 0, 0.5);
+    }
   }
 
   /* Without JS: keep every link reachable as a scrollable row. */
