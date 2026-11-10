@@ -12,7 +12,7 @@ export default function ProfileIsland() {
   const theme = useTheme();
   return (
     <ProfileCard
-      avatarUrl={abs('assets/portrait/reshad-headshot-720.webp')}
+      avatarUrl={abs('assets/portrait/reshad-headshot-720.webp?v=2')}
       miniAvatarUrl={abs('assets/brand/avatar-96.webp')}
       iconUrl={abs('assets/brand/holo-pattern.svg')}
       name="Reshad Ul Karim"

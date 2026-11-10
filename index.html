@@ -109,7 +109,7 @@
     <!-- React islands (islands/, built into assets/islands/): React Bits components
          mounted into [data-island] placeholders after load. Each placeholder holds
          working static HTML, so the page is complete without them. -->
-    <script type="module" src="assets/islands/islands.js?v=4d568b2591"></script>
+    <script type="module" src="assets/islands/islands.js?v=6832825a01"></script>
     <script>/* chat widget and its fonts: fetched after load, off the start-up path */addEventListener("load",function(){(window.requestIdleCallback||setTimeout)(function(){var l=document.createElement("link");l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap";document.head.appendChild(l);var s=document.createElement("script");s.src="assistant-widget.js?v=1.1.0";document.head.appendChild(s);},{timeout:3000});});</script>
     <!-- The hero portrait's 3D (one renderer, drawn inside the hero only). Starts
          once the page has loaded and gone idle; the static portrait stays for no
@@ -222,10 +222,10 @@
                     <div class="gl-window hero__gl" data-gl="hero" aria-hidden="true"></div>
                     <picture>
                         <source type="image/webp"
-                                srcset="assets/portrait/reshad-headshot-480.webp 480w, assets/portrait/reshad-headshot-720.webp 720w, assets/portrait/reshad-headshot-1000.webp 1000w"
+                                srcset="assets/portrait/reshad-headshot-480.webp?v=2 480w, assets/portrait/reshad-headshot-720.webp?v=2 720w, assets/portrait/reshad-headshot-819.webp?v=2 819w"
                                 sizes="(min-width: 960px) 34vw, (orientation: landscape) 34vw, 80vw">
-                        <img class="hero__portrait" src="assets/portrait/reshad-headshot-720.png" width="1000" height="1178"
-                             alt="Reshad Ul Karim, smiling, in a navy blazer and glasses" fetchpriority="high" decoding="async">
+                        <img class="hero__portrait" src="assets/portrait/reshad-headshot-720.png?v=2" width="819" height="965"
+                             alt="Reshad Ul Karim, smiling, in a navy suit, tie and glasses" fetchpriority="high" decoding="async">
                     </picture>
                 </div>
             </div>
@@ -245,7 +245,7 @@
             <div class="wrap about__layout">
                 <div class="about__card" data-island="profile-card">
                     <figure class="about__card-static">
-                        <img src="assets/portrait/reshad-headshot-720.webp" alt="Reshad Ul Karim" width="720" height="848" loading="lazy" decoding="async">
+                        <img src="assets/portrait/reshad-headshot-720.webp?v=2" alt="Reshad Ul Karim" width="720" height="848" loading="lazy" decoding="async">
                         <figcaption><strong>Reshad Ul Karim</strong><span>AI/ML Engineer &amp; Researcher</span></figcaption>
                     </figure>
                 </div>
