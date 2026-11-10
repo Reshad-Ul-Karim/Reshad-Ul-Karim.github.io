@@ -1288,8 +1288,9 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.18e
   box-shadow: var(--surface-edge), var(--surface-shadow);
 }
 .about__card[data-island-ready] .about__card-static { display: none; }
-.about__card-static img { position: absolute; inset: auto 0 0; width: 100%; height: 88%; object-fit: contain; object-position: bottom; }
-.about__card-static figcaption { position: absolute; left: 18px; top: 16px; display: grid; gap: 2px; color: var(--hero-ink); }
+.about__card-static img { position: absolute; inset: auto 0 0; width: 100%; height: 76%; object-fit: contain; object-position: bottom; }
+.about__card-static figcaption { position: absolute; inset: 26px 18px auto; display: grid; gap: 2px; text-align: center; color: var(--hero-ink); }
+.about__card .profile-card__tile { background: radial-gradient(80% 55% at 50% 100%, rgba(var(--hl-rgb), 0.28), transparent 72%), var(--pc-backdrop); }
 .about__card-static figcaption span { font-size: 0.86rem; color: var(--hero-ink-2); }
 .about__intro .section-head { margin-bottom: clamp(18px, 2vw, 26px); }
 .about__lead {

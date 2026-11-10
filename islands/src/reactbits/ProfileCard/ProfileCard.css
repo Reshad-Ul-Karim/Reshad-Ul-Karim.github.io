@@ -47,7 +47,6 @@
 
 .profile-card__sheen,
 .profile-card__holo,
-.profile-card__scrim,
 .profile-card__tile-rim,
 .profile-card__glare,
 .profile-card__shade,
@@ -106,7 +105,7 @@
   mix-blend-mode: var(--pc-blend);
   filter: brightness(calc(0.66 + 0.19 * var(--pc-active))) contrast(calc(1.33 + 0.17 * var(--pc-active)))
     saturate(calc(0.33 + 0.17 * var(--pc-active))) var(--pc-holo-filter);
-  opacity: calc(var(--pc-holo) * var(--pc-holo-gain) * (0.5 + 0.5 * var(--pc-active)));
+  opacity: calc(var(--pc-holo) * var(--pc-holo-gain) * var(--pc-active));
   -webkit-mask-image: var(--pc-pattern);
   -webkit-mask-size: var(--pc-pattern-size);
   -webkit-mask-position: calc(50% - var(--pc-shift-x) * 1.5) calc(65% - var(--pc-shift-y) * 1.5);
@@ -166,45 +165,36 @@
   filter: brightness(0.8) contrast(1.5);
 }
 
+/* A cutout standing in the lower part of the tile, below the name, with room
+   above the head; it overhangs the bottom edge so parallax never shows a gap. */
 .profile-card__photo {
   position: absolute;
-  inset: calc(var(--pc-parallax) * -1);
-  width: calc(100% + var(--pc-parallax) * 2);
-  height: calc(100% + var(--pc-parallax) * 2);
-  object-fit: cover;
-  object-position: center bottom;
-  transform: translate3d(var(--pc-shift-x), var(--pc-shift-y), 0);
+  left: 50%;
+  bottom: calc(var(--pc-parallax) * -1);
+  width: auto;
+  max-width: none;
+  height: calc(80% + var(--pc-parallax));
+  transform: translate3d(calc(-50% + var(--pc-shift-x)), var(--pc-shift-y), 0);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
   pointer-events: none;
   user-select: none;
   -webkit-user-select: none;
 }
 
-.profile-card__scrim {
-  background: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.6) 0%,
-    rgba(0, 0, 0, 0.57) 6%,
-    rgba(0, 0, 0, 0.5) 12%,
-    rgba(0, 0, 0, 0.4) 19%,
-    rgba(0, 0, 0, 0.28) 26%,
-    rgba(0, 0, 0, 0.16) 33%,
-    rgba(0, 0, 0, 0.07) 40%,
-    rgba(0, 0, 0, 0.02) 46%,
-    rgba(0, 0, 0, 0) 52%
-  );
-}
-
 .profile-card__info {
   position: absolute;
+  top: 22px;
   left: 20px;
   right: 20px;
-  bottom: 18px;
-  color: #ffffff;
+  z-index: 1;
+  text-align: center;
+  color: var(--pc-ink);
 }
 
 .profile-card__name {
   margin: 0;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 600;
   line-height: 1.25;
   letter-spacing: -0.01em;
@@ -215,7 +205,7 @@
   margin: 4px 0 0;
   font-size: 14px;
   line-height: 1.45;
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--pc-muted);
 }
 
 .profile-card__tile-rim {
@@ -296,12 +286,12 @@
 }
 
 .profile-card__contact {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  display: grid;
+  place-items: center;
   flex: none;
-  height: 36px;
-  padding: 0 14px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   border: none;
   border-radius: calc(var(--pc-radius) * 0.75);
   background: var(--pc-tile);

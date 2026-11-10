@@ -6,11 +6,11 @@ import './ProfileCard.css';
 
 const THEMES = {
   dark: {
-    '--pc-frame': 'rgba(38, 35, 46, 0.66)',
+    '--pc-frame': 'rgba(30, 31, 35, 0.7)',
     '--pc-frame-edge': 'rgba(255, 255, 255, 0.08)',
     '--pc-frame-highlight': 'rgba(255, 255, 255, 0.07)',
     '--pc-frame-shadow': '0 22px 44px -20px rgba(0, 0, 0, 0.8), 0 6px 16px -8px rgba(0, 0, 0, 0.5)',
-    '--pc-tile': 'linear-gradient(180deg, #3a3644 0%, #27242f 100%)',
+    '--pc-tile': 'linear-gradient(180deg, #2e3034 0%, #1c1d20 100%)',
     '--pc-tile-edge': 'rgba(255, 255, 255, 0.07)',
     '--pc-tile-highlight': 'rgba(255, 255, 255, 0.12)',
     '--pc-tile-shadow': '0 4px 10px -4px rgba(0, 0, 0, 0.7)',
@@ -321,13 +321,10 @@ const ProfileCard = ({
             <img className="profile-card__photo" src={avatarUrl} alt={name || ''} loading="lazy" draggable={false} />
           )}
           {(name || title) && (
-            <>
-              <span className="profile-card__scrim" />
-              <div className="profile-card__info">
-                {name && <h3 className="profile-card__name">{name}</h3>}
-                {title && <p className="profile-card__title">{title}</p>}
-              </div>
-            </>
+            <div className="profile-card__info">
+              {name && <h3 className="profile-card__name">{name}</h3>}
+              {title && <p className="profile-card__title">{title}</p>}
+            </div>
           )}
           <span className="profile-card__tile-rim" />
         </div>
@@ -349,9 +346,9 @@ const ProfileCard = ({
                 className="profile-card__contact"
                 onClick={onContactClick}
                 aria-label={name ? `${contactText} ${name}` : contactText}
+                title={contactText}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3" /><path d="m4 7 8 6 8-6" /></svg>
-                {contactText}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3" /><path d="m4 7 8 6 8-6" /></svg>
               </button>
             )}
           </div>
