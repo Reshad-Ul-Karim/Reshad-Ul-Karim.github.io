@@ -13,7 +13,7 @@ export default function ProfileIsland() {
   return (
     <ProfileCard
       avatarUrl={abs('assets/portrait/reshad-headshot-720.webp?v=2')}
-      miniAvatarUrl={abs('assets/brand/avatar-96.webp')}
+      miniAvatarUrl={abs('assets/brand/avatar-96.webp?v=2')}
       iconUrl={abs('assets/brand/holo-pattern.svg')}
       name="Reshad Ul Karim"
       title="AI/ML Engineer & Researcher"

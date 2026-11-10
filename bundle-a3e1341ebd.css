@@ -9928,7 +9928,7 @@ html[data-v2] .nav-logo a {
 }
 html[data-v2] .nav-logo a::before {
   content: ""; width: 32px; height: 32px; border-radius: 50%; flex: none;
-  background: url("assets/brand/avatar-96.webp") center / cover;
+  background: url("assets/brand/avatar-96.webp?v=2") center / cover;
   box-shadow: 0 0 0 1.5px rgba(var(--hl-rgb), 0.55);
 }
 html[data-v2] .nav-link {
