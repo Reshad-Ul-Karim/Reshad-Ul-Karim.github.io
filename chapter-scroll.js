@@ -83,6 +83,8 @@
   }
 
   /* ---- The loop: reads first, then writes --------------------------------- */
+  // The speed-following sheen restyles on-screen glass mid-scroll: mouse-driven full tier only.
+  var sheenFollows = !root.classList.contains('perf-lite') && win.matchMedia('(hover: hover) and (pointer: fine)').matches;
   var ticking = false;
   function kick() { if (!ticking) { ticking = true; requestAnimationFrame(frame); } }
   function frame(now) {
@@ -132,7 +134,7 @@
     // Writes: liquid-glass highlight follows the speed
     // Coarse steps: each change restyles the page and repaints every visible sheen.
     var sq = Math.round(clamp(vel / 2.5, -1, 1) * 20) / 20;
-    if (sq !== scrollV) {
+    if (sheenFollows && sq !== scrollV) {
       scrollV = sq;
       if (win.__lgScrollV) win.__lgScrollV(sq); else root.style.setProperty('--scroll-v', String(sq));
     }

@@ -130,6 +130,9 @@
   // Positioning comes from CSS (:where(.lg) { position: relative }, which any
   // fixed or absolute rule overrides). The corner radius is read only where a
   // lens map will be drawn, so phones never force a style pass here.
+  // Refraction budget: the SVG lens is the costliest backdrop filter, so only
+  // the navigation bar and the main buttons carry it. Other glass stays frosted.
+  var REFRACT = '.nav, .btn, .navbar .nav-container, .btn-primary, .btn-secondary, .theme-toggle, #accent-switcher .accent-trigger, #accent-switcher .accent-tray';
   function apply(el, radius) {
     el.__lg = true;
     el.__lgRad = radius;
@@ -145,7 +148,7 @@
   function refit(el, w, h) {
     // On touch screens the chapter pill floats over body text, which the
     // colour-split lens smears into rainbow ghosts: it stays frosted there.
-    var frosted = !canRefract || lessGlass.matches || (!fineMQ.matches && el.classList.contains('chapters'));
+    var frosted = !canRefract || lessGlass.matches || !el.matches(REFRACT);
     if (frosted) { el.style.removeProperty('--lg-filter'); el.classList.remove('lg--refract'); return; }
     if (!el.__lgNear) return; // frosted until it nears the viewport: fewer live filters
     if (w == null) { var r = el.getBoundingClientRect(); w = r.width; h = r.height; }
@@ -323,7 +326,8 @@
       for (var i = 0; i < records.length; i++) {
         var added = records[i].addedNodes;
         for (var j = 0; j < added.length; j++) {
-          if (relevant(added[j])) { pending = true; requestAnimationFrame(function () { pending = false; scan(); }); return; }
+          // One scan after a burst of insertions (islands mount one after another).
+          if (relevant(added[j])) { pending = true; setTimeout(function () { pending = false; scan(); }, 250); return; }
         }
       }
     }).observe(doc.body, { childList: true, subtree: true });

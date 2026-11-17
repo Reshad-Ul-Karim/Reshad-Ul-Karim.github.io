@@ -32,7 +32,7 @@ const forcedMQ = window.matchMedia('(forced-colors: active)');
 function shouldSkip() {
   if (!canvasHost || root.dataset.gl) return true; // initialise at most once
   if (forcedMQ.matches || !portraitImg) return true;
-  try { if (sessionStorage.getItem('gl-slow')) return true; } catch (e) {} // could not keep up earlier this session
+  try { sessionStorage.removeItem('gl-slow'); } catch (e) {} // old session kill-switch: replaced by the quality ladder
   const conn = navigator.connection;
   return !!(conn && conn.saveData);
 }
@@ -60,7 +60,26 @@ function loadImage(url) {
   return img.decode().then(() => img);
 }
 
-if (!shouldSkip()) {
+// A usable GPU is checked before the 3D library is fetched: without one the
+// static portrait stays and the download is skipped.
+function gpuUsable() {
+  try {
+    const c = document.createElement('canvas');
+    const gl = c.getContext('webgl2', { failIfMajorPerformanceCaveat: true });
+    if (!gl) return false;
+    const info = gl.getExtension('WEBGL_debug_renderer_info');
+    const name = String(gl.getParameter(info ? info.UNMASKED_RENDERER_WEBGL : gl.RENDERER));
+    const lose = gl.getExtension('WEBGL_lose_context');
+    if (lose) lose.loseContext();
+    return !/swiftshader|llvmpipe|softpipe|software|basic render/i.test(name);
+  } catch (e) { return false; }
+}
+
+if (!shouldSkip() && !gpuUsable()) {
+  root.dataset.gl = 'unsupported';
+  root.dataset.glWhy = 'no-gpu';
+  announce('gl:primed');
+} else if (!shouldSkip()) {
   root.dataset.gl = 'pending';
   const start = () => {
     Promise.all([import('./assets/vendor/three-home.min.js?v=186.1-2'), loadImage(ENV_URL).catch(() => null)])
@@ -829,6 +848,9 @@ async function createEngine(T, envImg) {
      and its ring. Low-end devices draw at most 1.5x and ~1.1 MP; others 2x and
      ~3.2 MP (a 2x phone hero is ~0.7 MP, a 1440 px laptop hero ~2.5 MP). */
   const LOW = root.classList.contains('perf-lite');
+  // Quality ladder: each rung scales the canvas density. A device that cannot
+  // keep up steps down a rung (see frame()); the 3D is never switched off.
+  const RUNGS = [1, 0.75, 0.55]; let rung = 0;
   let sized = '';
   function resize() {
     vw = canvasHost.clientWidth || 1;
@@ -836,7 +858,7 @@ async function createEngine(T, envImg) {
     measureDoc(canvasHost);
     const cap = LOW ? 1.5 : 2;
     const budget = LOW ? 1.1e6 : 3.2e6;
-    const dpr = Math.min(window.devicePixelRatio || 1, cap, Math.sqrt(budget / Math.max(1, vw * vh)));
+    const dpr = Math.max(Math.min(window.devicePixelRatio || 1, 1.34) * 0.75, Math.min(window.devicePixelRatio || 1, cap, Math.sqrt(budget / Math.max(1, vw * vh))) * RUNGS[rung]);
     const key = vw + 'x' + vh + '@' + dpr.toFixed(3);
     if (key !== sized) { // the observer's first call repeats the initial size: keep what prime() built
       if (sized) views.forEach((v) => { v.w = 0; }); // re-fit on the next frame
@@ -867,7 +889,7 @@ async function createEngine(T, envImg) {
   // phones and laptops), they are drawn every other display frame while the
   // page is scrolling. The canvas scrolls natively with the page, so a skipped
   // frame never lags behind it.
-  let cost = 0; let lastScrollT = 0; let tick = 0;
+  let cost = 0; let lastScrollT = 0;
   // Sustained-slowness guard: if most of ~120 consecutive animation frames
   // take over 50 ms, this device cannot run the scene smoothly. The portrait
   // image fades back once, and the 3D is not retried this session.
@@ -878,19 +900,18 @@ async function createEngine(T, envImg) {
   }
   function frame(now) {
     raf = 0;
-    if (prevT && now - prevT < 250) { samples++; if (now - prevT > 50) slow++; }
+    // Only consecutive frames of this loop are sampled (gaps over 250 ms are
+    // idle time). Most of ~90 frames slower than 30 fps: step down one rung of
+    // canvas density. Never below 1x on dense screens or 0.75x on 1x screens.
+    if (prevT && now - prevT < 250) { samples++; if (now - prevT > 34) slow++; }
     prevT = now;
-    if (samples >= 120) {
-      if (slow / samples > 0.6) {
-        try { sessionStorage.setItem('gl-slow', '1'); } catch (e) {}
-        destroy();
-        root.dataset.gl = 'slow';
-        return;
+    if (samples >= 90) {
+      if (slow / samples > 0.6 && rung < RUNGS.length - 1) {
+        rung++; root.dataset.glRung = String(rung); cost = 0;
+        resize();
       }
       samples = 0; slow = 0;
     }
-    const every = cost > 14 ? 3 : cost > 7 ? 2 : 1; // over ~14 ms: every third frame
-    if (every > 1 && now - lastScrollT < 150 && (++tick % every) !== 0) { raf = requestAnimationFrame(frame); return; }
     const t0 = performance.now();
     frameWork(now);
     cost += (performance.now() - t0 - cost) * 0.1;

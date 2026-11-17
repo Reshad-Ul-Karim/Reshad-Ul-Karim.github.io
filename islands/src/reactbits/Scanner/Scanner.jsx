@@ -329,6 +329,10 @@ const Scanner = ({
     let last = 0;
     let visible = true;
     let quiet = 0;
+    // The drift runs for a while after the intro or the last pointer activity,
+    // then the canvas holds a still frame: nothing is drawn on an idle page.
+    const DRIFT_SECONDS = 8;
+    let sinceWake = 0;
 
     const toUv = (x, y) => [(x * 2 - view.width) / view.height, (view.height - y * 2) / view.height];
 
@@ -407,7 +411,8 @@ const Scanner = ({
       mouse.x += (target[0] - mouse.x) * follow;
       mouse.y += (target[1] - mouse.y) * follow;
       presence += ((pointer.inside && s.mouseInteraction ? 1 : 0) - presence) * (1 - Math.exp(-dt / 0.3));
-      let busy = (!reduce && (s.speed !== 0 || s.sweepSpeed !== 0)) || introClock < 1 || presence > 0.001;
+      sinceWake += dt;
+      let busy = (!reduce && (s.speed !== 0 || s.sweepSpeed !== 0) && sinceWake < DRIFT_SECONDS) || introClock < 1 || presence > 0.001;
       for (let k = 0; k < MAX_PINGS; k++) {
         if (pings[k * 3 + 2] < 0) continue;
         pings[k * 3 + 2] += dt;
@@ -421,6 +426,7 @@ const Scanner = ({
 
     function wake() {
       quiet = 0;
+      sinceWake = 0;
       if (!raf && visible && !document.hidden) {
         last = 0;
         raf = requestAnimationFrame(frame);

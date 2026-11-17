@@ -8643,7 +8643,7 @@ a.detail-domain-tag:hover {
     inset 0 -6px 10px rgba(255, 255, 255, 0.08),
     0 8px 28px rgba(var(--ask-glow-1-rgb), 0.45),
     0 2px 14px rgba(var(--ask-glow-2-rgb), 0.3);
-  animation: askFabBob 5s ease-in-out infinite;
+  animation: askFabBob 5s ease-in-out 3;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
 }
 .ask-fab i {
@@ -8664,7 +8664,7 @@ a.detail-domain-tag:hover {
   background: radial-gradient(ellipse at 30% 30%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 72%);
   mix-blend-mode: screen;
   pointer-events: none;
-  animation: askFabGlare 5s ease-in-out infinite;
+  animation: askFabGlare 5s ease-in-out 3;
 }
 .ask-fab::after {
   content: '';
@@ -8675,7 +8675,7 @@ a.detail-domain-tag:hover {
   background: conic-gradient(from 0deg, rgb(var(--ask-glow-1-rgb)), rgb(var(--ask-glow-2-rgb)), rgb(var(--ask-glow-3-rgb)), rgb(var(--ask-glow-1-rgb)));
   filter: blur(11px);
   opacity: 0.5;
-  animation: askFabHaloSpin 7s linear infinite;
+  animation: askFabHaloSpin 7s linear 2;
 }
 @keyframes askFabBob {
   0%, 100% { transform: translateY(0) scale(1, 1) rotate(0deg); }
@@ -9250,6 +9250,10 @@ a.ask-citation-chip:hover {
 [data-booking-item][hidden] {
   display: none !important;
 }
+html[data-gl="unsupported"] .ask-fab,
+html[data-gl="unsupported"] .ask-fab::before,
+html[data-gl="unsupported"] .ask-fab::after,
+html[data-gl="unsupported"] .hero__status-dot { animation: none; }
 /* tokens.css */
 :root,
 html[data-accent="teal"] {
