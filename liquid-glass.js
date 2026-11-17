@@ -103,6 +103,9 @@
     var id = 'lg-' + (++count);
     // Glass Surface is tuned for ~200 x 80 panels; small controls bend less.
     var k = Math.max(0.3, Math.min(1, Math.min(bw, bh) / 80));
+    // Long bars (navigation) pass over body text: a strong lens folds whole lines
+    // into mirrored colour ghosts at the rim, so they bend far less.
+    if (bw > 480) k *= 0.3;
     var scales = GS.offsets.map(function (o) { return (GS.distortion + o) * k; });
     var ns = svg.namespaceURI;
     var f = doc.createElementNS(ns, 'filter');

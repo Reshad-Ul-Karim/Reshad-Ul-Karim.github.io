@@ -259,7 +259,7 @@
     function resize() {
       var r = canvas.getBoundingClientRect(); dpr = Math.min(2, window.devicePixelRatio || 1);
       cw = r.width; ch = r.height; canvas.width = Math.round(cw * dpr); canvas.height = Math.round(ch * dpr);
-      k.fs = clamp(640 / Math.max(1, cw), 1, 1.3); // small labels stay legible on narrow stages
+      k.fs = clamp(880 / Math.max(1, cw), 1, 1.38); // small labels stay legible: about 11 px on screen at any stage width
       render();
     }
     function target() {
@@ -278,7 +278,21 @@
       var s = Math.min(cw / W, ch / H);
       ctx.setTransform(s * dpr, 0, 0, s * dpr, (cw - W * s) / 2 * dpr, (ch - H * s) / 2 * dpr);
       k.p = p; k.t = t;
+      backdrop();
       try { draw(k, p, t); } catch (e) { /* a scene bug must never break the page */ }
+    }
+    // Behind every scene: a faint measured grid and a light pool that travels
+    // with the story, so beats read as one continuous space.
+    function backdrop() {
+      var dark = k.dark !== false; var prog = k.n > 1 ? p / (k.n - 1) : 0;
+      ctx.save();
+      ctx.fillStyle = hexA(k.ink || '#ffffff', dark ? 0.07 : 0.1);
+      for (var gx = 40; gx < W; gx += 40) for (var gy = 32; gy < H; gy += 40) ctx.fillRect(gx - 0.8, gy - 0.8, 1.6, 1.6);
+      var px = lerp(W * 0.22, W * 0.78, prog); var py = H * 0.5 + Math.sin(prog * Math.PI) * -60;
+      var g = ctx.createRadialGradient(px, py, 0, px, py, 420);
+      g.addColorStop(0, hexA(k.hl || '#3de0b8', dark ? 0.1 : 0.14)); g.addColorStop(1, hexA(k.hl || '#3de0b8', 0));
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      ctx.restore();
     }
     function frame(now) {
       raf = 0;
